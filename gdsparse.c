@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", #__VA_ARGS__)
-#define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", #__VA_ARGS__)
+#define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n",## __VA_ARGS__)
+#define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n",## __VA_ARGS__)
 enum parsing_state {PARSING_LENGTH = 0, PARSING_TYPE, PARSING_DAT};
 enum record {
 	INVALID = 0x0000,
@@ -19,8 +19,59 @@ enum record {
 	BOUNDARY = 0x0800,
 	PATH = 0x0900,
 	SREF = 0x0A00,
-	ENDEL = 0x1100
+	ENDEL = 0x1100,
+	XY = 0x1003,
+	MAG = 0x1B05,
+	ANGLE = 0x1C05,
+	SNAME = 0x1206,
+	STRANS = 0x1A01,
+	BOX = 0x2D00,
+	LAYER = 0x0D02,
 };
+
+static int name_cell_ref(struct gds_cell_instance *cell_inst, unsigned int bytes, char* data) {
+	int len;
+
+	if (cell_inst == NULL)
+	{
+		GDS_ERROR("Naming cell ref with no opened cell ref");
+		return -1;
+	}
+	data[bytes] = 0; // Append '0'
+	len = strlen(data);
+	if (len > CELL_NAME_MAX-1) {
+		GDS_ERROR("Cell name '%s' too long: %d\n", data, len);
+		return -1;
+	} else {
+		strcpy(cell_inst->ref_name, data);
+		printf("\tCell referenced: %s\n", cell_inst->ref_name);
+	}
+	return 0;
+
+}
+
+static signed int gds_convert_signed_int(char *data)
+{
+	if (!data) {
+		GDS_ERROR("This should not happen");
+		return 0;
+	}
+	return (signed int)((((int)(data[0])) << 24) |
+			(((int)(data[1])) << 16) |
+			(((int)(data[2])) <<  8) |
+			(((int)(data[3])) <<  0));
+}
+
+static int16_t gds_convert_signed_int16(char *data)
+{
+	if (!data) {
+		GDS_ERROR("This should not happen");
+		return 0;
+	}
+	return (int16_t)((((int16_t)(data[0])) <<  8) |
+			(((int16_t)(data[1])) <<  0));
+}
+
 
 static GList * append_library(GList *curr_list)
 {
@@ -53,6 +104,18 @@ static GList * append_graphics(GList *curr_list, enum graphics_type type)
 
 }
 
+static GList * append_vertex(GList *curr_list, int x, int y)
+{
+	struct gds_point *vertex;
+	vertex = (struct gds_point *)malloc(sizeof(struct gds_point));
+	if (vertex) {
+		vertex->x = x;
+		vertex->y = y;
+	} else
+		return NULL;
+	return g_list_append(curr_list, vertex);
+}
+
 static GList * append_cell(GList *curr_list)
 {
 	struct gds_cell *cell;
@@ -76,6 +139,9 @@ static GList * append_cell_ref(GList *curr_list)
 	if (inst) {
 		inst->cell_ref = NULL;
 		inst->ref_name[0] = 0;
+		inst->magnification = 1;
+		inst->flipped = 0;
+		inst->angle = 0;
 	} else
 		return NULL;
 
@@ -130,6 +196,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 {
 	char workbuff[1024];
 	int read;
+	int i;
 	int run = 1;
 	FILE *gds_file = NULL;
 	uint16_t rec_data_length;
@@ -254,6 +321,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				current_cell = NULL;
 				printf("Leaving Cell\n");
 				break;
+			//case BOX:
 			case BOUNDARY:
 				if (current_cell == NULL) {
 					GDS_ERROR("Boundary outside of cell");
@@ -282,6 +350,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 					break;
 				}
 
+				current_s_reference = (struct gds_cell_instance *) g_list_last(current_cell->child_cells)->data;
+				printf("\tEntering reference\n");
 				break;
 			case PATH:
 				if (current_cell == NULL) {
@@ -304,10 +374,33 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 					printf("\tLeaving %s\n", (current_graphics->type == GRAPHIC_POLYGON ? "boundary" : "path"));
 					current_graphics = NULL;
 				}
+				if (current_s_reference != NULL) {
+					printf("\tLeaving Reference\n");
+					current_s_reference = NULL;
+				}
 				break;
+			case XY:
+				if (current_graphics) {
 
+				} else if (current_s_reference) {
+					if (rec_data_length != 8) {
+						GDS_WARN("Instance has weird coordinates. Rendered output might be screwed!");
+					}
+				}
+
+				break;
+			case MAG:
+				GDS_WARN("Magnification not yet supported");
+				break;
+			case STRANS:
+
+				break;
+			default:
+				//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
+				break;
 			}
 			break;
+
 
 		case PARSING_DAT:
 			read = fread(workbuff, sizeof(char), rec_data_length, gds_file);
@@ -328,6 +421,40 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			case STRNAME:
 				name_cell(current_cell, read, workbuff);
 				break;
+			case XY:
+				if (current_s_reference) {
+					/* Get origin of reference */
+					current_s_reference->origin.x = gds_convert_signed_int(workbuff);
+					current_s_reference->origin.y = gds_convert_signed_int(&workbuff[4]);
+				} else if (current_graphics) {
+					for (i = 0; i < read/8; i++) {
+						// printf("coords: %d/%d", gds_convert_signed_int(&workbuff[i*8]), gds_convert_signed_int(&workbuff[i*8+4]));
+						current_graphics->vertices = append_vertex(current_graphics->vertices,
+											   gds_convert_signed_int(&workbuff[i*8]),
+								gds_convert_signed_int(&workbuff[i*8]));
+
+					}
+				}
+				break;
+			case STRANS:
+				if (!current_s_reference) {
+					GDS_ERROR("Transformation defined outside of instance");
+					break;
+				}
+				current_s_reference->flipped = ((workbuff[0] & 0x80) ? 1 : 0);
+				break;
+
+			case SNAME:
+				name_cell_ref(current_s_reference, read, workbuff);
+				break;
+			case LAYER:
+				if (!current_graphics) {
+					GDS_WARN("Layer has to be defined inside graphics object. Probably unknown object.");
+					break;
+				}
+				current_graphics->layer = gds_convert_signed_int16(workbuff);
+				printf("\tAdded layer %d\n", (int)current_graphics->layer);
+				break;
 
 			}
 			break;
@@ -339,6 +466,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 
 	/* Iterate and find references to cells */
+	// TODO
 
 
 	*library_list = lib_list;

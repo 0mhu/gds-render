@@ -26,7 +26,7 @@ struct gds_graphics {
     GList *vertices;
     unsigned int path_width;
     int width_absolute;
-    uint16_t layer;
+    int16_t layer;
     uint16_t datatype;
 };
 
