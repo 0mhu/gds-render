@@ -2,6 +2,7 @@
 #define __GDSPARSE_H__
 
 #include <stdint.h>
+#include <glib.h>
 
 #define CELL_NAME_MAX (100)
 
@@ -22,8 +23,7 @@ struct gds_point {
 
 struct gds_graphics {
     enum graphics_type type;
-    struct gds_point *vertices;
-    int vertices_count;
+    GList *vertices;
     unsigned int path_width;
     int width_absolute;
     uint16_t layer;
@@ -43,22 +43,19 @@ struct gds_cell {
     char name[CELL_NAME_MAX];
     struct gds_time_field mod_time;
     struct gds_time_field access_time;
-    struct gds_cell_instance *child_cells;
-    int child_cells_count;
-    struct gds_graphics *graphic_objs;
-    int graphic_objs_count;
+    GList *child_cells;
+    GList *graphic_objs;
 };
 
 struct gds_library {
     char name[CELL_NAME_MAX];
     struct gds_time_field time;
     double unit_to_meters;
-    struct gds_cell *cells;
-    int cells_count;
+    GList *cells;
 };
 
 
-int parse_gds_from_file(const char *filename, struct gds_library **library_array, unsigned int *count);
+int parse_gds_from_file(const char *filename, GList **library_array);
 
 
 #endif /* __GDSPARSE_H__ */
