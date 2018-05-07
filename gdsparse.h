@@ -24,6 +24,8 @@ struct gds_graphics {
     enum graphics_type type;
     struct gds_point *vertices;
     int vertices_count;
+    unsigned int path_width;
+    int width_absolute;
     uint16_t layer;
     uint16_t datatype;
 };

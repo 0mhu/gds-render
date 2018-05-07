@@ -16,18 +16,60 @@ enum record {
 	BGNSTR = 0x0502,
 	STRNAME = 0x0606,
 	ENDSTR = 0x0700,
+	BOUNDARY = 0x0800,
+	PATH = 0x0900,
+	SREF = 0x0A00,
+	ENDEL = 0x1100
 };
 
 static struct gds_library * append_library(struct gds_library *curr_arr, unsigned int curr_count)
 {
 	unsigned int size = (curr_count +1) * sizeof(struct gds_library);
-	return (struct gds_library *)realloc(curr_arr, size);
+	struct gds_library *ptr = (struct gds_library *)realloc(curr_arr, size);
+	if (ptr) {
+		ptr[curr_count].cells_count = 0;
+		ptr[curr_count].name[0] = 0;
+	}
+	return ptr;
+}
+
+static struct gds_graphics * append_graphics(struct gds_graphics *curr_arr, unsigned int curr_count)
+{
+	unsigned int size = (curr_count +1) * sizeof(struct gds_graphics);
+	struct gds_graphics *ptr = (struct gds_graphics *)realloc(curr_arr, size);
+	if (ptr != NULL) {
+		ptr[curr_count].vertices_count = 0;
+		ptr[curr_count].vertices = NULL;
+	}
+	return ptr;
 }
 
 static struct gds_cell * append_cell(struct gds_cell *curr_arr, unsigned int curr_count)
 {
 	unsigned int size = (curr_count +1) * sizeof(struct gds_cell);
-	return (struct gds_cell *)realloc(curr_arr, size);
+	struct gds_cell *ptr = (struct gds_cell *)realloc(curr_arr, size);
+
+	if (ptr != NULL) {
+		ptr[curr_count].child_cells_count = 0;
+		ptr[curr_count].graphic_objs_count = 0;
+		ptr[curr_count].child_cells = NULL;
+		ptr[curr_count].graphic_objs = NULL;
+		ptr[curr_count].name[0] = 0;
+	}
+
+	return ptr;
+}
+
+static gds_cell_instance * append_cell_ref(struct gds_cell_instance* curr_arr, unsigned int curr_count)
+{
+	unsigned int size = (curr_count + 1) * sizeof(struct gds_cell_instance);
+	struct gds_cell_instance *ptr = (struct gds_cell_instance *)realloc(curr_arr, size);
+	if (ptr) {
+		ptr[curr_count].cell_ref = NULL;
+		ptr[curr_count].ref_name[0] = 0;
+	}
+	return ptr;
+
 }
 
 static int name_library(struct gds_library *current_library, unsigned int bytes, char* data) {
@@ -169,6 +211,16 @@ int parse_gds_from_file(const char *filename, struct gds_library **library_array
 					GDS_ERROR("Closing Library with no opened library");
 					break;
 				}
+
+				/* Check for open Cells */
+				if (current_cell != NULL) {
+					run = -4;
+					GDS_ERROR("Closing Library with opened cells");
+					break;
+				}
+				current_lib->cells = cell_arr;
+				current_lib->cells_count = cell_arr_cnt;
+
 				current_lib = NULL;
 				printf("Leaving Library\n");
 				break;
@@ -190,8 +242,69 @@ int parse_gds_from_file(const char *filename, struct gds_library **library_array
 					GDS_ERROR("Closing cell with no opened cell");
 					break;
 				}
+				/* Check for open Elements */
+				if (current_graphics != NULL || current_s_reference != NULL) {
+					run = -4;
+					GDS_ERROR("Closing cell with opened Elements");
+					break;
+				}
 				current_cell = NULL;
 				printf("Leaving Cell\n");
+				break;
+			case BOUNDARY:
+				if (current_cell == NULL) {
+					GDS_ERROR("Boundary outside of cell");
+					run = -3;
+					break;
+				}
+				current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, current_cell->graphic_objs_count);
+				current_cell->graphic_objs_count++;
+				if (current_cell->graphic_objs == NULL) {
+					GDS_ERROR("Memory allocation failed");
+					run = -4;
+					break;
+				}
+				current_graphics = &(current_cell->graphic_objs[current_cell->graphic_objs_count-1]);
+				current_graphics->type = GRAPHIC_POLYGON;
+				printf("\tEntering boundary\n");
+				break;
+			case SREF:
+				if (current_cell == NULL) {
+					GDS_ERROR("Path outside of cell");
+					run = -3;
+					break;
+				}
+				current_cell->child_cells = append_cell_ref(current_cell->child_cells, current_cell->child_cells_count);
+				if (current_cell->child_cells == NULL) {
+					GDS_ERROR("Memory allocation failed");
+					run = -4;
+					break;
+				}
+
+				break;
+			case PATH:
+				if (current_cell == NULL) {
+					GDS_ERROR("Path outside of cell");
+					run = -3;
+					break;
+				}
+				current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, current_cell->graphic_objs_count);
+				current_cell->graphic_objs_count++;
+				if (current_cell->graphic_objs == NULL) {
+					GDS_ERROR("Memory allocation failed");
+					run = -4;
+					break;
+				}
+				current_graphics = &(current_cell->graphic_objs[current_cell->graphic_objs_count-1]);
+				current_graphics->type = GRAPHIC_PATH;
+				printf("\tEntering Path\n");
+				break;
+			case ENDEL:
+				if (current_graphics != NULL) {
+
+					printf("\tLeaving %s\n", (current_graphics->type == GRAPHIC_POLYGON ? "boundary" : "path"));
+					current_graphics = NULL;
+				}
 				break;
 
 			}
@@ -211,7 +324,7 @@ int parse_gds_from_file(const char *filename, struct gds_library **library_array
 
 			switch (rec_type) {
 			case LIBNAME:
-				name_library(current_lib, read,workbuff);
+				name_library(current_lib, read, workbuff);
 				break;
 			case STRNAME:
 				name_cell(current_cell, read, workbuff);
@@ -224,6 +337,10 @@ int parse_gds_from_file(const char *filename, struct gds_library **library_array
 	}
 
 	fclose(gds_file);
+
+
+	/* Iterate and find references to cells */
+
 
 	*library_array = lib_arr;
 	*count = lib_arr_cnt;
