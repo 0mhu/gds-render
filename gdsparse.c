@@ -7,12 +7,13 @@
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", #__VA_ARGS__)
 enum parsing_state {PARSING_LENGTH = 0, PARSING_TYPE, PARSING_DAT};
 enum record {
+	INVALID = 0x0000,
 	HEADER = 0x0002,
 	BGNLIB = 0x0102,
 	LIBNAME = 0x0206,
 	UNITS = 0x0305,
 	ENDLIB = 0x0400,
-	BGNSTR = 0x0500,
+	BGNSTR = 0x0502,
 	STRNAME = 0x0606,
 	ENDSTR = 0x0700,
 };
@@ -32,6 +33,12 @@ static struct gds_cell * append_cell(struct gds_cell *curr_arr, unsigned int cur
 static int name_library(struct gds_library *current_library, unsigned int bytes, char* data) {
 	int len;
 
+	if (current_library == NULL)
+	{
+		GDS_ERROR("Naming cell with no opened library");
+		return -1;
+	}
+
 	data[bytes] = 0; // Append '0'
 	len = strlen(data);
 	if (len > CELL_NAME_MAX-1) {
@@ -48,14 +55,19 @@ static int name_library(struct gds_library *current_library, unsigned int bytes,
 static int name_cell(struct gds_cell *cell, unsigned int bytes, char* data) {
 	int len;
 
+	if (cell == NULL)
+	{
+		GDS_ERROR("Naming library with no opened library");
+		return -1;
+	}
 	data[bytes] = 0; // Append '0'
 	len = strlen(data);
 	if (len > CELL_NAME_MAX-1) {
-		GDS_ERROR("Library name '%s' too long: %d\n", data, len);
+		GDS_ERROR("Cell name '%s' too long: %d\n", data, len);
 		return -1;
 	} else {
 		strcpy(cell->name, data);
-		printf("Named library: %s\n", cell->name);
+		printf("Named cell: %s\n", cell->name);
 	}
 	return 0;
 
@@ -92,6 +104,7 @@ int parse_gds_from_file(const char *filename, struct gds_library **library_array
 	while (run == 1) {
 		switch (state) {
 		case PARSING_LENGTH:
+			rec_type = INVALID;
 			read = fread(workbuff, sizeof(char), 2, gds_file);
 			if (read != 2 && (current_cell != NULL ||
 					  current_graphics != NULL ||
@@ -158,10 +171,11 @@ int parse_gds_from_file(const char *filename, struct gds_library **library_array
 				}
 				current_lib = NULL;
 				printf("Leaving Library\n");
+				break;
 			case BGNSTR:
 				cell_arr = append_cell(cell_arr, cell_arr_cnt);
 				cell_arr_cnt++;
-				if (lib_arr == NULL) {
+				if (cell_arr == NULL) {
 					GDS_ERROR("Allocating memory failed");
 					run = -3;
 					break;
