@@ -1,3 +1,13 @@
+/*
+ * What's missing? - A lot:
+ * Support for Boxes
+ * Support for 4 Byte real
+ * Support for pathtypes
+ * Support for datatypes (only layer so far)
+ * etc...
+ */
+
+
 #include "gdsparse.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -420,7 +430,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				current_cell = NULL;
 				printf("Leaving Cell\n");
 				break;
-			//case BOX:
+				//case BOX:
 			case BOUNDARY:
 				if (current_cell == NULL) {
 					GDS_ERROR("Boundary outside of cell");
@@ -599,4 +609,31 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	return run;
 
 
+}
+
+static void delete_cell_inst_element(struct gds_cell_instance *cell_inst)
+{
+	free(cell_inst);
+}
+
+static void delete_cell_element(struct gds_cell *cell)
+{
+	g_list_free_full(cell->child_cells, (GDestroyNotify)delete_cell_inst_element);
+	free(cell);
+}
+
+static void delete_library_element(struct gds_library *lib)
+{
+	g_list_free(lib->cell_names);
+	g_list_free_full(lib->cells, (GDestroyNotify)delete_cell_element);
+	free(lib);
+}
+
+
+int clear_lib_list(GList **library_list)
+{
+	if (*library_list == NULL) return 0;
+	g_list_free_full(*library_list, (GDestroyNotify)delete_library_element);
+	*library_list = NULL;
+	return 0;
 }

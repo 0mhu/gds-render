@@ -57,6 +57,6 @@ struct gds_library {
 
 
 int parse_gds_from_file(const char *filename, GList **library_array);
-
+int clear_lib_list(GList **library_list);
 
 #endif /* __GDSPARSE_H__ */
