@@ -2,6 +2,13 @@
 #include "gdsparse.h"
 #include <gtk/gtk.h>
 
+enum cell_store_columns {
+LIBRARY,
+CELL,
+STORE_COLUMN
+};
+
+
 struct open_button_data {
 	GList **list_ptr;
 	GtkTreeStore *cell_store;
@@ -17,10 +24,7 @@ gboolean on_window_close(gpointer window, gpointer user)
 	return TRUE;
 }
 
-static void list_add_label(const char *text, GtkListBox *box)
-{
 
-}
 
 void on_load_gds(gpointer button, gpointer user)
 {
@@ -42,11 +46,11 @@ void on_load_gds(gpointer button, gpointer user)
 		gds_lib = (struct gds_library *)lib->data;
 		/* Create top level iter */
 		gtk_tree_store_append (store, &libiter, NULL);
-		gtk_tree_store_set (store, &libiter, 0, gds_lib->name, -1);
+		gtk_tree_store_set (store, &libiter, LIBRARY, gds_lib->name, -1);
 		for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
 			gds_c = (struct gds_cell *)cell->data;
 			gtk_tree_store_append (store, &celliter, &libiter);
-			gtk_tree_store_set (store, &celliter, 0, gds_c->name, -1);
+			gtk_tree_store_set (store, &celliter, CELL, gds_c->name, -1);
 		}
 	}
 
@@ -62,13 +66,17 @@ static GtkTreeStore * setup_cell_selector(GtkTreeView* view)
 	GtkTreeStore *cell_store;
 
 	GtkCellRenderer *render;
+	GtkCellRenderer *render2;
 	GtkTreeViewColumn *column;
 
-	cell_store = gtk_tree_store_new(1, G_TYPE_STRING);
+	cell_store = gtk_tree_store_new(STORE_COLUMN, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_view_set_model(view, GTK_TREE_MODEL(cell_store));
 
 	render = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Cell Selection", render, "text", 0, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Library", render, "text", LIBRARY, NULL);
+	gtk_tree_view_append_column(view, column);
+	//g_object_unref(column);
+	column = gtk_tree_view_column_new_with_attributes("Cell", render, "text", CELL, NULL);
 	gtk_tree_view_append_column(view, column);
 
 	return cell_store;
