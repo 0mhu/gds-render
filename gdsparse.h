@@ -52,6 +52,7 @@ struct gds_library {
     struct gds_time_field time;
     double unit_to_meters;
     GList *cells;
+    GList *cell_names;
 };
 
 

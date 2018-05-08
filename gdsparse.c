@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
+#include <math.h>
 
 #define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n",## __VA_ARGS__)
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n",## __VA_ARGS__)
@@ -29,7 +31,8 @@ enum record {
 	LAYER = 0x0D02,
 };
 
-static int name_cell_ref(struct gds_cell_instance *cell_inst, unsigned int bytes, char* data) {
+static int name_cell_ref(struct gds_cell_instance *cell_inst, unsigned int bytes, char* data)
+{
 	int len;
 
 	if (cell_inst == NULL)
@@ -48,6 +51,46 @@ static int name_cell_ref(struct gds_cell_instance *cell_inst, unsigned int bytes
 	}
 	return 0;
 
+}
+
+static double gds_convert_double(char *data)
+{
+	bool sign_bit;
+	int i;
+	double ret_val;
+	char current_byte;
+	int bit = 0;
+	int exponent;
+
+	sign_bit = ((data[0] & 0x80) ? true : false);
+
+	/* Check for real 0 */
+	for (i = 0; i < 8; i++) {
+		if (data[i] != 0)
+			break;
+		if (i == 7) {
+			/* 7 bytes all 0 */
+			return 0.0;
+		}
+	}
+
+	/* Value is other than 0 */
+	ret_val = 0.0;
+	for (i = 8; i < 64; i++) {
+		current_byte = data[i/8];
+		bit = i % 8;
+		/* isolate bit */
+		if ((current_byte & (0x80 >> bit)))
+			ret_val += pow(2, ((double)(-i+7)));
+
+	}
+
+	/* Parse exponent and sign bit */
+	exponent = (int)(data[0] & 0x7F);
+	exponent -= 64;
+	ret_val *= pow(16, exponent) * (sign_bit == true ? -1 : 1);
+
+	return ret_val;
 }
 
 static signed int gds_convert_signed_int(char *data)
@@ -82,6 +125,7 @@ static GList * append_library(GList *curr_list)
 		lib->cells = NULL;
 		lib->name[0] = 0;
 		lib->unit_to_meters = 1; // Default. Will be overwritten
+		lib->cell_names = NULL;
 	} else
 		return NULL;
 	return g_list_append(curr_list, lib);
@@ -170,7 +214,7 @@ static int name_library(struct gds_library *current_library, unsigned int bytes,
 
 }
 
-static int name_cell(struct gds_cell *cell, unsigned int bytes, char* data) {
+static int name_cell(struct gds_cell *cell, unsigned int bytes, char* data, struct gds_library* lib) {
 	int len;
 
 	if (cell == NULL)
@@ -186,9 +230,61 @@ static int name_cell(struct gds_cell *cell, unsigned int bytes, char* data) {
 	} else {
 		strcpy(cell->name, data);
 		printf("Named cell: %s\n", cell->name);
+
+		/* Append cell name to lib's list of names */
+		lib->cell_names = g_list_append(lib->cell_names, cell->name);
+
 	}
+
+
 	return 0;
 
+}
+
+
+void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
+{
+	struct gds_cell_instance *inst = (struct gds_cell_instance *)gcell_ref;
+	struct gds_library *lib = (struct gds_library *)glibrary;
+	GList *cell_item;
+	struct gds_cell *cell;
+
+	printf("\t\t\tReference: %s: ", inst->ref_name);
+	/* Find cell */
+	for (cell_item = lib->cells; cell_item != NULL; cell_item = cell_item->next) {
+		cell = (struct gds_cell *)cell_item->data;
+		/* Check if cell is found */
+		if (!strcmp(cell->name, inst->ref_name)) {
+			printf("found\n");
+			/* update reference link */
+			inst->cell_ref = cell;
+			return;
+		}
+	}
+
+	printf("MISSING!\n");
+	GDS_WARN("referenced cell could not be found in library");
+
+}
+
+
+void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
+{
+	struct gds_cell *cell = (struct gds_cell *)gcell;
+	printf("\tScanning cell: %s\n", cell->name);
+
+	/* Scan all library references */
+	g_list_foreach(cell->child_cells, parse_reference_list, library);
+
+}
+
+
+void scan_library_references(gpointer library_list_item, gpointer user)
+{
+	struct gds_library *lib = (struct gds_library *)library_list_item;
+
+	printf("Scanning Library: %s\n", lib->name);
+	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
 }
 
 
@@ -208,6 +304,9 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	struct gds_cell_instance *current_s_reference = NULL;
 	////////////
 	GList *lib_list;
+	GList *lib_ptr;
+	GList *cell_ptr;
+	GList *cell_ref_ptr;
 
 	lib_list = *library_list;
 
@@ -390,10 +489,10 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 				break;
 			case MAG:
-				GDS_WARN("Magnification not yet supported");
+				break;
+			case ANGLE:
 				break;
 			case STRANS:
-
 				break;
 			default:
 				//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
@@ -419,7 +518,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				name_library(current_lib, read, workbuff);
 				break;
 			case STRNAME:
-				name_cell(current_cell, read, workbuff);
+				name_cell(current_cell, read, workbuff, current_lib);
 				break;
 			case XY:
 				if (current_s_reference) {
@@ -449,15 +548,43 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			case LAYER:
 				if (!current_graphics) {
-					GDS_WARN("Layer has to be defined inside graphics object. Probably unknown object.");
+					GDS_WARN("Layer has to be defined inside graphics object. Probably unknown object. Implement it yourself!");
 					break;
 				}
 				current_graphics->layer = gds_convert_signed_int16(workbuff);
-				printf("\tAdded layer %d\n", (int)current_graphics->layer);
+				printf("\t\tAdded layer %d\n", (int)current_graphics->layer);
+				break;
+			case MAG:
+				if (rec_data_length != 8) {
+					GDS_WARN("Magnification is not an 8 byte real. Results may be wrong");
+				}
+				if (current_graphics != NULL && current_s_reference != NULL) {
+					GDS_ERROR("Open Graphics and Cell Reference\n\tMissing ENDEL?");
+					run = -6;
+					break;
+				}
+				if (current_s_reference != NULL) {
+					current_s_reference->magnification = gds_convert_double(workbuff);
+					printf("\t\tMagnification defined: %lf\n", current_s_reference->magnification);
+				}
+				break;
+			case ANGLE:
+				if (rec_data_length != 8) {
+					GDS_WARN("Angle is not an 8 byte real. Results may be wrong");
+				}
+				if (current_graphics != NULL && current_s_reference != NULL) {
+					GDS_ERROR("Open Graphics and Cell Reference\n\tMissing ENDEL?");
+					run = -6;
+					break;
+				}
+				if (current_s_reference != NULL) {
+					current_s_reference->angle = gds_convert_double(workbuff);
+					printf("\t\tAngle defined: %lf\n", current_s_reference->angle);
+				}
 				break;
 
 			}
-			break;
+			break; /* PARSING_DAT */
 
 		}
 	}
@@ -466,8 +593,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 
 	/* Iterate and find references to cells */
-	// TODO
-
+	g_list_foreach(lib_list, scan_library_references, NULL);
 
 	*library_list = lib_list;
 	return run;

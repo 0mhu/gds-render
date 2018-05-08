@@ -10,4 +10,4 @@ link_directories(${GLIB_LINK_DIRS})
 project(gds-render)
 add_executable(${PROJECT_NAME} "main.c" "gdsparse.c")
 
-target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS})
+target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} m)
