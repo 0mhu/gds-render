@@ -165,7 +165,8 @@ static GList *append_library(GList *curr_list)
 	return g_list_append(curr_list, lib);
 }
 
-static GList *append_graphics(GList *curr_list, enum graphics_type type)
+static GList *append_graphics(GList *curr_list, enum graphics_type type,
+			      struct gds_graphics **graphics_ptr)
 {
 	struct gds_graphics *gfx;
 
@@ -178,6 +179,10 @@ static GList *append_graphics(GList *curr_list, enum graphics_type type)
 		gfx->type = type;
 	} else
 		return NULL;
+
+	if (graphics_ptr)
+		*graphics_ptr = gfx;
+
 	return g_list_append(curr_list, gfx);
 }
 
@@ -194,7 +199,7 @@ static GList *append_vertex(GList *curr_list, int x, int y)
 	return g_list_append(curr_list, vertex);
 }
 
-static GList *append_cell(GList *curr_list)
+static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 {
 	struct gds_cell *cell;
 
@@ -205,11 +210,14 @@ static GList *append_cell(GList *curr_list)
 		cell->name[0] = 0;
 	} else
 		return NULL;
+	/* return cell */
+	if (cell_ptr)
+		*cell_ptr = cell;
 
 	return g_list_append(curr_list, cell);
 }
 
-static GList *append_cell_ref(GList *curr_list)
+static GList *append_cell_ref(GList *curr_list, struct gds_cell_instance **instance_ptr)
 {
 	struct gds_cell_instance *inst;
 
@@ -223,6 +231,9 @@ static GList *append_cell_ref(GList *curr_list)
 		inst->angle = 0;
 	} else
 		return NULL;
+
+	if (instance_ptr)
+		*instance_ptr = inst;
 
 	return g_list_append(curr_list, inst);
 }
@@ -422,15 +433,13 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			printf("Leaving Library\n");
 			break;
 		case BGNSTR:
-			current_lib->cells = append_cell(current_lib->cells);
+			current_lib->cells = append_cell(current_lib->cells, &current_cell);
 			if (current_lib->cells == NULL) {
 				GDS_ERROR("Allocating memory failed");
 				run = -3;
 				break;
 			}
 			printf("Entering Cell\n");
-			current_cell = (struct gds_cell *)
-					g_list_last(current_lib->cells)->data;
 			break;
 		case ENDSTR:
 			if (current_cell == NULL) {
@@ -454,13 +463,13 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -3;
 				break;
 			}
-			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, GRAPHIC_POLYGON);
+			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs,
+								     GRAPHIC_POLYGON, &current_graphics);
 			if (current_cell->graphic_objs == NULL) {
 				GDS_ERROR("Memory allocation failed");
 				run = -4;
 				break;
 			}
-			current_graphics = (struct gds_graphics *) g_list_last(current_cell->graphic_objs)->data;
 			printf("\tEntering boundary\n");
 			break;
 		case SREF:
@@ -469,14 +478,14 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -3;
 				break;
 			}
-			current_cell->child_cells = append_cell_ref(current_cell->child_cells);
+			current_cell->child_cells = append_cell_ref(current_cell->child_cells,
+								    &current_s_reference);
 			if (current_cell->child_cells == NULL) {
 				GDS_ERROR("Memory allocation failed");
 				run = -4;
 				break;
 			}
 
-			current_s_reference = (struct gds_cell_instance *) g_list_last(current_cell->child_cells)->data;
 			printf("\tEntering reference\n");
 			break;
 		case PATH:
@@ -485,13 +494,13 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -3;
 				break;
 			}
-			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, GRAPHIC_PATH);
+			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs,
+								     GRAPHIC_PATH, &current_graphics);
 			if (current_cell->graphic_objs == NULL) {
 				GDS_ERROR("Memory allocation failed");
 				run = -4;
 				break;
 			}
-			current_graphics = (struct gds_graphics *) g_list_last(current_cell->graphic_objs)->data;
 			printf("\tEntering Path\n");
 			break;
 		case ENDEL:
