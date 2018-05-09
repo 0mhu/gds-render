@@ -34,8 +34,8 @@
 #include <stdbool.h>
 #include <math.h>
 
-#define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n",## __VA_ARGS__)
-#define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n",## __VA_ARGS__)
+#define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__)
+#define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__)
 
 enum record {
 	INVALID = 0x0000,
@@ -60,12 +60,12 @@ enum record {
 	LAYER = 0x0D02,
 };
 
-static int name_cell_ref(struct gds_cell_instance *cell_inst, unsigned int bytes, char* data)
+static int name_cell_ref(struct gds_cell_instance *cell_inst,
+			 unsigned int bytes, char *data)
 {
 	int len;
 
-	if (cell_inst == NULL)
-	{
+	if (cell_inst == NULL) {
 		GDS_ERROR("Naming cell ref with no opened cell ref");
 		return -1;
 	}
@@ -74,12 +74,13 @@ static int name_cell_ref(struct gds_cell_instance *cell_inst, unsigned int bytes
 	if (len > CELL_NAME_MAX-1) {
 		GDS_ERROR("Cell name '%s' too long: %d\n", data, len);
 		return -1;
-	} else {
-		strcpy(cell_inst->ref_name, data);
-		printf("\tCell referenced: %s\n", cell_inst->ref_name);
 	}
-	return 0;
 
+	/* else: */
+	strcpy(cell_inst->ref_name, data);
+	printf("\tCell referenced: %s\n", cell_inst->ref_name);
+
+	return 0;
 }
 
 static double gds_convert_double(char *data)
@@ -125,6 +126,7 @@ static double gds_convert_double(char *data)
 static signed int gds_convert_signed_int(char *data)
 {
 	int ret;
+
 	if (!data) {
 		GDS_ERROR("This should not happen");
 		return 0;
@@ -148,12 +150,12 @@ static int16_t gds_convert_signed_int16(char *data)
 }
 
 
-static GList * append_library(GList *curr_list)
+static GList *append_library(GList *curr_list)
 {
 	struct gds_library *lib;
 
 	lib = (struct gds_library *)malloc(sizeof(struct gds_library));
-	if(lib) {
+	if (lib) {
 		lib->cells = NULL;
 		lib->name[0] = 0;
 		lib->unit_to_meters = 1; // Default. Will be overwritten
@@ -163,7 +165,7 @@ static GList * append_library(GList *curr_list)
 	return g_list_append(curr_list, lib);
 }
 
-static GList * append_graphics(GList *curr_list, enum graphics_type type)
+static GList *append_graphics(GList *curr_list, enum graphics_type type)
 {
 	struct gds_graphics *gfx;
 
@@ -177,12 +179,12 @@ static GList * append_graphics(GList *curr_list, enum graphics_type type)
 	} else
 		return NULL;
 	return g_list_append(curr_list, gfx);
-
 }
 
-static GList * append_vertex(GList *curr_list, int x, int y)
+static GList *append_vertex(GList *curr_list, int x, int y)
 {
 	struct gds_point *vertex;
+
 	vertex = (struct gds_point *)malloc(sizeof(struct gds_point));
 	if (vertex) {
 		vertex->x = x;
@@ -192,7 +194,7 @@ static GList * append_vertex(GList *curr_list, int x, int y)
 	return g_list_append(curr_list, vertex);
 }
 
-static GList * append_cell(GList *curr_list)
+static GList *append_cell(GList *curr_list)
 {
 	struct gds_cell *cell;
 
@@ -207,11 +209,12 @@ static GList * append_cell(GList *curr_list)
 	return g_list_append(curr_list, cell);
 }
 
-static GList * append_cell_ref(GList *curr_list)
+static GList *append_cell_ref(GList *curr_list)
 {
 	struct gds_cell_instance *inst;
 
-	inst = (struct gds_cell_instance *)malloc(sizeof(struct gds_cell_instance));
+	inst = (struct gds_cell_instance *)
+			malloc(sizeof(struct gds_cell_instance));
 	if (inst) {
 		inst->cell_ref = NULL;
 		inst->ref_name[0] = 0;
@@ -224,11 +227,12 @@ static GList * append_cell_ref(GList *curr_list)
 	return g_list_append(curr_list, inst);
 }
 
-static int name_library(struct gds_library *current_library, unsigned int bytes, char* data) {
+static int name_library(struct gds_library *current_library,
+			unsigned int bytes, char *data)
+{
 	int len;
 
-	if (current_library == NULL)
-	{
+	if (current_library == NULL) {
 		GDS_ERROR("Naming cell with no opened library");
 		return -1;
 	}
@@ -238,19 +242,20 @@ static int name_library(struct gds_library *current_library, unsigned int bytes,
 	if (len > CELL_NAME_MAX-1) {
 		GDS_ERROR("Library name '%s' too long: %d\n", data, len);
 		return -1;
-	} else {
-		strcpy(current_library->name, data);
-		printf("Named library: %s\n", current_library->name);
 	}
-	return 0;
 
+	strcpy(current_library->name, data);
+	printf("Named library: %s\n", current_library->name);
+
+	return 0;
 }
 
-static int name_cell(struct gds_cell *cell, unsigned int bytes, char* data, struct gds_library* lib) {
+static int name_cell(struct gds_cell *cell, unsigned int bytes,
+		     char *data, struct gds_library *lib)
+{
 	int len;
 
-	if (cell == NULL)
-	{
+	if (cell == NULL) {
 		GDS_ERROR("Naming library with no opened library");
 		return -1;
 	}
@@ -259,18 +264,15 @@ static int name_cell(struct gds_cell *cell, unsigned int bytes, char* data, stru
 	if (len > CELL_NAME_MAX-1) {
 		GDS_ERROR("Cell name '%s' too long: %d\n", data, len);
 		return -1;
-	} else {
-		strcpy(cell->name, data);
-		printf("Named cell: %s\n", cell->name);
-
-		/* Append cell name to lib's list of names */
-		lib->cell_names = g_list_append(lib->cell_names, cell->name);
-
 	}
 
+	strcpy(cell->name, data);
+	printf("Named cell: %s\n", cell->name);
+
+	/* Append cell name to lib's list of names */
+	lib->cell_names = g_list_append(lib->cell_names, cell->name);
 
 	return 0;
-
 }
 
 
@@ -283,7 +285,9 @@ void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 
 	printf("\t\t\tReference: %s: ", inst->ref_name);
 	/* Find cell */
-	for (cell_item = lib->cells; cell_item != NULL; cell_item = cell_item->next) {
+	for (cell_item = lib->cells; cell_item != NULL;
+	     cell_item = cell_item->next) {
+
 		cell = (struct gds_cell *)cell_item->data;
 		/* Check if cell is found */
 		if (!strcmp(cell->name, inst->ref_name)) {
@@ -296,20 +300,18 @@ void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 
 	printf("MISSING!\n");
 	GDS_WARN("referenced cell could not be found in library");
-
 }
-
 
 void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
 {
 	struct gds_cell *cell = (struct gds_cell *)gcell;
+
 	printf("\tScanning cell: %s\n", cell->name);
 
 	/* Scan all library references */
 	g_list_foreach(cell->child_cells, parse_reference_list, library);
 
 }
-
 
 void scan_library_references(gpointer library_list_item, gpointer user)
 {
@@ -318,7 +320,6 @@ void scan_library_references(gpointer library_list_item, gpointer user)
 	printf("Scanning Library: %s\n", lib->name);
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
 }
-
 
 int parse_gds_from_file(const char *filename, GList **library_list)
 {
@@ -401,7 +402,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 			}
 			printf("Entering Lib\n");
-			current_lib = (struct gds_library *)g_list_last(lib_list)->data;
+			current_lib = (struct gds_library *)
+					g_list_last(lib_list)->data;
 			break;
 		case ENDLIB:
 			if (current_lib == NULL) {
@@ -427,7 +429,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			}
 			printf("Entering Cell\n");
-			current_cell = (struct gds_cell *)g_list_last(current_lib->cells)->data;
+			current_cell = (struct gds_cell *)
+					g_list_last(current_lib->cells)->data;
 			break;
 		case ENDSTR:
 			if (current_cell == NULL) {
@@ -623,8 +626,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 	*library_list = lib_list;
 	return run;
-
-
 }
 
 static void delete_cell_inst_element(struct gds_cell_instance *cell_inst)
