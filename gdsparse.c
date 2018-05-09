@@ -124,14 +124,17 @@ static double gds_convert_double(char *data)
 
 static signed int gds_convert_signed_int(char *data)
 {
+	int ret;
 	if (!data) {
 		GDS_ERROR("This should not happen");
 		return 0;
 	}
-	return (signed int)((((int)(data[0])) << 24) |
-			(((int)(data[1])) << 16) |
-			(((int)(data[2])) <<  8) |
-			(((int)(data[3])) <<  0));
+
+	ret =	(signed int)(((((int)data[0]) & 0xFF) << 24) |
+			((((int)data[1]) & 0xFF) << 16) |
+			(((int)(data[2]) & 0xFF) <<  8) |
+			(((int)(data[3]) & 0xFF) <<  0));
+	return ret;
 }
 
 static int16_t gds_convert_signed_int16(char *data)
@@ -140,8 +143,8 @@ static int16_t gds_convert_signed_int16(char *data)
 		GDS_ERROR("This should not happen");
 		return 0;
 	}
-	return (int16_t)((((int16_t)(data[0])) <<  8) |
-			(((int16_t)(data[1])) <<  0));
+	return (int16_t)((((int16_t)(data[0]) & 0xFF) <<  8) |
+			(((int16_t)(data[1]) & 0xFF) <<  0));
 }
 
 
@@ -552,7 +555,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			} else if (current_graphics) {
 				for (i = 0; i < read/8; i++) {
 					x = gds_convert_signed_int(&workbuff[i*8]);
-					y = gds_convert_signed_int(&workbuff[i*8]);
+					y = gds_convert_signed_int(&workbuff[i*8+4]);
 					current_graphics->vertices =
 							append_vertex(current_graphics->vertices, x, y);
 					printf("\t\tSet coordinate: %d/%d\n", x, y);
@@ -577,6 +580,9 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			}
 			current_graphics->layer = gds_convert_signed_int16(workbuff);
+			if (current_graphics->layer < 0) {
+				GDS_WARN("Layer negative! %x %x\n", (unsigned int)workbuff[0], (unsigned int)(unsigned char)workbuff[1]);
+			}
 			printf("\t\tAdded layer %d\n", (int)current_graphics->layer);
 			break;
 		case MAG:
