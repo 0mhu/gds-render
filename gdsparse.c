@@ -36,7 +36,7 @@
 
 #define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n",## __VA_ARGS__)
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n",## __VA_ARGS__)
-enum parsing_state {PARSING_LENGTH = 0, PARSING_TYPE, PARSING_DAT};
+
 enum record {
 	INVALID = 0x0000,
 	HEADER = 0x0002,
@@ -329,7 +329,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	FILE *gds_file = NULL;
 	uint16_t rec_data_length;
 	enum record rec_type;
-	enum parsing_state state = PARSING_LENGTH;
 	struct gds_library *current_lib = NULL;
 	struct gds_cell *current_cell = NULL;
 	struct gds_graphics *current_graphics = NULL;
@@ -390,7 +389,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		}
 		rec_type = (uint16_t)((((uint16_t)(workbuff[0])) << 8) |
 				(uint16_t)(workbuff[1]));
-		state = PARSING_DAT;
 
 		/* if begin: Allocate structures */
 		switch (rec_type) {
@@ -530,7 +528,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		if (!rec_data_length) continue;
 
 		read = fread(workbuff, sizeof(char), rec_data_length, gds_file);
-		state = PARSING_LENGTH;
 
 		if (read != rec_data_length) {
 			GDS_ERROR("Could not read enough data");
