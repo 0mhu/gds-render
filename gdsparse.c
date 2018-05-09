@@ -149,7 +149,6 @@ static int16_t gds_convert_signed_int16(char *data)
 			(((int16_t)(data[1]) & 0xFF) <<  0));
 }
 
-
 static GList *append_library(GList *curr_list)
 {
 	struct gds_library *lib;
@@ -654,7 +653,6 @@ static void delete_library_element(struct gds_library *lib)
 	g_list_free_full(lib->cells, (GDestroyNotify)delete_cell_element);
 	free(lib);
 }
-
 
 int clear_lib_list(GList **library_list)
 {
