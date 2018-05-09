@@ -1,4 +1,23 @@
 /*
+ * GDSII converter
+ * Copyright (C) 2018  Mario Hüttel <mario.huettel@gmx.net>
+ *
+ * This file is part of GDSII-Converter.
+ *
+ * GDSII-Converter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License.
+ *
+ * GDSII-converter is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
  * What's missing? - A lot:
  * Support for Boxes
  * Support for 4 Byte real
@@ -312,11 +331,9 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	struct gds_cell *current_cell = NULL;
 	struct gds_graphics *current_graphics = NULL;
 	struct gds_cell_instance *current_s_reference = NULL;
+	int x, y;
 	////////////
 	GList *lib_list;
-	GList *lib_ptr;
-	GList *cell_ptr;
-	GList *cell_ref_ptr;
 
 	lib_list = *library_list;
 
@@ -329,275 +346,271 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 	/* Record parser */
 	while (run == 1) {
-		switch (state) {
-		case PARSING_LENGTH:
-			rec_type = INVALID;
-			read = fread(workbuff, sizeof(char), 2, gds_file);
-			if (read != 2 && (current_cell != NULL ||
-					  current_graphics != NULL ||
-					  current_lib != NULL ||
-					  current_s_reference != NULL)) {
-				GDS_ERROR("End of File. with openend structs/libs");
-				run = -2;
-				break;
-			} else if (read != 2) {
-				/* EOF */
-				run = 0;
-				break;
-			}
-
-			rec_data_length = (uint16_t)((((uint16_t)(workbuff[0])) << 8) |
-					(uint16_t)(workbuff[1]));
-
-			if (rec_data_length < 4) {
-				/* Possible Zero-Padding: */
-				run = 0;
-				GDS_WARN("Zero Padding detected!");
-				if (current_cell != NULL ||
-						current_graphics != NULL ||
-						current_lib != NULL ||
-						current_s_reference != NULL) {
-					GDS_ERROR("Not all structures closed");
-					run = -2;
-				}
-				break;
-			}
-			rec_data_length -= 4;
-			state = PARSING_TYPE;
+		rec_type = INVALID;
+		read = fread(workbuff, sizeof(char), 2, gds_file);
+		if (read != 2 && (current_cell != NULL ||
+				  current_graphics != NULL ||
+				  current_lib != NULL ||
+				  current_s_reference != NULL)) {
+			GDS_ERROR("End of File. with openend structs/libs");
+			run = -2;
 			break;
-		case PARSING_TYPE:
-			read = fread(workbuff, sizeof(char), 2, gds_file);
-			if (read != 2) {
+		} else if (read != 2) {
+			/* EOF */
+			run = 0;
+			break;
+		}
+
+		rec_data_length = (uint16_t)((((uint16_t)(workbuff[0])) << 8) |
+				(uint16_t)(workbuff[1]));
+
+		if (rec_data_length < 4) {
+			/* Possible Zero-Padding: */
+			run = 0;
+			GDS_WARN("Zero Padding detected!");
+			if (current_cell != NULL ||
+					current_graphics != NULL ||
+					current_lib != NULL ||
+					current_s_reference != NULL) {
+				GDS_ERROR("Not all structures closed");
 				run = -2;
-				GDS_ERROR("Unexpected end of file");
-				break;
-			}
-			rec_type = (uint16_t)((((uint16_t)(workbuff[0])) << 8) |
-					(uint16_t)(workbuff[1]));
-			state = PARSING_DAT;
-
-			/* if begin: Allocate structures */
-			switch (rec_type) {
-			case BGNLIB:
-				lib_list = append_library(lib_list);
-				if (lib_list == NULL) {
-					GDS_ERROR("Allocating memory failed");
-					run = -3;
-					break;
-
-				}
-				printf("Entering Lib\n");
-				current_lib = (struct gds_library *)g_list_last(lib_list)->data;
-				break;
-			case ENDLIB:
-				if (current_lib == NULL) {
-					run = -4;
-					GDS_ERROR("Closing Library with no opened library");
-					break;
-				}
-
-				/* Check for open Cells */
-				if (current_cell != NULL) {
-					run = -4;
-					GDS_ERROR("Closing Library with opened cells");
-					break;
-				}
-				current_lib = NULL;
-				printf("Leaving Library\n");
-				break;
-			case BGNSTR:
-				current_lib->cells = append_cell(current_lib->cells);
-				if (current_lib->cells == NULL) {
-					GDS_ERROR("Allocating memory failed");
-					run = -3;
-					break;
-				}
-				printf("Entering Cell\n");
-				current_cell = (struct gds_cell *)g_list_last(current_lib->cells)->data;
-				break;
-			case ENDSTR:
-				if (current_cell == NULL) {
-					run = -4;
-					GDS_ERROR("Closing cell with no opened cell");
-					break;
-				}
-				/* Check for open Elements */
-				if (current_graphics != NULL || current_s_reference != NULL) {
-					run = -4;
-					GDS_ERROR("Closing cell with opened Elements");
-					break;
-				}
-				current_cell = NULL;
-				printf("Leaving Cell\n");
-				break;
-				//case BOX:
-			case BOUNDARY:
-				if (current_cell == NULL) {
-					GDS_ERROR("Boundary outside of cell");
-					run = -3;
-					break;
-				}
-				current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, GRAPHIC_POLYGON);
-				if (current_cell->graphic_objs == NULL) {
-					GDS_ERROR("Memory allocation failed");
-					run = -4;
-					break;
-				}
-				current_graphics = (struct gds_graphics *) g_list_last(current_cell->graphic_objs)->data;
-				printf("\tEntering boundary\n");
-				break;
-			case SREF:
-				if (current_cell == NULL) {
-					GDS_ERROR("Path outside of cell");
-					run = -3;
-					break;
-				}
-				current_cell->child_cells = append_cell_ref(current_cell->child_cells);
-				if (current_cell->child_cells == NULL) {
-					GDS_ERROR("Memory allocation failed");
-					run = -4;
-					break;
-				}
-
-				current_s_reference = (struct gds_cell_instance *) g_list_last(current_cell->child_cells)->data;
-				printf("\tEntering reference\n");
-				break;
-			case PATH:
-				if (current_cell == NULL) {
-					GDS_ERROR("Path outside of cell");
-					run = -3;
-					break;
-				}
-				current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, GRAPHIC_PATH);
-				if (current_cell->graphic_objs == NULL) {
-					GDS_ERROR("Memory allocation failed");
-					run = -4;
-					break;
-				}
-				current_graphics = (struct gds_graphics *) g_list_last(current_cell->graphic_objs)->data;
-				printf("\tEntering Path\n");
-				break;
-			case ENDEL:
-				if (current_graphics != NULL) {
-
-					printf("\tLeaving %s\n", (current_graphics->type == GRAPHIC_POLYGON ? "boundary" : "path"));
-					current_graphics = NULL;
-				}
-				if (current_s_reference != NULL) {
-					printf("\tLeaving Reference\n");
-					current_s_reference = NULL;
-				}
-				break;
-			case XY:
-				if (current_graphics) {
-
-				} else if (current_s_reference) {
-					if (rec_data_length != 8) {
-						GDS_WARN("Instance has weird coordinates. Rendered output might be screwed!");
-					}
-				}
-
-				break;
-			case MAG:
-				break;
-			case ANGLE:
-				break;
-			case STRANS:
-				break;
-			default:
-				//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
-				break;
 			}
 			break;
+		}
+		rec_data_length -= 4;
 
+		read = fread(workbuff, sizeof(char), 2, gds_file);
+		if (read != 2) {
+			run = -2;
+			GDS_ERROR("Unexpected end of file");
+			break;
+		}
+		rec_type = (uint16_t)((((uint16_t)(workbuff[0])) << 8) |
+				(uint16_t)(workbuff[1]));
+		state = PARSING_DAT;
 
-		case PARSING_DAT:
-			read = fread(workbuff, sizeof(char), rec_data_length, gds_file);
-			state = PARSING_LENGTH;
-
-			if (read != rec_data_length) {
-				GDS_ERROR("Could not read enough data");
-				run = -5;
-				break;
-			}
-			/* No Data -> No Processing */
-			if (!read) break;
-
-			switch (rec_type) {
-			case LIBNAME:
-				name_library(current_lib, read, workbuff);
-				break;
-			case STRNAME:
-				name_cell(current_cell, read, workbuff, current_lib);
-				break;
-			case XY:
-				if (current_s_reference) {
-					/* Get origin of reference */
-					current_s_reference->origin.x = gds_convert_signed_int(workbuff);
-					current_s_reference->origin.y = gds_convert_signed_int(&workbuff[4]);
-				} else if (current_graphics) {
-					for (i = 0; i < read/8; i++) {
-						// printf("coords: %d/%d", gds_convert_signed_int(&workbuff[i*8]), gds_convert_signed_int(&workbuff[i*8+4]));
-						current_graphics->vertices = append_vertex(current_graphics->vertices,
-											   gds_convert_signed_int(&workbuff[i*8]),
-								gds_convert_signed_int(&workbuff[i*8]));
-
-					}
-				}
-				break;
-			case STRANS:
-				if (!current_s_reference) {
-					GDS_ERROR("Transformation defined outside of instance");
-					break;
-				}
-				current_s_reference->flipped = ((workbuff[0] & 0x80) ? 1 : 0);
-				break;
-
-			case SNAME:
-				name_cell_ref(current_s_reference, read, workbuff);
-				break;
-			case LAYER:
-				if (!current_graphics) {
-					GDS_WARN("Layer has to be defined inside graphics object. Probably unknown object. Implement it yourself!");
-					break;
-				}
-				current_graphics->layer = gds_convert_signed_int16(workbuff);
-				printf("\t\tAdded layer %d\n", (int)current_graphics->layer);
-				break;
-			case MAG:
-				if (rec_data_length != 8) {
-					GDS_WARN("Magnification is not an 8 byte real. Results may be wrong");
-				}
-				if (current_graphics != NULL && current_s_reference != NULL) {
-					GDS_ERROR("Open Graphics and Cell Reference\n\tMissing ENDEL?");
-					run = -6;
-					break;
-				}
-				if (current_s_reference != NULL) {
-					current_s_reference->magnification = gds_convert_double(workbuff);
-					printf("\t\tMagnification defined: %lf\n", current_s_reference->magnification);
-				}
-				break;
-			case ANGLE:
-				if (rec_data_length != 8) {
-					GDS_WARN("Angle is not an 8 byte real. Results may be wrong");
-				}
-				if (current_graphics != NULL && current_s_reference != NULL) {
-					GDS_ERROR("Open Graphics and Cell Reference\n\tMissing ENDEL?");
-					run = -6;
-					break;
-				}
-				if (current_s_reference != NULL) {
-					current_s_reference->angle = gds_convert_double(workbuff);
-					printf("\t\tAngle defined: %lf\n", current_s_reference->angle);
-				}
+		/* if begin: Allocate structures */
+		switch (rec_type) {
+		case BGNLIB:
+			lib_list = append_library(lib_list);
+			if (lib_list == NULL) {
+				GDS_ERROR("Allocating memory failed");
+				run = -3;
 				break;
 
 			}
-			break; /* PARSING_DAT */
+			printf("Entering Lib\n");
+			current_lib = (struct gds_library *)g_list_last(lib_list)->data;
+			break;
+		case ENDLIB:
+			if (current_lib == NULL) {
+				run = -4;
+				GDS_ERROR("Closing Library with no opened library");
+				break;
+			}
+
+			/* Check for open Cells */
+			if (current_cell != NULL) {
+				run = -4;
+				GDS_ERROR("Closing Library with opened cells");
+				break;
+			}
+			current_lib = NULL;
+			printf("Leaving Library\n");
+			break;
+		case BGNSTR:
+			current_lib->cells = append_cell(current_lib->cells);
+			if (current_lib->cells == NULL) {
+				GDS_ERROR("Allocating memory failed");
+				run = -3;
+				break;
+			}
+			printf("Entering Cell\n");
+			current_cell = (struct gds_cell *)g_list_last(current_lib->cells)->data;
+			break;
+		case ENDSTR:
+			if (current_cell == NULL) {
+				run = -4;
+				GDS_ERROR("Closing cell with no opened cell");
+				break;
+			}
+			/* Check for open Elements */
+			if (current_graphics != NULL || current_s_reference != NULL) {
+				run = -4;
+				GDS_ERROR("Closing cell with opened Elements");
+				break;
+			}
+			current_cell = NULL;
+			printf("Leaving Cell\n");
+			break;
+			//case BOX:
+		case BOUNDARY:
+			if (current_cell == NULL) {
+				GDS_ERROR("Boundary outside of cell");
+				run = -3;
+				break;
+			}
+			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, GRAPHIC_POLYGON);
+			if (current_cell->graphic_objs == NULL) {
+				GDS_ERROR("Memory allocation failed");
+				run = -4;
+				break;
+			}
+			current_graphics = (struct gds_graphics *) g_list_last(current_cell->graphic_objs)->data;
+			printf("\tEntering boundary\n");
+			break;
+		case SREF:
+			if (current_cell == NULL) {
+				GDS_ERROR("Path outside of cell");
+				run = -3;
+				break;
+			}
+			current_cell->child_cells = append_cell_ref(current_cell->child_cells);
+			if (current_cell->child_cells == NULL) {
+				GDS_ERROR("Memory allocation failed");
+				run = -4;
+				break;
+			}
+
+			current_s_reference = (struct gds_cell_instance *) g_list_last(current_cell->child_cells)->data;
+			printf("\tEntering reference\n");
+			break;
+		case PATH:
+			if (current_cell == NULL) {
+				GDS_ERROR("Path outside of cell");
+				run = -3;
+				break;
+			}
+			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs, GRAPHIC_PATH);
+			if (current_cell->graphic_objs == NULL) {
+				GDS_ERROR("Memory allocation failed");
+				run = -4;
+				break;
+			}
+			current_graphics = (struct gds_graphics *) g_list_last(current_cell->graphic_objs)->data;
+			printf("\tEntering Path\n");
+			break;
+		case ENDEL:
+			if (current_graphics != NULL) {
+
+				printf("\tLeaving %s\n", (current_graphics->type == GRAPHIC_POLYGON ? "boundary" : "path"));
+				current_graphics = NULL;
+			}
+			if (current_s_reference != NULL) {
+				printf("\tLeaving Reference\n");
+				current_s_reference = NULL;
+			}
+			break;
+		case XY:
+			if (current_graphics) {
+
+			} else if (current_s_reference) {
+				if (rec_data_length != 8) {
+					GDS_WARN("Instance has weird coordinates. Rendered output might be screwed!");
+				}
+			}
+
+			break;
+		case MAG:
+			break;
+		case ANGLE:
+			break;
+		case STRANS:
+			break;
+		default:
+			//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
+			break;
+		} /* switch(rec_type) */
+
+
+		/* No Data -> No Processing, go back to top */
+		if (!rec_data_length) continue;
+
+		read = fread(workbuff, sizeof(char), rec_data_length, gds_file);
+		state = PARSING_LENGTH;
+
+		if (read != rec_data_length) {
+			GDS_ERROR("Could not read enough data");
+			run = -5;
+			break;
+		}
+
+		switch (rec_type) {
+		case LIBNAME:
+			name_library(current_lib, read, workbuff);
+			break;
+		case STRNAME:
+			name_cell(current_cell, read, workbuff, current_lib);
+			break;
+		case XY:
+			if (current_s_reference) {
+				/* Get origin of reference */
+				current_s_reference->origin.x = gds_convert_signed_int(workbuff);
+				current_s_reference->origin.y = gds_convert_signed_int(&workbuff[4]);
+				printf("\t\tSet origin to: %d/%d\n", current_s_reference->origin.x,
+				       current_s_reference->origin.y);
+			} else if (current_graphics) {
+				for (i = 0; i < read/8; i++) {
+					x = gds_convert_signed_int(&workbuff[i*8]);
+					y = gds_convert_signed_int(&workbuff[i*8]);
+					current_graphics->vertices =
+							append_vertex(current_graphics->vertices, x, y);
+					printf("\t\tSet coordinate: %d/%d\n", x, y);
+
+				}
+			}
+			break;
+		case STRANS:
+			if (!current_s_reference) {
+				GDS_ERROR("Transformation defined outside of instance");
+				break;
+			}
+			current_s_reference->flipped = ((workbuff[0] & 0x80) ? 1 : 0);
+			break;
+
+		case SNAME:
+			name_cell_ref(current_s_reference, read, workbuff);
+			break;
+		case LAYER:
+			if (!current_graphics) {
+				GDS_WARN("Layer has to be defined inside graphics object. Probably unknown object. Implement it yourself!");
+				break;
+			}
+			current_graphics->layer = gds_convert_signed_int16(workbuff);
+			printf("\t\tAdded layer %d\n", (int)current_graphics->layer);
+			break;
+		case MAG:
+			if (rec_data_length != 8) {
+				GDS_WARN("Magnification is not an 8 byte real. Results may be wrong");
+			}
+			if (current_graphics != NULL && current_s_reference != NULL) {
+				GDS_ERROR("Open Graphics and Cell Reference\n\tMissing ENDEL?");
+				run = -6;
+				break;
+			}
+			if (current_s_reference != NULL) {
+				current_s_reference->magnification = gds_convert_double(workbuff);
+				printf("\t\tMagnification defined: %lf\n", current_s_reference->magnification);
+			}
+			break;
+		case ANGLE:
+			if (rec_data_length != 8) {
+				GDS_WARN("Angle is not an 8 byte real. Results may be wrong");
+			}
+			if (current_graphics != NULL && current_s_reference != NULL) {
+				GDS_ERROR("Open Graphics and Cell Reference\n\tMissing ENDEL?");
+				run = -6;
+				break;
+			}
+			if (current_s_reference != NULL) {
+				current_s_reference->angle = gds_convert_double(workbuff);
+				printf("\t\tAngle defined: %lf\n", current_s_reference->angle);
+			}
+			break;
 
 		}
-	}
+
+	} /* while(run == 1) */
 
 	fclose(gds_file);
 
