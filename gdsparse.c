@@ -578,7 +578,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			}
 			current_graphics->layer = gds_convert_signed_int16(workbuff);
 			if (current_graphics->layer < 0) {
-				GDS_WARN("Layer negative! %x %x\n", (unsigned int)workbuff[0], (unsigned int)(unsigned char)workbuff[1]);
+				GDS_WARN("Layer negative!\n");
 			}
 			printf("\t\tAdded layer %d\n", (int)current_graphics->layer);
 			break;
