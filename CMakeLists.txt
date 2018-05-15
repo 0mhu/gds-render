@@ -9,7 +9,7 @@ link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS})
 configure_file(glade/main.glade glade/main.glade COPYONLY)
 
 project(gds-render)
-add_executable(${PROJECT_NAME} "main.c" "gdsparse.c")
+add_executable(${PROJECT_NAME} "main.c" "gdsparse.c" "layer-element.c")
 
 
 target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} m)
