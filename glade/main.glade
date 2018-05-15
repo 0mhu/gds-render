@@ -65,7 +65,7 @@
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
             <child>
-              <object class="GtkButton">
+              <object class="GtkButton" id="convert-button">
                 <property name="label">gtk-convert</property>
                 <property name="name">button-convert</property>
                 <property name="visible">True</property>

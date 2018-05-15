@@ -161,6 +161,7 @@ int main(int argc, char **argv)
 	GList *gds_libs = NULL;
 	GtkTreeView *cell_tree;
 	GtkTreeStore *cell_store;
+	GtkWidget *widget_generic;
 
 	struct open_button_data open_data;
 
@@ -180,7 +181,10 @@ int main(int argc, char **argv)
 	open_data.main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),
 			 "clicked", G_CALLBACK(on_load_gds), (gpointer)&open_data);
-
+	
+	/* Connect Convert button */
+	widget_generic = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
+	g_signal_connect(widget_generic, "clicked", G_CALLBACK(on_convert_clicked), NULL);
 
 
 	gtk_main();
