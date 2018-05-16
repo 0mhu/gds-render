@@ -28,14 +28,14 @@
 #define IS_LAYE_RELEMENT(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, layer_element_get_type())
 
 typedef struct _LayerElement {
-    /* Inheritance */
-    GtkBox hbox;
-    /* Custom Elements */
-    GtkWidget *button;
+	/* Inheritance */
+	GtkBox hbox;
+	/* Custom Elements */
+	GtkWidget *button;
 } LayerElement;
 
 typedef struct _LayerElementClass {
-    GtkBoxClass parent_class;
+	GtkBoxClass parent_class;
 } LayerElementClass;
 
 

@@ -60,7 +60,6 @@ void on_load_gds(gpointer button, gpointer user)
 	GtkTreeStore *store = ptr->cell_store;
 	GtkWidget *open_dialog;
 	GtkFileChooser *file_chooser;
-	GtkWidget *msg_dialog;
 	GtkFileFilter *filter;
 	GtkStyleContext *button_style;
 	gint dialog_result;
@@ -83,24 +82,9 @@ void on_load_gds(gpointer button, gpointer user)
 		/* Get File name */
 		filename = gtk_file_chooser_get_filename(file_chooser);
 
-		if (*ptr->list_ptr) {
-			/* Libraries present */
-			msg_dialog =
-					gtk_message_dialog_new(ptr->main_window, GTK_DIALOG_USE_HEADER_BAR,
-							       GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-							       "There's already data present? Delete old data?");
-			dialog_result = gtk_dialog_run(GTK_DIALOG(msg_dialog));
-			gtk_widget_destroy(msg_dialog);
-		} else
-			dialog_result = GTK_RESPONSE_YES;
-
-		/* Clear Display Will be completely refreshed in any case */
 		gtk_tree_store_clear(store);
+		clear_lib_list(ptr->list_ptr);
 
-		if (dialog_result == GTK_RESPONSE_YES) {
-			/* Delete parsed GDS data */
-			clear_lib_list(ptr->list_ptr);
-		}
 		/* Parse new GDSII file */
 		gds_result = parse_gds_from_file(filename, ptr->list_ptr);
 
