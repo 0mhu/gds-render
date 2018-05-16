@@ -123,11 +123,9 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
 {
 	GList *cell_list = NULL;
 	struct gds_library *lib;
-	printf("foo?\n");
 	clear_list_box_widgets(listbox);
 
 	gtk_list_box_set_sort_func(listbox, sort_func, NULL, NULL);
-	printf("layers deleted\n");
 
 	for (; libs != NULL; libs = libs->next) {
 		lib = (struct gds_library *)libs->data;
