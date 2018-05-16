@@ -27,11 +27,20 @@
 #define LAYER_ELEMENT_CLASS(klass) G_TYPE_CHECK_CLASS_CAST(klass, layer_element_get_type(), LayerElementClass)
 #define IS_LAYE_RELEMENT(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, layer_element_get_type())
 
+typedef struct _LayerElementPriv {
+	GtkEntry *name;
+	GtkLabel *layer;
+	int layer_num;
+	GtkColorButton *color;
+	GtkScale *opacity;
+	GtkCheckButton *export;
+} LayerElementPriv;
+
 typedef struct _LayerElement {
 	/* Inheritance */
 	GtkBox hbox;
 	/* Custom Elements */
-	GtkWidget *button;
+	LayerElementPriv priv;
 } LayerElement;
 
 typedef struct _LayerElementClass {
@@ -41,5 +50,16 @@ typedef struct _LayerElementClass {
 
 GType layer_element_get_type(void);
 GtkWidget *layer_element_new(void);
+
+const char *layer_element_get_name(LayerElement *elem);
+void layer_element_set_name(LayerElement *elem, const char* name);
+void layer_element_set_layer(LayerElement *elem, int layer);
+int layer_element_get_layer(LayerElement *elem);
+void layer_element_set_opacity(LayerElement *elem, int opacity);
+int layer_element_get_opacity(LayerElement *elem);
+void layer_element_set_export(LayerElement *elem, gboolean export);
+gboolean layer_element_get_export(LayerElement *elem);
+void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba);
+void layer_element_set_color(LayerElement *elem, GdkRGBA *rgba);
 
 #endif /* __LAYER_ELEMENT_H__ */

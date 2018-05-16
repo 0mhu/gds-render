@@ -21,6 +21,7 @@
 #include "gdsparse.h"
 #include <gtk/gtk.h>
 #include "layer-element.h"
+#include "layer-selector.h"
 
 
 enum cell_store_columns {
@@ -34,6 +35,7 @@ struct open_button_data {
 	GtkWindow *main_window;
 	GList **list_ptr;
 	GtkTreeStore *cell_store;
+	GtkListBox *layer_box;
 };
 
 
@@ -108,6 +110,9 @@ void on_load_gds(gpointer button, gpointer user)
 				gtk_tree_store_set (store, &celliter, CELL, gds_c->name, -1);
 			}
 		}
+
+		/* Create Layers in Layer Box */
+		generate_layer_widgets(ptr->layer_box, *(ptr->list_ptr));
 	}
 
 end_destroy:
@@ -146,6 +151,8 @@ int main(int argc, char **argv)
 	GtkTreeView *cell_tree;
 	GtkTreeStore *cell_store;
 	GtkWidget *widget_generic;
+	GtkWidget *layer;
+	GtkWidget *listbox;
 
 	struct open_button_data open_data;
 
@@ -166,10 +173,14 @@ int main(int argc, char **argv)
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),
 			 "clicked", G_CALLBACK(on_load_gds), (gpointer)&open_data);
 	
+
 	/* Connect Convert button */
 	widget_generic = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
-	g_signal_connect(widget_generic, "clicked", G_CALLBACK(on_convert_clicked), NULL);
+	g_signal_connect(widget_generic, "clicked", G_CALLBACK(on_convert_clicked), layer);
 
+	/* test widget list */
+	listbox = GTK_WIDGET(gtk_builder_get_object(main_builder, "layer-list"));
+	open_data.layer_box = GTK_LIST_BOX(listbox);
 
 	gtk_main();
 
