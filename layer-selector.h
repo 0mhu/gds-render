@@ -22,7 +22,7 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
-#include "layer-element.h" 
+#include <layer-element.h>
 
 struct layer_info {
     int id;
@@ -33,8 +33,8 @@ struct layer_info {
 void generate_layer_widgets(GtkListBox *listbox, GList *libs);
 void clear_list_box_widgets();
 
-void setup_load_mapping_callback(GtkWidget *button);
-void setup_save_mapping_callback(GtkWidget *button);
+void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
+void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
 
 void get_layer_info(GList **info_list, GtkListBox *box);
 

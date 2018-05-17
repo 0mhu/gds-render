@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include "gdsparse.h"
 #include <gtk/gtk.h>
-#include "layer-element.h"
+#include <layer-element.h>
 #include "layer-selector.h"
 
 
@@ -37,9 +37,6 @@ struct open_button_data {
 	GtkTreeStore *cell_store;
 	GtkListBox *layer_box;
 };
-
-
-
 
 gboolean on_window_close(gpointer window, gpointer user)
 {
@@ -116,6 +113,7 @@ void on_load_gds(gpointer button, gpointer user)
 	}
 
 end_destroy:
+	/* Destroy dialog and filter */
 	gtk_widget_destroy(open_dialog);
 }
 
@@ -178,9 +176,15 @@ int main(int argc, char **argv)
 	widget_generic = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
 	g_signal_connect(widget_generic, "clicked", G_CALLBACK(on_convert_clicked), layer);
 
-	/* test widget list */
 	listbox = GTK_WIDGET(gtk_builder_get_object(main_builder, "layer-list"));
 	open_data.layer_box = GTK_LIST_BOX(listbox);
+
+	/* Set buttons fpr layer mapping GUI */
+	setup_load_mapping_callback(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
+				    open_data.main_window);
+	setup_save_mapping_callback(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
+				    open_data.main_window);
+
 
 	gtk_main();
 
