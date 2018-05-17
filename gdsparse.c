@@ -641,9 +641,21 @@ static void delete_cell_inst_element(struct gds_cell_instance *cell_inst)
 	free(cell_inst);
 }
 
+static void delete_vertex(struct gds_point *vertex)
+{
+	free(vertex);
+}
+
+static void delete_graphics_obj(struct gds_graphics *gfx)
+{
+	g_list_free_full(gfx->vertices, (GDestroyNotify)delete_vertex);
+	free(gfx);
+}
+
 static void delete_cell_element(struct gds_cell *cell)
 {
 	g_list_free_full(cell->child_cells, (GDestroyNotify)delete_cell_inst_element);
+	g_list_free_full(cell->graphic_objs, (GDestroyNotify)delete_graphics_obj);
 	free(cell);
 }
 
@@ -656,7 +668,8 @@ static void delete_library_element(struct gds_library *lib)
 
 int clear_lib_list(GList **library_list)
 {
-	if (*library_list == NULL) return 0;
+	if (*library_list == NULL)
+		return 0;
 	g_list_free_full(*library_list, (GDestroyNotify)delete_library_element);
 	*library_list = NULL;
 	return 0;
