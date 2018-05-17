@@ -150,7 +150,6 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
 
 static void load_mapping_clicked(GtkWidget *button, gpointer user_data)
 {
-	printf("Clicked\n");
 }
 
 static void create_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len)
