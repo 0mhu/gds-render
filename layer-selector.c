@@ -21,6 +21,7 @@
 #include "gdsparse.h"
 #include <glib.h>
 #include <string.h>
+#include <stdio.h>
 
 static GList *layer_widgets = NULL;
 static GtkWidget *load_button;
@@ -148,8 +149,152 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
 	gtk_widget_set_sensitive(save_button, TRUE);
 }
 
+/**
+ * @brief load_csv_line
+ * @param file
+ * @param export
+ * @param name
+ * @param layer
+ * @param color
+ * @param opacity
+ * @return 0 if succesfull, 1 if line was malformatted or parameters are broken, -1 if file end
+ */
+static int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color)
+{
+	int ret;
+	gsize len;
+	gchar *line;
+	GRegex *regex;
+	GMatchInfo *mi;
+	char *match;
+
+	if ((!export) || (!name) || (!layer) || (!color)) {
+		ret = 1;
+		goto ret_direct;
+	}
+
+	regex = g_regex_new("^(?<layer>[0-9]+),(?<r>[0-9\\.]+),(?<g>[0-9\\.]+),(?<b>[0-9\\.]+),(?<a>[0-9\\.]+),(?<export>[01]),(?<name>.*)$", 0, 0, NULL);
+
+	line = g_data_input_stream_read_line(stream, &len, NULL, NULL);
+	if (!line) {
+		ret = -1;
+		goto destroy_regex;
+	}
+
+	/* Match line in CSV */
+	g_regex_match(regex, line, 0, &mi);
+	if (g_match_info_matches(mi)) {
+		/* Line is valid */
+		match = g_match_info_fetch_named(mi, "layer");
+		*layer = g_ascii_strtoll(match, NULL, 10);
+		g_free(match);
+		match = g_match_info_fetch_named(mi, "r");
+		color->red = g_ascii_strtod(match, NULL);
+		g_free(match);
+		match = g_match_info_fetch_named(mi, "g");
+		color->green = g_ascii_strtod(match, NULL);
+		g_free(match);
+		match = g_match_info_fetch_named(mi, "b");
+		color->blue = g_ascii_strtod(match, NULL);
+		g_free(match);
+		match = g_match_info_fetch_named(mi, "a");
+		color->alpha = g_ascii_strtod(match, NULL);
+		g_free(match);
+		match = g_match_info_fetch_named(mi, "export");
+		*export = ((!strcmp(match, "1")) ? TRUE : FALSE);
+		g_free(match);
+		match = g_match_info_fetch_named(mi, "name");
+		*name = match;
+
+		ret = 0;
+	} else {
+		/* Line is malformatted */
+		printf("Could not recognize line in CSV as valid entry: %s\n", line);
+		ret = 1;
+	}
+
+	g_match_info_free(mi);
+	g_free(line);
+destroy_regex:
+	g_regex_unref(regex);
+ret_direct:
+	return ret;
+
+}
+
+static LayerElement *find_layer_in_list(GList *list, int layer)
+{
+	LayerElement *le_found, *temp;
+
+	for (le_found = NULL; list != NULL; list = list->next) {
+		temp = LAYER_ELEMENT(list->data);
+		if (layer_element_get_layer(temp) == layer) {
+			le_found = temp;
+			break;
+		}
+	}
+
+	return le_found;
+}
+
+
+static void load_layer_mapping_from_file(gchar *file_name)
+{
+	GFile *file;
+	GFileInputStream *stream;
+	GDataInputStream *dstream;
+
+	LayerElement *le;
+	char *name;
+	gboolean export;
+	int layer;
+	GdkRGBA color;
+	int result;
+
+	file = g_file_new_for_path(file_name);
+	stream = g_file_read(file, NULL, NULL);
+
+	if (!stream)
+		goto destroy_file;
+
+	dstream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+
+	while((result = load_csv_line(dstream, &export, &name, &layer, &color)) >= 0) {
+		/* skip broken line */
+		if (result == 1)
+			continue;
+
+		/* search for layer widget */
+		if (le = find_layer_in_list(layer_widgets, layer)) {
+			layer_element_set_name(le, name);
+			layer_element_set_color(le, &color);
+			layer_element_set_export(le, export);
+		}
+		g_free(name);
+	}
+
+	/* read line */
+	g_object_unref(dstream);
+	g_object_unref(stream);
+destroy_file:
+	g_object_unref(file);
+}
+
 static void load_mapping_clicked(GtkWidget *button, gpointer user_data)
 {
+	GtkWidget *dialog;
+	gint res;
+	gchar *file_name;
+
+	dialog = gtk_file_chooser_dialog_new("Load Mapping File", GTK_WINDOW(user_data), GTK_FILE_CHOOSER_ACTION_OPEN,
+					     "Cancel", GTK_RESPONSE_CANCEL, "Load Mapping", GTK_RESPONSE_ACCEPT, NULL);
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if (res == GTK_RESPONSE_ACCEPT) {
+		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		load_layer_mapping_from_file(file_name);
+		g_free(file_name);
+	}
+	gtk_widget_destroy(dialog);
 }
 
 static void create_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len)
@@ -159,7 +304,6 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	const gchar *name;
 	int layer;
 	GdkRGBA color;
-	int opacity;
 
 	string = g_string_new_len(NULL, max_len-1);
 
@@ -167,12 +311,11 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	export = layer_element_get_export(layer_element);
 	name = (const gchar*)layer_element_get_name(layer_element);
 	layer = layer_element_get_layer(layer_element);
-	opacity = layer_element_get_opacity(layer_element);
 	layer_element_get_color(layer_element, &color);
 
 	/* print values to line */
-	g_string_printf(string, "%d,%lf,%lf,%lf,%d,%d,%s\n", layer, color.red, color.green,
-			color.blue, opacity, (export == TRUE ? 1 : 0), name);
+	g_string_printf(string, "%d,%lf,%lf,%lf,%lf,%d,%s\n", layer, color.red, color.green,
+			color.blue, color.alpha, (export == TRUE ? 1 : 0), name);
 
 	if (string->len > (max_len-1)) {
 		printf("Layer Definition too long. Please shorten Layer Name!!\n");
@@ -197,7 +340,7 @@ static void save_layer_mapping_data(const gchar *file_name)
 	/* Overwrite existing file */
 	file = fopen((const char *)file_name, "w");
 
-	/* File format is CSV: <Layer>,<R>,<G>,<B>,<Opacity>,<Export?>,<Name> */
+	/* File format is CSV: <Layer>,<R>,<G>,<B>,<Alpha>,<Export?>,<Name> */
 	for (le_list = layer_widgets; le_list != NULL; le_list = le_list->next) {
 		/* To be sure it is a valid string */
 		workbuff[0] = 0;
@@ -217,7 +360,7 @@ static void save_mapping_clicked(GtkWidget *button, gpointer user_data)
 	gchar *file_name;
 
 	dialog = gtk_file_chooser_dialog_new("Save Mapping File", GTK_WINDOW(user_data), GTK_FILE_CHOOSER_ACTION_SAVE,
-						  "Cancel", GTK_RESPONSE_CANCEL, "Save Mapping", GTK_RESPONSE_ACCEPT, NULL);
+					     "Cancel", GTK_RESPONSE_CANCEL, "Save Mapping", GTK_RESPONSE_ACCEPT, NULL);
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if (res == GTK_RESPONSE_ACCEPT) {
 		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));

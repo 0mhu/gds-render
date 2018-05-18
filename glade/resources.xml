@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource>
+  <gresource prefix="/">
     <file compressed="true">main.glade</file>
     <file>layer-widget.glade</file>
   </gresource>

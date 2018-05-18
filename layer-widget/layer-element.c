@@ -32,7 +32,6 @@ static void layer_element_class_init(LayerElementClass *klass)
 {
 	GObjectClass *oclass = G_OBJECT_CLASS(klass);
 	oclass->dispose = layer_element_dispose;
-	return;
 }
 
 static void layer_element_init(LayerElement *self)
@@ -48,7 +47,6 @@ static void layer_element_init(LayerElement *self)
 	self->priv.export = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "export"));
 	self->priv.layer = GTK_LABEL(gtk_builder_get_object(builder, "layer"));
 	self->priv.name = GTK_ENTRY(gtk_builder_get_object(builder, "entry"));
-	self->priv.opacity = GTK_SCALE(gtk_builder_get_object(builder, "opacity"));
 
 	/* Connect signals */
 	/* None */
@@ -76,7 +74,7 @@ void layer_element_set_layer(LayerElement *elem, int layer)
 	GString *string;
 
 	string = g_string_new_len(NULL, 100);
-	g_string_printf(string, "Layer: %d", layer);
+	g_string_printf(string, "Layer: %3d", layer);
 	gtk_label_set_text(elem->priv.layer, (const gchar *)string->str);
 	elem->priv.layer_num = layer;
 	g_string_free(string, TRUE);
@@ -85,18 +83,6 @@ void layer_element_set_layer(LayerElement *elem, int layer)
 int layer_element_get_layer(LayerElement *elem)
 {
 	return elem->priv.layer_num;
-}
-
-void layer_element_set_opacity(LayerElement *elem, int opacity)
-{
-	if (opacity > 100 || opacity < 0)
-		return;
-	gtk_range_set_value(GTK_RANGE(elem->priv.opacity), (gdouble)opacity);
-}
-
-int layer_element_get_opacity(LayerElement *elem)
-{
-	return (int)gtk_range_get_value(GTK_RANGE(elem->priv.opacity));
 }
 
 void layer_element_set_export(LayerElement *elem, gboolean export)
