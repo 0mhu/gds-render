@@ -156,7 +156,7 @@ int main(int argc, char **argv)
 
 	gtk_init(&argc, &argv);
 
-	main_builder = gtk_builder_new_from_file("glade/main.glade");
+	main_builder = gtk_builder_new_from_resource("/main.glade");
 	gtk_builder_connect_signals(main_builder, NULL);
 
 

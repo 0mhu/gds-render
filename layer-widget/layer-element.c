@@ -39,7 +39,7 @@ static void layer_element_init(LayerElement *self)
 {
 	GtkBuilder *builder;
 	GtkWidget *glade_box;
-	builder = gtk_builder_new_from_file("glade/layer-widget.glade");
+	builder = gtk_builder_new_from_resource("/layer-widget.glade");
 	glade_box = GTK_WIDGET(gtk_builder_get_object(builder, "box"));
 	gtk_box_pack_start(GTK_BOX(self), glade_box, TRUE, TRUE, 0);
 
