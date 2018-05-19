@@ -83,7 +83,7 @@ static int name_cell_ref(struct gds_cell_instance *cell_inst,
 	return 0;
 }
 
-static double gds_convert_double(char *data)
+static double gds_convert_double(const char *data)
 {
 	bool sign_bit;
 	int i;
@@ -123,7 +123,7 @@ static double gds_convert_double(char *data)
 	return ret_val;
 }
 
-static signed int gds_convert_signed_int(char *data)
+static signed int gds_convert_signed_int(const char *data)
 {
 	int ret;
 
@@ -139,7 +139,7 @@ static signed int gds_convert_signed_int(char *data)
 	return ret;
 }
 
-static int16_t gds_convert_signed_int16(char *data)
+static int16_t gds_convert_signed_int16(const char *data)
 {
 	if (!data) {
 		GDS_ERROR("This should not happen");
@@ -149,7 +149,17 @@ static int16_t gds_convert_signed_int16(char *data)
 			(((int16_t)(data[1]) & 0xFF) <<  0));
 }
 
-static GList *append_library(GList *curr_list)
+static uint16_t gds_convert_unsigend_int16(const char *data)
+{
+	if (!data) {
+		GDS_ERROR("This should not happen");
+		return 0;
+	}
+	return (uint16_t)((((uint16_t)(data[0]) & 0xFF) <<  8) |
+			(((uint16_t)(data[1]) & 0xFF) <<  0));
+}
+
+static GList *append_library(GList *curr_list, struct gds_library **library_ptr)
 {
 	struct gds_library *lib;
 
@@ -161,6 +171,9 @@ static GList *append_library(GList *curr_list)
 		lib->cell_names = NULL;
 	} else
 		return NULL;
+	if (library_ptr)
+		*library_ptr = lib;
+
 	return g_list_append(curr_list, lib);
 }
 
@@ -331,6 +344,46 @@ void scan_library_references(gpointer library_list_item, gpointer user)
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
 }
 
+void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_date, struct gds_time_field *access_date)
+{
+	if (!access_date || !mod_date) {
+		GDS_WARN("Date structures invalid");
+		return;
+	}
+
+	if (length != (2*6*2)) {
+		GDS_WARN("Could not parse date field! Not the specified length");
+		return;
+	}
+
+	mod_date->year = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	mod_date->month = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	mod_date->day = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	mod_date->hour = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	mod_date->minute = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	mod_date->second = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+
+	access_date->year = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	access_date->month = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	access_date->day = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	access_date->hour = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	access_date->minute = gds_convert_unsigend_int16(buffer);
+	buffer += 2;
+	access_date->second = gds_convert_unsigend_int16(buffer);
+
+
+}
+
 int parse_gds_from_file(const char *filename, GList **library_list)
 {
 	char workbuff[1024];
@@ -404,7 +457,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		/* if begin: Allocate structures */
 		switch (rec_type) {
 		case BGNLIB:
-			lib_list = append_library(lib_list);
+			lib_list = append_library(lib_list, &current_lib);
 			if (lib_list == NULL) {
 				GDS_ERROR("Allocating memory failed");
 				run = -3;
@@ -412,8 +465,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 			}
 			printf("Entering Lib\n");
-			current_lib = (struct gds_library *)
-					g_list_last(lib_list)->data;
 			break;
 		case ENDLIB:
 			if (current_lib == NULL) {
@@ -547,6 +598,13 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		}
 
 		switch (rec_type) {
+		case BGNLIB:
+			/* Parse date record */
+			gds_parse_date(workbuff, read, &current_lib->mod_time, &current_lib->access_time);
+			break;
+		case BGNSTR:
+			gds_parse_date(workbuff, read, &current_cell->mod_time, &current_cell->access_time);
+			break;
 		case LIBNAME:
 			name_library(current_lib, read, workbuff);
 			break;

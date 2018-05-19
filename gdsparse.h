@@ -35,6 +35,7 @@ struct gds_time_field {
 		uint16_t minute;
 		uint16_t second;
 };
+
 struct gds_point {
 		int x;
 		int y;
@@ -68,7 +69,8 @@ struct gds_cell {
 
 struct gds_library {
 		char name[CELL_NAME_MAX];
-		struct gds_time_field time;
+		struct gds_time_field mod_time;
+		struct gds_time_field access_time;
 		double unit_to_meters;
 		GList *cells;
 		GList *cell_names;

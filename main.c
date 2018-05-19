@@ -27,7 +27,9 @@
 enum cell_store_columns {
 	LIBRARY,
 	CELL,
-	STORE_COLUMN
+	MODDATE,
+	ACCESSDATE,
+	STORE_COLUMN_COUNT
 };
 
 
@@ -45,7 +47,19 @@ gboolean on_window_close(gpointer window, gpointer user)
 	return TRUE;
 }
 
+static GString *generate_string_from_date(struct gds_time_field *date)
+{
+	GString *str;
 
+	str = g_string_new_len(NULL, 50);
+	g_string_printf(str, "%02u.%02u.%u - %02u:%02u",
+			(unsigned int)date->day,
+			(unsigned int)date->month,
+			(unsigned int)date->year,
+			(unsigned int)date->hour,
+			(unsigned int)date->minute);
+	return str;
+}
 
 void on_load_gds(gpointer button, gpointer user)
 {
@@ -64,6 +78,8 @@ void on_load_gds(gpointer button, gpointer user)
 	gint dialog_result;
 	int gds_result;
 	char *filename;
+	GString *mod_date;
+	GString *acc_date;
 
 	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", ptr->main_window, GTK_FILE_CHOOSER_ACTION_OPEN,
 						  "Cancel", GTK_RESPONSE_CANCEL, "Open GDSII", GTK_RESPONSE_ACCEPT, NULL);
@@ -100,11 +116,40 @@ void on_load_gds(gpointer button, gpointer user)
 			gds_lib = (struct gds_library *)lib->data;
 			/* Create top level iter */
 			gtk_tree_store_append (store, &libiter, NULL);
-			gtk_tree_store_set (store, &libiter, LIBRARY, gds_lib->name, -1);
+
+			/* Convert dates to String */
+			mod_date = generate_string_from_date(&gds_lib->mod_time);
+			acc_date = generate_string_from_date(&gds_lib->access_time);
+
+			gtk_tree_store_set (store, &libiter,
+					    LIBRARY, gds_lib->name,
+					    MODDATE, mod_date->str,
+					    ACCESSDATE, acc_date->str,
+					    -1);
+
+			/* Delete GStrings including string data. */
+			/* Cell store copies String type data items */
+			g_string_free(mod_date, TRUE);
+			g_string_free(acc_date, TRUE);
+
 			for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
 				gds_c = (struct gds_cell *)cell->data;
 				gtk_tree_store_append (store, &celliter, &libiter);
-				gtk_tree_store_set (store, &celliter, CELL, gds_c->name, -1);
+
+				/* Convert dates to String */
+				mod_date = generate_string_from_date(&gds_c->mod_time);
+				acc_date = generate_string_from_date(&gds_c->access_time);
+
+				gtk_tree_store_set (store, &celliter,
+						    CELL, gds_c->name,
+						    MODDATE, mod_date->str,
+						    ACCESSDATE, acc_date->str,
+						    -1);
+
+				/* Delete GStrings including string data. */
+				/* Cell store copies String type data items */
+				g_string_free(mod_date, TRUE);
+				g_string_free(acc_date, TRUE);
 			}
 		}
 
@@ -127,16 +172,47 @@ static GtkTreeStore * setup_cell_selector(GtkTreeView* view)
 	GtkTreeStore *cell_store;
 
 	GtkCellRenderer *render;
+	GtkCellRenderer *render_cell;
 	GtkTreeViewColumn *column;
+	GdkRGBA cell_text_color;
+	GValue val = G_VALUE_INIT;
 
-	cell_store = gtk_tree_store_new(STORE_COLUMN, G_TYPE_STRING, G_TYPE_STRING);
+	cell_store = gtk_tree_store_new(STORE_COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_view_set_model(view, GTK_TREE_MODEL(cell_store));
 
 	render = gtk_cell_renderer_text_new();
+	render_cell = gtk_cell_renderer_text_new();
+
+	/* Set foreground color */
+	cell_text_color.alpha = 1;
+	cell_text_color.red = (double)61.0/(double)255.0;
+	cell_text_color.green = (double)152.0/(double)255.0;
+	cell_text_color.blue = 0.0;
+
+	g_value_init(&val, G_TYPE_BOOLEAN);
+	g_value_set_boolean(&val, TRUE);
+	g_object_set_property(G_OBJECT(render_cell), "foreground-set", &val);
+	g_value_unset(&val);
+
+	g_value_init(&val, GDK_TYPE_RGBA);
+	g_value_set_boxed(&val, &cell_text_color);
+	g_object_set_property(G_OBJECT(render_cell), "foreground-rgba", &val);
+	g_value_unset(&val);
+
+
+
+
 	column = gtk_tree_view_column_new_with_attributes("Library", render, "text", LIBRARY, NULL);
 	gtk_tree_view_append_column(view, column);
 
-	column = gtk_tree_view_column_new_with_attributes("Cell", render, "text", CELL, NULL);
+	/* Cell color: #3D9801 */
+	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "text", CELL, NULL);
+	gtk_tree_view_append_column(view, column);
+
+	column = gtk_tree_view_column_new_with_attributes("Mod. Date", render, "text", MODDATE, NULL);
+	gtk_tree_view_append_column(view, column);
+
+	column = gtk_tree_view_column_new_with_attributes("Acc. Date", render, "text", ACCESSDATE, NULL);
 	gtk_tree_view_append_column(view, column);
 
 	return cell_store;
