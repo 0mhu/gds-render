@@ -13,12 +13,14 @@ add_definitions(${GLIB2_CFLAGS_OTHER})
 
 
 aux_source_directory("layer-widget" SUB_SOURCES)
+aux_source_directory("tree-renderer" RENDERER_SOURCES)
 set(SOURCE "main.c" "gdsparse.c" "layer-selector.c")
 
 
 set(SOURCE
   ${SOURCE}
   ${SUB_SOURCES}
+  ${RENDERER_SOURCES}
 )
 
 

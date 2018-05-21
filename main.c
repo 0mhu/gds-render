@@ -22,6 +22,7 @@
 #include <gtk/gtk.h>
 #include <layer-element.h>
 #include "layer-selector.h"
+#include "tree-renderer/lib-cell-renderer.h"
 
 
 enum cell_store_columns {
@@ -122,7 +123,7 @@ void on_load_gds(gpointer button, gpointer user)
 			acc_date = generate_string_from_date(&gds_lib->access_time);
 
 			gtk_tree_store_set (store, &libiter,
-					    LIBRARY, gds_lib->name,
+					    LIBRARY, gds_lib,
 					    MODDATE, mod_date->str,
 					    ACCESSDATE, acc_date->str,
 					    -1);
@@ -141,7 +142,7 @@ void on_load_gds(gpointer button, gpointer user)
 				acc_date = generate_string_from_date(&gds_c->access_time);
 
 				gtk_tree_store_set (store, &celliter,
-						    CELL, gds_c->name,
+						    CELL, gds_c,
 						    MODDATE, mod_date->str,
 						    ACCESSDATE, acc_date->str,
 						    -1);
@@ -171,19 +172,21 @@ static GtkTreeStore * setup_cell_selector(GtkTreeView* view)
 {
 	GtkTreeStore *cell_store;
 
-	GtkCellRenderer *render;
+	GtkCellRenderer *render_dates;
 	GtkCellRenderer *render_cell;
+	GtkCellRenderer *render_lib;
 	GtkTreeViewColumn *column;
 	GdkRGBA cell_text_color;
 	GValue val = G_VALUE_INIT;
 
-	cell_store = gtk_tree_store_new(STORE_COLUMN_COUNT, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+	cell_store = gtk_tree_store_new(STORE_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_STRING);
 	gtk_tree_view_set_model(view, GTK_TREE_MODEL(cell_store));
 
-	render = gtk_cell_renderer_text_new();
-	render_cell = gtk_cell_renderer_text_new();
+	render_dates = gtk_cell_renderer_text_new();
+	render_cell = lib_cell_renderer_new();
+	render_lib = lib_cell_renderer_new();
 
-	/* Set foreground color */
+	/* Set foreground color for cell column */
 	cell_text_color.alpha = 1;
 	cell_text_color.red = (double)61.0/(double)255.0;
 	cell_text_color.green = (double)152.0/(double)255.0;
@@ -202,17 +205,17 @@ static GtkTreeStore * setup_cell_selector(GtkTreeView* view)
 
 
 
-	column = gtk_tree_view_column_new_with_attributes("Library", render, "text", LIBRARY, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Library", render_lib, "gds-lib", LIBRARY, NULL);
 	gtk_tree_view_append_column(view, column);
 
 	/* Cell color: #3D9801 */
-	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "text", CELL, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "gds-cell", CELL, NULL);
 	gtk_tree_view_append_column(view, column);
 
-	column = gtk_tree_view_column_new_with_attributes("Mod. Date", render, "text", MODDATE, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Mod. Date", render_dates, "text", MODDATE, NULL);
 	gtk_tree_view_append_column(view, column);
 
-	column = gtk_tree_view_column_new_with_attributes("Acc. Date", render, "text", ACCESSDATE, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Acc. Date", render_dates, "text", ACCESSDATE, NULL);
 	gtk_tree_view_append_column(view, column);
 
 	return cell_store;

@@ -28,10 +28,16 @@ static void layer_element_dispose(GObject *obj)
 	G_OBJECT_CLASS(layer_element_parent_class)->dispose(obj);
 }
 
+static void layer_element_constructed(GObject *obj)
+{
+	G_OBJECT_CLASS(layer_element_parent_class)->constructed(obj);
+}
+
 static void layer_element_class_init(LayerElementClass *klass)
 {
 	GObjectClass *oclass = G_OBJECT_CLASS(klass);
 	oclass->dispose = layer_element_dispose;
+	oclass->constructed = layer_element_constructed;
 }
 
 static void layer_element_init(LayerElement *self)
