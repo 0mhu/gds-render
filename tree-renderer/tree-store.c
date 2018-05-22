@@ -2,6 +2,27 @@
 #include "lib-cell-renderer.h"
 #include "../gds-types.h"
 
+static gboolean tree_sel_func(GtkTreeSelection *selection,
+				GtkTreeModel *model,
+				GtkTreePath *path,
+				gboolean path_currently_selected,
+				gpointer data)
+{
+	static int cnt = 0;
+	GtkTreeIter iter;
+	struct gds_cell *cell;
+	gchar *p;
+
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, CELL_SEL_CELL, &cell, -1);
+
+	/* Allow only rows with valid cell to be selected */
+	if (cell)
+		return TRUE;
+	else
+		return FALSE;
+}
+
 GtkTreeStore *setup_cell_selector(GtkTreeView* view)
 {
 	GtkTreeStore *cell_store;
@@ -51,6 +72,10 @@ GtkTreeStore *setup_cell_selector(GtkTreeView* view)
 
 	column = gtk_tree_view_column_new_with_attributes("Acc. Date", render_dates, "text", CELL_SEL_ACCESSDATE, NULL);
 	gtk_tree_view_append_column(view, column);
+
+	/* Callback for selection
+	 * This prevents selecting a library */
+	gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(view), tree_sel_func, NULL, NULL);
 
 	return cell_store;
 }
