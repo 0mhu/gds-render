@@ -35,6 +35,7 @@ typedef struct _LayerElementPriv {
 	int layer_num;
 	GtkColorButton *color;
 	GtkCheckButton *export;
+	GtkEntry *stack;
 } LayerElementPriv;
 
 typedef struct _LayerElement {
@@ -50,6 +51,10 @@ const char *layer_element_get_name(LayerElement *elem);
 void layer_element_set_name(LayerElement *elem, const char* name);
 void layer_element_set_layer(LayerElement *elem, int layer);
 int layer_element_get_layer(LayerElement *elem);
+
+void layer_element_set_stack(LayerElement *elem, int layer);
+int layer_element_get_stack(LayerElement *elem);
+
 void layer_element_set_export(LayerElement *elem, gboolean export);
 gboolean layer_element_get_export(LayerElement *elem);
 void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba);

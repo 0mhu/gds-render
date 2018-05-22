@@ -52,6 +52,7 @@ static void layer_element_init(LayerElement *self)
 	self->priv.export = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "export"));
 	self->priv.layer = GTK_LABEL(gtk_builder_get_object(builder, "layer"));
 	self->priv.name = GTK_ENTRY(gtk_builder_get_object(builder, "entry"));
+	self->priv.stack = GTK_ENTRY(gtk_builder_get_object(builder, "entry-stack"));
 
 	/* Connect signals */
 	/* None */
@@ -79,7 +80,7 @@ void layer_element_set_layer(LayerElement *elem, int layer)
 	GString *string;
 
 	string = g_string_new_len(NULL, 100);
-	g_string_printf(string, "Layer: %3d", layer);
+	g_string_printf(string, "Layer: %d", layer);
 	gtk_label_set_text(elem->priv.layer, (const gchar *)string->str);
 	elem->priv.layer_num = layer;
 	g_string_free(string, TRUE);
@@ -88,6 +89,25 @@ void layer_element_set_layer(LayerElement *elem, int layer)
 int layer_element_get_layer(LayerElement *elem)
 {
 	return elem->priv.layer_num;
+}
+
+
+void layer_element_set_stack(LayerElement *elem, int layer)
+{
+	GString *string;
+
+	string = g_string_new_len(NULL, 20);
+	g_string_printf(string, "%d", layer);
+	gtk_entry_set_text(elem->priv.stack, (const gchar *)string->str);
+	g_string_free(string, TRUE);
+}
+
+int layer_element_get_stack(LayerElement *elem)
+{
+	const char *txt;
+
+	txt = gtk_entry_get_text(elem->priv.stack);
+	return (int)g_ascii_strtoll(txt, NULL, 10);
 }
 
 void layer_element_set_export(LayerElement *elem, gboolean export)

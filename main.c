@@ -33,8 +33,8 @@ struct open_button_data {
 };
 
 struct convert_button_data {
-	GList *layer_info;
 	GtkTreeView *tree_view;
+	GtkWindow *main_window;
 };
 
 gboolean on_window_close(gpointer window, gpointer user)
@@ -162,7 +162,43 @@ end_destroy:
 static void on_convert_clicked(gpointer button, gpointer user)
 {
 	struct convert_button_data *data = (struct convert_button_data *)user;
-	printf("convert\n");
+	GtkTreeSelection *selection;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	GList *layer_list;
+	struct gds_cell *cell_to_render;
+	FILE *tex_file;
+	GtkWidget *dialog;
+	gint res;
+	char *file_name;
+
+	/* Get selected cell */
+	selection = gtk_tree_view_get_selection(data->tree_view);
+	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
+		return;
+
+	gtk_tree_model_get(model, &iter, CELL_SEL_CELL, &cell_to_render, -1);
+
+	if (!cell_to_render)
+		return;
+
+	/* Get layers that are rendered */
+	layer_list = export_rendered_layer_info();
+
+	/* save file dialog */
+	dialog = gtk_file_chooser_dialog_new("Save TeX File", GTK_WINDOW(data->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
+					     "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if (res == GTK_RESPONSE_ACCEPT) {
+		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		tex_file = fopen(file_name, "w");
+		g_free(file_name);
+	}
+
+	gtk_widget_destroy(dialog);
+	render_cell_to_code(cell_to_render, layer_list, tex_file);
+	fclose(tex_file);
+	g_list_free_full(layer_list, (GDestroyNotify)delete_layer_info_struct);
 }
 
 /* This function activates/deactivates the convert button depending on whether
@@ -187,11 +223,10 @@ int main(int argc, char **argv)
 	GtkTreeView *cell_tree;
 	GtkTreeStore *cell_store;
 	GtkWidget *conv_button;
-
-	GtkWidget *layer;
 	GtkWidget *listbox;
 
 	struct open_button_data open_data;
+	struct convert_button_data conv_data;
 
 	gtk_init(&argc, &argv);
 
@@ -212,8 +247,11 @@ int main(int argc, char **argv)
 	
 
 	/* Connect Convert button */
+	conv_data.tree_view = cell_tree;
+	conv_data.main_window = open_data.main_window;
+
 	conv_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
-	g_signal_connect(conv_button, "clicked", G_CALLBACK(on_convert_clicked), layer);
+	g_signal_connect(conv_button, "clicked", G_CALLBACK(on_convert_clicked), &conv_data);
 
 	listbox = GTK_WIDGET(gtk_builder_get_object(main_builder, "layer-list"));
 	open_data.layer_box = GTK_LIST_BOX(listbox);

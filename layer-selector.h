@@ -26,6 +26,7 @@
 struct layer_info
 {
 	int layer;
+	int stacked_position; ///< Lower is bottom, higher is top
 	GdkRGBA color;
 };
 
@@ -33,5 +34,6 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs);
 void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
 void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
 GList *export_rendered_layer_info();
+void delete_layer_info_struct(struct layer_info *info);
 
 #endif /* __LAYER_SELECTOR_H__ */

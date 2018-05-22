@@ -54,6 +54,21 @@
       </packing>
     </child>
     <child>
+      <object class="GtkEntry" id="entry-stack">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="max_length">5</property>
+        <property name="width_chars">5</property>
+        <property name="max_width_chars">4</property>
+        <property name="input_purpose">number</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">3</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkEntry" id="entry">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
@@ -61,7 +76,7 @@
       <packing>
         <property name="expand">True</property>
         <property name="fill">True</property>
-        <property name="position">3</property>
+        <property name="position">4</property>
       </packing>
     </child>
   </object>

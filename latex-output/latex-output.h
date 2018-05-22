@@ -23,6 +23,9 @@
 #include "../gds-parser/gds-types.h"
 #include <glib.h>
 #include <stdio.h>
+#include "../layer-selector.h"
+
+#define LATEX_LINE_BUFFER_KB (10)
 
 void render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file);
 

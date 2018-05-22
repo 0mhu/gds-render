@@ -34,6 +34,13 @@ static void delete_layer_widget(GtkWidget *widget)
 	gtk_widget_destroy(widget);
 }
 
+
+void delete_layer_info_struct(struct layer_info *info)
+{
+	if (info)
+		free(info);
+}
+
 /**
  * @brief export_rendered_layer_info
  * @return new list with all info elements needed to render cells
@@ -55,6 +62,7 @@ GList *export_rendered_layer_info()
 			linfo = (struct layer_info *)malloc(sizeof(struct layer_info));
 			layer_element_get_color(le, &linfo->color);
 			linfo->layer = layer_element_get_layer(le);
+			linfo->stacked_position = layer_element_get_stack(le);
 
 			/* Append to list */
 			info_list = g_list_append(info_list, (gpointer)linfo);
@@ -109,6 +117,7 @@ static void analyze_cell_layers(GtkListBox *listbox, struct gds_cell *cell)
 		if (check_if_layer_widget_exists(layer) == FALSE) {
 			le = layer_element_new();
 			layer_element_set_layer(LAYER_ELEMENT(le), layer);
+			layer_element_set_stack(LAYER_ELEMENT(le), layer);
 			gtk_list_box_insert(listbox, le, -1);
 			gtk_widget_show(le);
 			layer_widgets = g_list_append(layer_widgets, le);
@@ -140,8 +149,8 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
 {
 	GList *cell_list = NULL;
 	struct gds_library *lib;
-	clear_list_box_widgets(listbox);
 
+	clear_list_box_widgets(listbox);
 	gtk_list_box_set_sort_func(listbox, sort_func, NULL, NULL);
 
 	for (; libs != NULL; libs = libs->next) {
@@ -169,7 +178,7 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
  * @param opacity
  * @return 0 if succesfull, 1 if line was malformatted or parameters are broken, -1 if file end
  */
-static int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color)
+static int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, int *target_layer, GdkRGBA *color)
 {
 	int ret;
 	gsize len;
@@ -183,7 +192,7 @@ static int load_csv_line(GDataInputStream *stream, gboolean *export, char **name
 		goto ret_direct;
 	}
 
-	regex = g_regex_new("^(?<layer>[0-9]+),(?<r>[0-9\\.]+),(?<g>[0-9\\.]+),(?<b>[0-9\\.]+),(?<a>[0-9\\.]+),(?<export>[01]),(?<name>.*)$", 0, 0, NULL);
+	regex = g_regex_new("^(?<layer>[0-9]+),(?<target>[0-9]+),(?<r>[0-9\\.]+),(?<g>[0-9\\.]+),(?<b>[0-9\\.]+),(?<a>[0-9\\.]+),(?<export>[01]),(?<name>.*)$", 0, 0, NULL);
 
 	line = g_data_input_stream_read_line(stream, &len, NULL, NULL);
 	if (!line) {
@@ -196,7 +205,10 @@ static int load_csv_line(GDataInputStream *stream, gboolean *export, char **name
 	if (g_match_info_matches(mi)) {
 		/* Line is valid */
 		match = g_match_info_fetch_named(mi, "layer");
-		*layer = g_ascii_strtoll(match, NULL, 10);
+		*layer = (int)g_ascii_strtoll(match, NULL, 10);
+		g_free(match);
+		match = g_match_info_fetch_named(mi, "target");
+		*target_layer = (int)g_ascii_strtoll(match, NULL, 10);
 		g_free(match);
 		match = g_match_info_fetch_named(mi, "r");
 		color->red = g_ascii_strtod(match, NULL);
@@ -258,6 +270,7 @@ static void load_layer_mapping_from_file(gchar *file_name)
 	char *name;
 	gboolean export;
 	int layer;
+	int target_layer;
 	GdkRGBA color;
 	int result;
 
@@ -269,7 +282,7 @@ static void load_layer_mapping_from_file(gchar *file_name)
 
 	dstream = g_data_input_stream_new(G_INPUT_STREAM(stream));
 
-	while((result = load_csv_line(dstream, &export, &name, &layer, &color)) >= 0) {
+	while((result = load_csv_line(dstream, &export, &name, &layer, &target_layer, &color)) >= 0) {
 		/* skip broken line */
 		if (result == 1)
 			continue;
@@ -279,6 +292,7 @@ static void load_layer_mapping_from_file(gchar *file_name)
 			layer_element_set_name(le, name);
 			layer_element_set_color(le, &color);
 			layer_element_set_export(le, export);
+			layer_element_set_stack(le, target_layer);
 		}
 		g_free(name);
 	}
@@ -313,6 +327,7 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	gboolean export;
 	const gchar *name;
 	int layer;
+	int target_layer;
 	GdkRGBA color;
 
 	string = g_string_new_len(NULL, max_len-1);
@@ -321,10 +336,12 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	export = layer_element_get_export(layer_element);
 	name = (const gchar*)layer_element_get_name(layer_element);
 	layer = layer_element_get_layer(layer_element);
+	target_layer = layer_element_get_stack(layer_element);
 	layer_element_get_color(layer_element, &color);
 
 	/* print values to line */
-	g_string_printf(string, "%d,%lf,%lf,%lf,%lf,%d,%s\n", layer, color.red, color.green,
+	g_string_printf(string, "%d,%d,%lf,%lf,%lf,%lf,%d,%s\n",
+			layer, target_layer, color.red, color.green,
 			color.blue, color.alpha, (export == TRUE ? 1 : 0), name);
 
 	if (string->len > (max_len-1)) {
@@ -350,7 +367,7 @@ static void save_layer_mapping_data(const gchar *file_name)
 	/* Overwrite existing file */
 	file = fopen((const char *)file_name, "w");
 
-	/* File format is CSV: <Layer>,<R>,<G>,<B>,<Alpha>,<Export?>,<Name> */
+	/* File format is CSV: <Layer>,<target_layer>,<R>,<G>,<B>,<Alpha>,<Export?>,<Name> */
 	for (le_list = layer_widgets; le_list != NULL; le_list = le_list->next) {
 		/* To be sure it is a valid string */
 		workbuff[0] = 0;
