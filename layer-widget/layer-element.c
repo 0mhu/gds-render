@@ -19,7 +19,7 @@
 
 #include "layer-element.h"
 
-G_DEFINE_TYPE(LayerElement, layer_element, GTK_TYPE_BOX)
+G_DEFINE_TYPE(LayerElement, layer_element, GTK_TYPE_LIST_BOX_ROW)
 
 static void layer_element_dispose(GObject *obj)
 {
@@ -39,23 +39,98 @@ static void layer_element_class_init(LayerElementClass *klass)
 	oclass->constructed = layer_element_constructed;
 }
 
+static GtkTargetEntry entries[] = {
+	{ "GTK_LIST_BOX_ROW", GTK_TARGET_SAME_APP, 0 }
+};
+
+static void layer_element_drag_begin(GtkWidget *widget,
+				     GdkDragContext *context,
+				     gpointer data)
+{
+	GtkWidget *row;
+	GtkAllocation alloc;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+	int x, y;
+
+	row = gtk_widget_get_ancestor (widget, GTK_TYPE_LIST_BOX_ROW);
+	gtk_widget_get_allocation (row, &alloc);
+	surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
+	cr = cairo_create (surface);
+
+	gtk_style_context_add_class (gtk_widget_get_style_context (row), "drag-icon");
+	gtk_widget_draw (row, cr);
+	gtk_style_context_remove_class (gtk_widget_get_style_context (row), "drag-icon");
+
+	gtk_widget_translate_coordinates (widget, row, 0, 0, &x, &y);
+	cairo_surface_set_device_offset (surface, -x, -y);
+	gtk_drag_set_icon_surface (context, surface);
+
+	cairo_destroy (cr);
+	cairo_surface_destroy (surface);
+}
+
+static void layer_element_drag_data_get(GtkWidget *widget,
+					GdkDragContext *context,
+					GtkSelectionData *selection_data,
+					guint info,
+					guint time,
+					gpointer data)
+{
+	gtk_selection_data_set(selection_data, gdk_atom_intern_static_string("GTK_LIST_BOX_ROW"),
+			       32, (const guchar *)&widget, sizeof(gpointer));
+}
+
+static void layer_element_drag_data_received(GtkWidget        *widget,
+					     GdkDragContext   *context,
+					     gint              x,
+					     gint              y,
+					     GtkSelectionData *selection_data,
+					     guint             info,
+					     guint32           time,
+					     gpointer          data)
+{
+	GtkWidget *target;
+	GtkWidget *row;
+	GtkWidget *source;
+	int pos;
+
+	target = widget;
+
+	pos = gtk_list_box_row_get_index (GTK_LIST_BOX_ROW (target));
+	row = (gpointer) *(gpointer *)gtk_selection_data_get_data (selection_data);
+	source = gtk_widget_get_ancestor (row, GTK_TYPE_LIST_BOX_ROW);
+
+	if (source == target)
+		return;
+
+	g_object_ref (source);
+	gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (source)), source);
+	gtk_list_box_insert (GTK_LIST_BOX (gtk_widget_get_parent (target)), source, pos);
+	g_object_unref (source);
+}
+
 static void layer_element_init(LayerElement *self)
 {
 	GtkBuilder *builder;
 	GtkWidget *glade_box;
 	builder = gtk_builder_new_from_resource("/layer-widget.glade");
 	glade_box = GTK_WIDGET(gtk_builder_get_object(builder, "box"));
-	gtk_box_pack_start(GTK_BOX(self), glade_box, TRUE, TRUE, 0);
+	gtk_container_add(GTK_CONTAINER(self), glade_box);
 
 	/* Get Elements */
 	self->priv.color = GTK_COLOR_BUTTON(gtk_builder_get_object(builder, "color"));
 	self->priv.export = GTK_CHECK_BUTTON(gtk_builder_get_object(builder, "export"));
 	self->priv.layer = GTK_LABEL(gtk_builder_get_object(builder, "layer"));
 	self->priv.name = GTK_ENTRY(gtk_builder_get_object(builder, "entry"));
-	self->priv.stack = GTK_ENTRY(gtk_builder_get_object(builder, "entry-stack"));
+	self->priv.event_handle = GTK_EVENT_BOX(gtk_builder_get_object(builder, "event-box"));
 
-	/* Connect signals */
-	/* None */
+	/* Setup drag and drop */
+	gtk_drag_source_set(GTK_WIDGET(self->priv.event_handle), GDK_BUTTON1_MASK, entries, 1, GDK_ACTION_MOVE);
+	g_signal_connect(self->priv.event_handle, "drag-begin", G_CALLBACK(layer_element_drag_begin), NULL);
+	g_signal_connect(self->priv.event_handle, "drag-data-get", G_CALLBACK(layer_element_drag_data_get), NULL);
+	gtk_drag_dest_set(GTK_WIDGET(self), GTK_DEST_DEFAULT_ALL, entries, 1, GDK_ACTION_MOVE);
+	g_signal_connect(GTK_WIDGET(self), "drag-data-received", G_CALLBACK(layer_element_drag_data_received), NULL);
 
 	g_object_unref(builder);
 }
@@ -89,25 +164,6 @@ void layer_element_set_layer(LayerElement *elem, int layer)
 int layer_element_get_layer(LayerElement *elem)
 {
 	return elem->priv.layer_num;
-}
-
-
-void layer_element_set_stack(LayerElement *elem, int layer)
-{
-	GString *string;
-
-	string = g_string_new_len(NULL, 20);
-	g_string_printf(string, "%d", layer);
-	gtk_entry_set_text(elem->priv.stack, (const gchar *)string->str);
-	g_string_free(string, TRUE);
-}
-
-int layer_element_get_stack(LayerElement *elem)
-{
-	const char *txt;
-
-	txt = gtk_entry_get_text(elem->priv.stack);
-	return (int)g_ascii_strtoll(txt, NULL, 10);
 }
 
 void layer_element_set_export(LayerElement *elem, gboolean export)

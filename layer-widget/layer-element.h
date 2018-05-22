@@ -25,7 +25,7 @@
 G_BEGIN_DECLS
 
 /* Creates Class structure etc */
-G_DECLARE_FINAL_TYPE(LayerElement, layer_element, LAYER, ELEMENT, GtkBox)
+G_DECLARE_FINAL_TYPE(LayerElement, layer_element, LAYER, ELEMENT, GtkListBoxRow)
 
 #define TYPE_LAYER_ELEMENT (layer_element_get_type())
 
@@ -33,14 +33,14 @@ typedef struct _LayerElementPriv {
 	GtkEntry *name;
 	GtkLabel *layer;
 	int layer_num;
+	GtkEventBox *event_handle;
 	GtkColorButton *color;
 	GtkCheckButton *export;
-	GtkEntry *stack;
 } LayerElementPriv;
 
 typedef struct _LayerElement {
 	/* Inheritance */
-	GtkBox hbox;
+	GtkListBoxRow parent;
 	/* Custom Elements */
 	LayerElementPriv priv;
 } LayerElement;
@@ -51,10 +51,6 @@ const char *layer_element_get_name(LayerElement *elem);
 void layer_element_set_name(LayerElement *elem, const char* name);
 void layer_element_set_layer(LayerElement *elem, int layer);
 int layer_element_get_layer(LayerElement *elem);
-
-void layer_element_set_stack(LayerElement *elem, int layer);
-int layer_element_get_stack(LayerElement *elem);
-
 void layer_element_set_export(LayerElement *elem, gboolean export);
 gboolean layer_element_get_export(LayerElement *elem);
 void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba);
