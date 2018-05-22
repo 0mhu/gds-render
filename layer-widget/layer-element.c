@@ -21,7 +21,6 @@
 
 G_DEFINE_TYPE(LayerElement, layer_element, GTK_TYPE_BOX)
 
-
 static void layer_element_dispose(GObject *obj)
 {
 	/* destroy parent container. This destroys all widgets inside */

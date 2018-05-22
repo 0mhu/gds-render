@@ -18,18 +18,23 @@
  */
 
 #include <stdio.h>
-#include "gdsparse.h"
+#include "gds-parser/gds-parser.h"
 #include <gtk/gtk.h>
-#include <layer-element.h>
+#include "layer-widget/layer-element.h"
 #include "layer-selector.h"
-#include "tree-renderer/lib-cell-renderer.h"
 #include "tree-renderer/tree-store.h"
+#include "latex-output/latex-output.h"
 
 struct open_button_data {
 	GtkWindow *main_window;
 	GList **list_ptr;
 	GtkTreeStore *cell_store;
 	GtkListBox *layer_box;
+};
+
+struct convert_button_data {
+	GList *layer_info;
+	GtkTreeView *tree_view;
 };
 
 gboolean on_window_close(gpointer window, gpointer user)
@@ -156,9 +161,24 @@ end_destroy:
 
 static void on_convert_clicked(gpointer button, gpointer user)
 {
+	struct convert_button_data *data = (struct convert_button_data *)user;
 	printf("convert\n");
 }
 
+/* This function activates/deactivates the convert button depending on whether
+ * a cell is selected for conversion or not */
+static void cell_selection_changed(GtkTreeSelection *sel, GtkWidget *convert_button)
+{
+	GtkTreeModel *model = NULL;
+	GtkTreeIter iter;
+
+	if (gtk_tree_selection_get_selected(sel, &model, &iter)) {
+		/* Node selected. Show button */
+		gtk_widget_set_sensitive(convert_button, TRUE);
+	} else {
+		gtk_widget_set_sensitive(convert_button, FALSE);
+	}
+}
 
 int main(int argc, char **argv)
 {
@@ -166,7 +186,8 @@ int main(int argc, char **argv)
 	GList *gds_libs = NULL;
 	GtkTreeView *cell_tree;
 	GtkTreeStore *cell_store;
-	GtkWidget *widget_generic;
+	GtkWidget *conv_button;
+
 	GtkWidget *layer;
 	GtkWidget *listbox;
 
@@ -191,8 +212,8 @@ int main(int argc, char **argv)
 	
 
 	/* Connect Convert button */
-	widget_generic = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
-	g_signal_connect(widget_generic, "clicked", G_CALLBACK(on_convert_clicked), layer);
+	conv_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
+	g_signal_connect(conv_button, "clicked", G_CALLBACK(on_convert_clicked), layer);
 
 	listbox = GTK_WIDGET(gtk_builder_get_object(main_builder, "layer-list"));
 	open_data.layer_box = GTK_LIST_BOX(listbox);
@@ -203,6 +224,9 @@ int main(int argc, char **argv)
 	setup_save_mapping_callback(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
 				    open_data.main_window);
 
+	/* Callback for selection change of cell selector */
+	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(cell_tree)), "changed",
+			 G_CALLBACK(cell_selection_changed), conv_button);
 
 	gtk_main();
 

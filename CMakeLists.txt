@@ -7,20 +7,24 @@ project(gds-render)
 
 add_subdirectory(glade)
 
-include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} "layer-widget")
+include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS})
 link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
 
 
-aux_source_directory("layer-widget" SUB_SOURCES)
+aux_source_directory("layer-widget" LAYER_SOURCES)
 aux_source_directory("tree-renderer" RENDERER_SOURCES)
-set(SOURCE "main.c" "gdsparse.c" "layer-selector.c")
+aux_source_directory("gds-parser" PARSER_SOURCES)
+aux_source_directory("latex-output" LATEX_SOURCES)
+set(SOURCE "main.c" "layer-selector.c")
 
 
 set(SOURCE
   ${SOURCE}
-  ${SUB_SOURCES}
+  ${LAYER_SOURCES}
   ${RENDERER_SOURCES}
+  ${PARSER_SOURCES}
+  ${LATEX_SOURCES}
 )
 
 

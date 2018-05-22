@@ -22,21 +22,16 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
-#include <layer-element.h>
 
-struct layer_info {
-    int id;
-    /* This contains both: opacity and Color */
-    GdkRGBA color;
+struct layer_info
+{
+	int layer;
+	GdkRGBA color;
 };
 
 void generate_layer_widgets(GtkListBox *listbox, GList *libs);
-void clear_list_box_widgets();
-
 void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
 void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
-
-void get_layer_info(GList **info_list, GtkListBox *box);
-
+GList *export_rendered_layer_info();
 
 #endif /* __LAYER_SELECTOR_H__ */

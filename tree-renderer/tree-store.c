@@ -1,6 +1,6 @@
 #include "tree-store.h"
 #include "lib-cell-renderer.h"
-#include "../gds-types.h"
+#include "../gds-parser/gds-types.h"
 
 static gboolean tree_sel_func(GtkTreeSelection *selection,
 				GtkTreeModel *model,

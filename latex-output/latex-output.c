@@ -17,13 +17,9 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GDSPARSE_H__
-#define __GDSPARSE_H__
+#include "latex-output.h"
 
-#include <glib.h>
-#include "gds-types.h"
+void render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file)
+{
 
-int parse_gds_from_file(const char *filename, GList **library_array);
-int clear_lib_list(GList **library_list);
-
-#endif /* __GDSPARSE_H__ */
+}

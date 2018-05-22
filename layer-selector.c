@@ -18,7 +18,8 @@
  */
 
 #include "layer-selector.h"
-#include "gdsparse.h"
+#include "gds-parser/gds-parser.h"
+#include "layer-widget/layer-element.h"
 #include <glib.h>
 #include <string.h>
 #include <stdio.h>
@@ -27,31 +28,40 @@ static GList *layer_widgets = NULL;
 static GtkWidget *load_button;
 static GtkWidget *save_button;
 
-static void layer_list_remove_element(struct layer_info *inf)
-{
-	if (inf)
-		free(inf);
-}
-
-void get_layer_info(GList **info_list, GtkListBox *box)
-{
-	GList *local_list = NULL;
-
-	/* Clear info Glist */
-	if (*info_list != NULL) {
-		g_list_free_full(*info_list, (GDestroyNotify)layer_list_remove_element);
-		*info_list = NULL;
-	}
-
-
-
-	*info_list = local_list;
-}
-
 static void delete_layer_widget(GtkWidget *widget)
 {
 
 	gtk_widget_destroy(widget);
+}
+
+/**
+ * @brief export_rendered_layer_info
+ * @return new list with all info elements needed to render cells
+ */
+GList *export_rendered_layer_info()
+{
+	GList *info_list = NULL;
+	LayerElement *le;
+	struct layer_info *linfo;
+	GList *widget_list;
+
+	/* Iterate through  widgets and add layers that shall be exported */
+	for (widget_list = layer_widgets; widget_list != NULL; widget_list = widget_list->next) {
+
+		le = LAYER_ELEMENT(widget_list->data);
+
+		if (layer_element_get_export(le) == TRUE) {
+			/* Allocate new info and fill with info */
+			linfo = (struct layer_info *)malloc(sizeof(struct layer_info));
+			layer_element_get_color(le, &linfo->color);
+			linfo->layer = layer_element_get_layer(le);
+
+			/* Append to list */
+			info_list = g_list_append(info_list, (gpointer)linfo);
+		}
+	}
+
+	return info_list;
 }
 
 void clear_list_box_widgets(GtkListBox *box)

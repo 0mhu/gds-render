@@ -27,7 +27,7 @@
  */
 
 
-#include "gdsparse.h"
+#include "gds-parser.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
