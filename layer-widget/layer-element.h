@@ -21,11 +21,13 @@
 #define __LAYER_ELEMENT_H__
 
 #include <gtk/gtk.h>
-// #include <gdk/gdk.h>
 
-#define LAYER_ELEMENT(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, layer_element_get_type(), LayerElement)
-#define LAYER_ELEMENT_CLASS(klass) G_TYPE_CHECK_CLASS_CAST(klass, layer_element_get_type(), LayerElementClass)
-#define IS_LAYER_ELEMENT(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, layer_element_get_type())
+G_BEGIN_DECLS
+
+/* Creates Class structure etc */
+G_DECLARE_FINAL_TYPE(LayerElement, layer_element, LAYER, ELEMENT, GtkBox)
+
+#define TYPE_LAYER_ELEMENT (layer_element_get_type())
 
 typedef struct _LayerElementPriv {
 	GtkEntry *name;
@@ -42,12 +44,6 @@ typedef struct _LayerElement {
 	LayerElementPriv priv;
 } LayerElement;
 
-typedef struct _LayerElementClass {
-	GtkBoxClass parent_class;
-} LayerElementClass;
-
-
-GType layer_element_get_type(void);
 GtkWidget *layer_element_new(void);
 
 const char *layer_element_get_name(LayerElement *elem);
@@ -58,5 +54,7 @@ void layer_element_set_export(LayerElement *elem, gboolean export);
 gboolean layer_element_get_export(LayerElement *elem);
 void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba);
 void layer_element_set_color(LayerElement *elem, GdkRGBA *rgba);
+
+G_END_DECLS
 
 #endif /* __LAYER_ELEMENT_H__ */

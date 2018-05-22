@@ -20,12 +20,11 @@
 #ifndef __LIB_CELL_RENDERER_H__
 #define __LIB_CELL_RENDERER_H__
 
-
 #include <gtk/gtk.h>
 
-#define LIB_CELL_RENDERER(obj) G_TYPE_CHECK_INSTANCE_CAST(obj, lib_cell_renderer_get_type(), LibCellRenderer)
-#define LIB_CELL_RENDERER_CLASS(klass) G_TYPE_CHECK_CLASS_CAST(klass, lib_cell_renderer_get_type(), LibCellRendererClass)
-#define IS_LIB_CELL_RENDERER(obj) G_TYPE_CHECK_INSTANCE_TYPE(obj, layer_element_get_type())
+G_BEGIN_DECLS
+
+G_DECLARE_FINAL_TYPE(LibCellRenderer, lib_cell_renderer, LIB_CELL, RENDERER, GtkCellRendererText)
 #define TYPE_LIB_CELL_RENDERER (lib_cell_renderer_get_type())
 
 typedef struct _LibCellRenderer {
@@ -34,14 +33,9 @@ typedef struct _LibCellRenderer {
         /* Custom Elements */
 } LibCellRenderer;
 
-typedef struct _LibCellRendererClass {
-        GtkCellRendererTextClass parent;
-} LibCellRendererClass;
-
-
 GType lib_cell_renderer_get_type(void);
 GtkCellRenderer *lib_cell_renderer_new(void);
 
-
+G_END_DECLS
 
 #endif /* __LIB_CELL_RENDERER_H__ */

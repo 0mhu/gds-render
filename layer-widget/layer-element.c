@@ -62,7 +62,7 @@ static void layer_element_init(LayerElement *self)
 
 GtkWidget *layer_element_new(void)
 {
-	return GTK_WIDGET(g_object_new(layer_element_get_type(), NULL));
+	return GTK_WIDGET(g_object_new(TYPE_LAYER_ELEMENT, NULL));
 }
 
 const char *layer_element_get_name(LayerElement *elem)
