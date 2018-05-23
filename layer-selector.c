@@ -307,6 +307,7 @@ static void load_layer_mapping_from_file(gchar *file_name)
 			layer_element_set_color(le, &color);
 			layer_element_set_export(le, export);
 			layer_element_set_name(le, name);
+			g_free(name);
 
 			/* Dereference and remove from list */
 			g_object_unref(G_OBJECT(le));

@@ -58,6 +58,7 @@ enum record {
 	STRANS = 0x1A01,
 	BOX = 0x2D00,
 	LAYER = 0x0D02,
+	WIDTH = 0x0F03,
 };
 
 static int name_cell_ref(struct gds_cell_instance *cell_inst,
@@ -580,6 +581,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		case STRANS:
 			break;
+		case WIDTH:
+			break;
 		default:
 			//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
 			break;
@@ -639,6 +642,12 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 		case SNAME:
 			name_cell_ref(current_s_reference, read, workbuff);
+			break;
+		case WIDTH:
+			if (!current_graphics) {
+				GDS_WARN("Width defined outside of path element");
+			}
+			current_graphics->width_absolute = gds_convert_signed_int(workbuff);
 			break;
 		case LAYER:
 			if (!current_graphics) {
