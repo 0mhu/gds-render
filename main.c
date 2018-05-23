@@ -196,9 +196,10 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		gtk_widget_destroy(dialog);
 		render_cell_to_code(cell_to_render, layer_list, tex_file);
 		fclose(tex_file);
+	} else {
+		gtk_widget_destroy(dialog);
 	}
 
-	gtk_widget_destroy(dialog);
 	g_list_free_full(layer_list, (GDestroyNotify)delete_layer_info_struct);
 }
 
