@@ -189,15 +189,16 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	dialog = gtk_file_chooser_dialog_new("Save TeX File", GTK_WINDOW(data->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
 	if (res == GTK_RESPONSE_ACCEPT) {
 		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 		tex_file = fopen(file_name, "w");
 		g_free(file_name);
+		gtk_widget_destroy(dialog);
+		render_cell_to_code(cell_to_render, layer_list, tex_file);
+		fclose(tex_file);
 	}
 
-	gtk_widget_destroy(dialog);
-	render_cell_to_code(cell_to_render, layer_list, tex_file);
-	fclose(tex_file);
 	g_list_free_full(layer_list, (GDestroyNotify)delete_layer_info_struct);
 }
 
