@@ -366,7 +366,6 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	layer = layer_element_get_layer(layer_element);
 	layer_element_get_color(layer_element, &color);
 
-	printf("Foo\n");
 	/* print values to line */
 	g_string_printf(string, "%d,%lf,%lf,%lf,%lf,%d,%s\n",
 			layer, color.red, color.green,
