@@ -26,6 +26,7 @@
 struct layer_info
 {
 	int layer;
+	char *name;
 	int stacked_position; ///< Lower is bottom, higher is top
 	GdkRGBA color;
 };
