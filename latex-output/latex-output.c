@@ -70,7 +70,7 @@ static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList
 			color->red = inf->color.red;
 			color->green = inf->color.green;
 			color->blue = inf->color.blue;
-			g_string_printf(buffer, "\\begin{pgfonlayer}{l%d}\n\\begin{scope}[ocg={ref=%d, status=visible,name={%s}]\n",
+			g_string_printf(buffer, "\\begin{pgfonlayer}{l%d}\n\\begin{scope}[ocg={ref=%d, status=visible,name={%s}}]\n",
 					layer, layer, inf->name);
 			WRITEOUT_BUFFER(buffer);
 			return TRUE;
