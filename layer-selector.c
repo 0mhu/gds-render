@@ -67,7 +67,7 @@ GList *export_rendered_layer_info()
 			layer_element_get_color(le, &linfo->color);
 			linfo->layer = layer_element_get_layer(le);
 			linfo->stacked_position = i;
-			linfo->name = layer_element_get_name(le);
+			linfo->name = (char *)layer_element_get_name(le);
 
 			/* Append to list */
 			info_list = g_list_append(info_list, (gpointer)linfo);
