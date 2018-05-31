@@ -387,7 +387,7 @@ void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_d
 
 int parse_gds_from_file(const char *filename, GList **library_list)
 {
-	char workbuff[1024];
+	char *workbuff;
 	int read;
 	int i;
 	int run = 1;
@@ -403,6 +403,12 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	GList *lib_list;
 
 	lib_list = *library_list;
+
+	/* Allocate working buffer */
+	workbuff = (char *)malloc(sizeof(char)*128*1024);
+
+	if(!workbuff)
+		return -100;
 
 	/* open File */
 	gds_file = fopen(filename, "r");
@@ -428,8 +434,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		}
 
-		rec_data_length = (uint16_t)((((uint16_t)(workbuff[0])) << 8) |
-				(uint16_t)(workbuff[1]));
+		rec_data_length = gds_convert_unsigend_int16(workbuff);
 
 		if (rec_data_length < 4) {
 			/* Possible Zero-Padding: */
@@ -452,8 +457,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			GDS_ERROR("Unexpected end of file");
 			break;
 		}
-		rec_type = (uint16_t)((((uint16_t)(workbuff[0])) << 8) |
-				(uint16_t)(workbuff[1]));
+		rec_type = gds_convert_unsigend_int16(workbuff);
 
 		/* if begin: Allocate structures */
 		switch (rec_type) {
@@ -595,7 +599,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		read = fread(workbuff, sizeof(char), rec_data_length, gds_file);
 
 		if (read != rec_data_length) {
-			GDS_ERROR("Could not read enough data");
+			GDS_ERROR("Could not read enough data: requested: %u, read: %u | Type: %04x\n",
+				  (unsigned int)rec_data_length, (unsigned int)read, (unsigned int)rec_type);
 			run = -5;
 			break;
 		}
@@ -696,10 +701,15 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	fclose(gds_file);
 
 
-	/* Iterate and find references to cells */
-	g_list_foreach(lib_list, scan_library_references, NULL);
+	if (!run) {
+		/* Iterate and find references to cells */
+		g_list_foreach(lib_list, scan_library_references, NULL);
+	}
 
 	*library_list = lib_list;
+
+	free(workbuff);
+
 	return run;
 }
 
