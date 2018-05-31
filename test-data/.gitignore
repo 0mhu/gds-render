@@ -1,2 +1,2 @@
-layout.tex
-toplevel.pdf
+*.log
+*.aux
