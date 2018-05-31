@@ -164,6 +164,16 @@ void render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_fi
 	/* 10 kB Line working buffer should be enough */
 	working_line = g_string_new_len(NULL, LATEX_LINE_BUFFER_KB*1024);
 
+	/* standalone foo */
+	g_string_printf(working_line, "\\newif\\iftestmode\n\\testmodefalse %% Change to true for standalone rendering\n");
+	WRITEOUT_BUFFER(working_line);
+	g_string_printf(working_line, "\\iftestmode\n");
+	WRITEOUT_BUFFER(working_line);
+	g_string_printf(working_line, "\\documentclass[tikz]{standalone}\n\\usepackage{xcolor}\n\\usetikzlibrary{ocgx}\n\\begin{document}\n");
+	WRITEOUT_BUFFER(working_line);
+	g_string_printf(working_line, "\\fi\n");
+	WRITEOUT_BUFFER(working_line);
+
 	/* Write layer definitions */
 	write_layer_definitions(tex_file, layer_infos, working_line);
 
@@ -176,6 +186,13 @@ void render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_fi
 
 
 	g_string_printf(working_line, "\\end{tikzpicture}\n");
+	WRITEOUT_BUFFER(working_line);
+
+	g_string_printf(working_line, "\\iftestmode\n");
+	WRITEOUT_BUFFER(working_line);
+	g_string_printf(working_line, "\\end{document}\n");
+	WRITEOUT_BUFFER(working_line);
+	g_string_printf(working_line, "\\fi\n");
 	WRITEOUT_BUFFER(working_line);
 
 	fflush(tex_file);
