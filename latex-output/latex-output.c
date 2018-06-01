@@ -70,7 +70,7 @@ static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList
 			color->red = inf->color.red;
 			color->green = inf->color.green;
 			color->blue = inf->color.blue;
-			g_string_printf(buffer, "\\begin{pgfonlayer}{l%d}\n\\begin{scope}[ocg={ref=%d, status=visible,name={%s}}]\n",
+			g_string_printf(buffer, "\\begin{pgfonlayer}{l%d}\n\\ifcreatepdflayers\n\\begin{scope}[ocg={ref=%d, status=visible,name={%s}}]\n\\fi]\n",
 					layer, layer, inf->name);
 			WRITEOUT_BUFFER(buffer);
 			return TRUE;
@@ -96,8 +96,6 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 
 			/* Layer is defined => create graphics */
 			if (gfx->type == GRAPHIC_POLYGON) {
-
-
 				g_string_printf(buffer, "\\draw[line width=0.00001 pt, draw={c%d}, fill={c%d}, fill opacity={%lf}] ",
 						gfx->layer, gfx->layer, color.alpha);
 				WRITEOUT_BUFFER(buffer);
@@ -109,9 +107,24 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				}
 				g_string_printf(buffer, "cycle;\n");
 				WRITEOUT_BUFFER(buffer);
+			} else if(gfx->type == GRAPHIC_PATH) {
+				g_string_printf(buffer, "\\draw[line width=%lf pt, draw={c%d}, opacity={%lf}] ",
+						gfx->width_absolute/1000.0, gfx->layer, gfx->layer, color.alpha);
+				WRITEOUT_BUFFER(buffer);
+				/* Append vertices */
+				for (temp_vertex = gfx->vertices; temp_vertex != NULL; temp_vertex = temp_vertex->next) {
+					pt = (struct gds_point *)temp_vertex->data;
+					g_string_printf(buffer, "(%lf pt, %lf pt)%s",
+							((double)pt->x)/1000.0,
+							((double)pt->y)/1000.0,
+							(temp_vertex->next ? " -- " : ""));
+					WRITEOUT_BUFFER(buffer);
+				}
+				g_string_printf(buffer, ";\n");
+				WRITEOUT_BUFFER(buffer);
 			}
 
-			g_string_printf(buffer, "\\end{scope}\n\\end{pgfonlayer}\n");
+			g_string_printf(buffer, "\\ifcreatepdflayers\n\\end{scope}\n\\fi\n\\end{pgfonlayer}\n");
 			WRITEOUT_BUFFER(buffer);
 		}
 
@@ -166,6 +179,8 @@ void render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_fi
 
 	/* standalone foo */
 	g_string_printf(working_line, "\\newif\\iftestmode\n\\testmodefalse %% Change to true for standalone rendering\n");
+	WRITEOUT_BUFFER(working_line);
+	g_string_printf(working_line, "\\newif\\ifcreatepdflayers\n\\createpdflayersfalse %% Change to true for Embedded layers in PDF output\n");
 	WRITEOUT_BUFFER(working_line);
 	g_string_printf(working_line, "\\iftestmode\n");
 	WRITEOUT_BUFFER(working_line);
