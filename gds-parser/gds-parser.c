@@ -59,6 +59,7 @@ enum record {
 	BOX = 0x2D00,
 	LAYER = 0x0D02,
 	WIDTH = 0x0F03,
+	PATHTYPE = 0x2102
 };
 
 static int name_cell_ref(struct gds_cell_instance *cell_inst,
@@ -189,7 +190,8 @@ static GList *append_graphics(GList *curr_list, enum graphics_type type,
 		gfx->layer = 0;
 		gfx->vertices = NULL;
 		gfx->width_absolute = 0;
-		gfx->type = type;
+		gfx->gfx_type = type;
+		gfx->path_render_type = PATH_FLUSH;
 	} else
 		return NULL;
 
@@ -561,7 +563,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		case ENDEL:
 			if (current_graphics != NULL) {
 
-				printf("\tLeaving %s\n", (current_graphics->type == GRAPHIC_POLYGON ? "boundary" : "path"));
+				printf("\tLeaving %s\n", (current_graphics->gfx_type == GRAPHIC_POLYGON ? "boundary" : "path"));
 				current_graphics = NULL;
 			}
 			if (current_s_reference != NULL) {
@@ -586,6 +588,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		case STRANS:
 			break;
 		case WIDTH:
+			break;
+		case PATHTYPE:
 			break;
 		default:
 			//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
@@ -691,6 +695,18 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			if (current_s_reference != NULL) {
 				current_s_reference->angle = gds_convert_double(workbuff);
 				printf("\t\tAngle defined: %lf\n", current_s_reference->angle);
+			}
+			break;
+		case PATHTYPE:
+			if (current_graphics == NULL) {
+				GDS_WARN("Path type defined outside of path. Ignoring");
+				break;
+			}
+			if (current_graphics->gfx_type == GRAPHIC_PATH) {
+				current_graphics->path_render_type = (int)gds_convert_signed_int16(workbuff);
+				printf("\t\tPathtype: %d\n", current_graphics->path_render_type);
+			} else {
+				GDS_WARN("Path type defined inside non-path graphics object. Ignoring");
 			}
 			break;
 

@@ -95,7 +95,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 		if (write_layer_env(tex_file, &color, (int)gfx->layer, linfo, buffer) == TRUE) {
 
 			/* Layer is defined => create graphics */
-			if (gfx->type == GRAPHIC_POLYGON) {
+			if (gfx->gfx_type == GRAPHIC_POLYGON) {
 				g_string_printf(buffer, "\\draw[line width=0.00001 pt, draw={c%d}, fill={c%d}, fill opacity={%lf}] ",
 						gfx->layer, gfx->layer, color.alpha);
 				WRITEOUT_BUFFER(buffer);
@@ -107,7 +107,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				}
 				g_string_printf(buffer, "cycle;\n");
 				WRITEOUT_BUFFER(buffer);
-			} else if(gfx->type == GRAPHIC_PATH) {
+			} else if(gfx->gfx_type == GRAPHIC_PATH) {
 				g_string_printf(buffer, "\\draw[line width=%lf pt, draw={c%d}, opacity={%lf}] ",
 						gfx->width_absolute/1000.0, gfx->layer, gfx->layer, color.alpha);
 				WRITEOUT_BUFFER(buffer);
