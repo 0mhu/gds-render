@@ -18,6 +18,7 @@
  */
 
 #include "latex-output.h"
+#include <math.h>
 
 #define WRITEOUT_BUFFER(buff) fwrite((buff)->str, sizeof(char), (buff)->len, tex_file)
 
@@ -87,8 +88,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 	struct gds_graphics *gfx;
 	struct gds_point *pt;
 	GdkRGBA color;
-	int width;
-	gchar *red, *green, *blue, *opacity;
+	static const char *line_caps[] = {"butt", "round", "rect"};
 
 	for (temp = graphics; temp != NULL; temp = temp->next) {
 		gfx = (struct gds_graphics *)temp->data;
@@ -108,9 +108,22 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				g_string_printf(buffer, "cycle;\n");
 				WRITEOUT_BUFFER(buffer);
 			} else if(gfx->gfx_type == GRAPHIC_PATH) {
-				g_string_printf(buffer, "\\draw[line width=%lf pt, draw={c%d}, opacity={%lf}] ",
-						gfx->width_absolute/1000.0, gfx->layer, gfx->layer, color.alpha);
+
+				if (g_list_length(gfx->vertices) < 2) {
+					printf("Cannot write path with less than 2 points\n");
+					break;
+				}
+
+				if (gfx->path_render_type < 0 || gfx->path_render_type > 2) {
+					printf("Path type unrecognized. Setting to 'flushed'\n");
+					gfx->path_render_type = 0;
+				}
+
+				g_string_printf(buffer, "\\draw[line width=%lf pt, draw={c%d}, opacity={%lf}, cap=%s] ",
+						gfx->width_absolute/1000.0, gfx->layer, color.alpha,
+						line_caps[gfx->path_render_type]);
 				WRITEOUT_BUFFER(buffer);
+
 				/* Append vertices */
 				for (temp_vertex = gfx->vertices; temp_vertex != NULL; temp_vertex = temp_vertex->next) {
 					pt = (struct gds_point *)temp_vertex->data;
