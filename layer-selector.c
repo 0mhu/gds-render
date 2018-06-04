@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static GtkWidget *global_load_button;
 static GtkWidget *global_save_button;
