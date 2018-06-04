@@ -603,7 +603,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		read = fread(workbuff, sizeof(char), rec_data_length, gds_file);
 
 		if (read != rec_data_length) {
-			GDS_ERROR("Could not read enough data: requested: %u, read: %u | Type: %04x\n",
+			GDS_ERROR("Could not read enough data: requested: %u, read: %u | Type: 0x%04x\n",
 				  (unsigned int)rec_data_length, (unsigned int)read, (unsigned int)rec_type);
 			run = -5;
 			break;
