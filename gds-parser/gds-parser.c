@@ -413,7 +413,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		return -100;
 
 	/* open File */
-	gds_file = fopen(filename, "r");
+	gds_file = fopen(filename, "rb");
 	if (gds_file == NULL) {
 		GDS_ERROR("Could not open File %s", filename);
 		return -1;
