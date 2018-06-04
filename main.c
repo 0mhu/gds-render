@@ -246,6 +246,9 @@ int main(int argc, char **argv)
 	open_data.main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),
 			 "clicked", G_CALLBACK(on_load_gds), (gpointer)&open_data);
+
+	/* Connect delete-event */
+	g_signal_connect(GTK_WIDGET(open_data.main_window), "delete-event", G_CALLBACK(on_window_close), NULL);
 	
 
 	/* Connect Convert button */
