@@ -27,6 +27,7 @@ set(SOURCE
   ${LATEX_SOURCES}
 )
 
+add_compile_options(-Wall)
 
 add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/glade/resources.c)
 add_dependencies(${PROJECT_NAME} glib-resources)
