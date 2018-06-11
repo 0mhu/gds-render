@@ -8,10 +8,8 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
 				gboolean path_currently_selected,
 				gpointer data)
 {
-	static int cnt = 0;
 	GtkTreeIter iter;
 	struct gds_cell *cell;
-	gchar *p;
 
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, CELL_SEL_CELL, &cell, -1);

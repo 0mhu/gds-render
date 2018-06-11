@@ -604,6 +604,19 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		}
 
 		switch (rec_type) {
+
+		case HEADER:
+		case UNITS:
+		case ENDLIB:
+		case ENDSTR:
+		case BOUNDARY:
+		case PATH:
+		case SREF:
+		case ENDEL:
+		case BOX:
+		case INVALID:
+			break;
+
 		case BGNLIB:
 			/* Parse date record */
 			gds_parse_date(workbuff, read, &current_lib->mod_time, &current_lib->access_time);

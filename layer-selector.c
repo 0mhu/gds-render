@@ -29,13 +29,6 @@ static GtkWidget *global_load_button;
 static GtkWidget *global_save_button;
 static GtkListBox *global_list_box;
 
-static void delete_layer_widget(GtkWidget *widget)
-{
-
-	gtk_widget_destroy(widget);
-}
-
-
 void delete_layer_info_struct(struct layer_info *info)
 {
 	if (info)
@@ -271,7 +264,6 @@ static void load_layer_mapping_from_file(gchar *file_name)
 	char *name;
 	gboolean export;
 	int layer;
-	int target_layer;
 	GdkRGBA color;
 	int result;
 	GList *rows;
@@ -295,15 +287,13 @@ static void load_layer_mapping_from_file(gchar *file_name)
 		gtk_container_remove(GTK_CONTAINER(global_list_box), GTK_WIDGET(le));
 	}
 
-	target_layer = 0;
-
 	while((result = load_csv_line(dstream, &export, &name, &layer, &color)) >= 0) {
 		/* skip broken line */
 		if (result == 1)
 			continue;
 
 		/* Add rows in the same order as in file */
-		if (le = find_layer_element_in_list(rows, layer)) {
+		if ((le = find_layer_element_in_list(rows, layer))) {
 			gtk_list_box_insert(global_list_box, GTK_WIDGET(le), -1);
 
 			layer_element_set_color(le, &color);
