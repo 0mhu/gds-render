@@ -349,6 +349,9 @@ void scan_library_references(gpointer library_list_item, gpointer user)
 
 void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_date, struct gds_time_field *access_date)
 {
+
+	struct gds_time_field *temp_date;
+
 	if (!access_date || !mod_date) {
 		GDS_WARN("Date structures invalid");
 		return;
@@ -359,32 +362,23 @@ void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_d
 		return;
 	}
 
-	mod_date->year = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	mod_date->month = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	mod_date->day = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	mod_date->hour = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	mod_date->minute = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	mod_date->second = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
+	for (temp_date = mod_date; 1; temp_date = access_date) {
+		temp_date->year = gds_convert_unsigend_int16(buffer);
+		buffer += 2;
+		temp_date->month = gds_convert_unsigend_int16(buffer);
+		buffer += 2;
+		temp_date->day = gds_convert_unsigend_int16(buffer);
+		buffer += 2;
+		temp_date->hour = gds_convert_unsigend_int16(buffer);
+		buffer += 2;
+		temp_date->minute = gds_convert_unsigend_int16(buffer);
+		buffer += 2;
+		temp_date->second = gds_convert_unsigend_int16(buffer);
+		buffer += 2;
 
-	access_date->year = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	access_date->month = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	access_date->day = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	access_date->hour = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	access_date->minute = gds_convert_unsigend_int16(buffer);
-	buffer += 2;
-	access_date->second = gds_convert_unsigend_int16(buffer);
-
-
+		if (temp_date == access_date)
+			break;
+	}
 }
 
 int parse_gds_from_file(const char *filename, GList **library_list)
