@@ -158,17 +158,21 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 	for (list_child = cell->child_cells; list_child != NULL; list_child = list_child->next) {
 		inst = (struct gds_cell_instance *)list_child->data;
 		/* generate translation scope */
-		g_string_printf(buffer, "\\begin{scope}[shift={(%lf pt,%lf pt)}, rotate=%lf]\n",
-				((double)inst->origin.x)/1000.0,((double)inst->origin.y)/1000.0,
-				inst->angle);
+		g_string_printf(buffer, "\\begin{scope}[shift={(%lf pt,%lf pt)}]\n",
+				((double)inst->origin.x)/1000.0,((double)inst->origin.y)/1000.0);
 		WRITEOUT_BUFFER(buffer);
 
-		g_string_printf(buffer, "\\begin{scope}[xscale=%s]\n",
-				(inst->flipped ? "-1" : "1"));
+		g_string_printf(buffer, "\\begin{scope}[rotate=%lf]\n", inst->angle);
+		WRITEOUT_BUFFER(buffer);
+
+		g_string_printf(buffer, "\\begin{scope}[yscale=%s]\n", (inst->flipped ? "-1" : "1"));
 		WRITEOUT_BUFFER(buffer);
 
 		if (inst->cell_ref)
 			render_cell(inst->cell_ref, layer_infos, tex_file, buffer);
+
+		g_string_printf(buffer, "\\end{scope}\n");
+		WRITEOUT_BUFFER(buffer);
 
 		g_string_printf(buffer, "\\end{scope}\n");
 		WRITEOUT_BUFFER(buffer);
