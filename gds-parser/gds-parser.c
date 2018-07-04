@@ -36,6 +36,8 @@
 
 #define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__)
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__)
+#define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
 enum record {
 	INVALID = 0x0000,
@@ -223,6 +225,7 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 		cell->child_cells = NULL;
 		cell->graphic_objs = NULL;
 		cell->name[0] = 0;
+		cell->bounding_box.scanned = FALSE;
 	} else
 		return NULL;
 	/* return cell */
@@ -345,6 +348,97 @@ void scan_library_references(gpointer library_list_item, gpointer user)
 
 	printf("Scanning Library: %s\n", lib->name);
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
+}
+
+static void cell_create_bounding_box(struct gds_cell *cell)
+{
+	GList *ref;
+	GList *gfx_list;
+	GList *vertex_list;
+
+	struct gds_cell_instance *cell_inst;
+	struct gds_graphics *gfx;
+	struct gds_point *vertex;
+
+	int xlow=0, xhigh=0, ylow=0, yhigh=0;
+	gboolean first = TRUE;
+
+	if (cell->bounding_box.scanned == TRUE)
+		return;
+
+	/* Generate bounding boxes of child cells and update current box*/
+	for (ref = cell->child_cells; ref != NULL; ref = ref->next) {
+		cell_inst = (struct gds_cell_instance *)ref->data;
+		if (cell_inst->cell_ref) {
+			if (cell_inst->cell_ref->bounding_box.scanned == FALSE)
+				cell_create_bounding_box(cell_inst->cell_ref);
+			/* TODO: calculate rotation and inversion to process size correctly */
+			if (cell_inst->cell_ref->bounding_box.scanned == TRUE) {
+				if (first == TRUE) {
+					xlow = cell_inst->cell_ref->bounding_box.coords[0].x +
+							cell_inst->origin.x;
+					ylow = cell_inst->cell_ref->bounding_box.coords[0].y +
+							cell_inst->origin.y;
+					xhigh = cell_inst->cell_ref->bounding_box.coords[1].x +
+							cell_inst->origin.x;
+					yhigh = cell_inst->cell_ref->bounding_box.coords[1].y +
+							cell_inst->origin.y;
+					first = FALSE;
+				} else {
+					xlow = MIN(cell_inst->cell_ref->bounding_box.coords[0].x +
+							cell_inst->origin.x, xlow);
+					ylow = MIN(cell_inst->cell_ref->bounding_box.coords[0].y +
+							cell_inst->origin.y, ylow);
+					xhigh = MAX(cell_inst->cell_ref->bounding_box.coords[1].x +
+							cell_inst->origin.x, xhigh);
+					yhigh = MAX(cell_inst->cell_ref->bounding_box.coords[1].y +
+							cell_inst->origin.y, yhigh);
+				}
+			} else
+				GDS_WARN("Unscanned cells present. This should not happen");
+		} else
+			GDS_WARN("Cell referenced that does not exist: %s. Bounding box might be incorrect.",
+				 cell_inst->ref_name);
+	}
+
+	/* Generate update box using graphic objects*/
+	for (gfx_list = cell->graphic_objs; gfx_list != NULL; gfx_list = gfx_list->next) {
+		gfx = (struct gds_graphics *)gfx_list->data;
+
+		for (vertex_list = gfx->vertices; vertex_list != NULL; vertex_list = vertex_list->next) {
+			vertex = (struct gds_point *)vertex_list->data;
+			if (first == TRUE) {
+				xlow = vertex->x - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2: 0);
+				ylow = vertex->y - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0);
+				xhigh = vertex->x + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2: 0);
+				yhigh = vertex->y + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0);
+				first = FALSE;
+			} else {
+				xlow = MIN(xlow, vertex->x - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
+				ylow = MIN(ylow, vertex->y - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
+				xhigh = MAX(xhigh, vertex->x + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
+				yhigh = MAX(yhigh, vertex->y + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
+			}
+		}
+	}
+
+	printf("Cell '%s' has size: %d / %d\n", cell->name, xhigh - xlow, yhigh - ylow);
+	cell->bounding_box.coords[0].x = xlow;
+	cell->bounding_box.coords[0].y = ylow;
+	cell->bounding_box.coords[1].x = xhigh;
+	cell->bounding_box.coords[1].y = yhigh;
+	cell->bounding_box.scanned = TRUE;
+}
+
+static void library_create_bounding_boxes(gpointer library_list_item, gpointer user)
+{
+	GList *cell_list;
+	struct gds_library *lib = (struct gds_library *)library_list_item;
+	if (!lib)
+		return;
+	for (cell_list = lib->cells; cell_list != NULL; cell_list = cell_list->next) {
+		cell_create_bounding_box((struct gds_cell *)cell_list->data);
+	}
 }
 
 void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_date, struct gds_time_field *access_date)
@@ -727,7 +821,12 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	if (!run) {
 		/* Iterate and find references to cells */
 		g_list_foreach(lib_list, scan_library_references, NULL);
+		/* Create bounding boxes */
+		g_list_foreach(lib_list, library_create_bounding_boxes, NULL);
 	}
+
+
+
 
 	*library_list = lib_list;
 

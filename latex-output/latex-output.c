@@ -157,6 +157,11 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 	/* Draw polygons of childs */
 	for (list_child = cell->child_cells; list_child != NULL; list_child = list_child->next) {
 		inst = (struct gds_cell_instance *)list_child->data;
+
+		/* Abort if cell has no reference */
+		if (!inst->cell_ref)
+			continue;
+
 		/* generate translation scope */
 		g_string_printf(buffer, "\\begin{scope}[shift={(%lf pt,%lf pt)}]\n",
 				((double)inst->origin.x)/1000.0,((double)inst->origin.y)/1000.0);
@@ -168,8 +173,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 		g_string_printf(buffer, "\\begin{scope}[yscale=%s]\n", (inst->flipped ? "-1" : "1"));
 		WRITEOUT_BUFFER(buffer);
 
-		if (inst->cell_ref)
-			render_cell(inst->cell_ref, layer_infos, tex_file, buffer);
+		render_cell(inst->cell_ref, layer_infos, tex_file, buffer);
 
 		g_string_printf(buffer, "\\end{scope}\n");
 		WRITEOUT_BUFFER(buffer);
