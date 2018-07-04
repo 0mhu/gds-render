@@ -14,9 +14,14 @@ struct gds_point {
 	int y;
 };
 
+struct gds_dpoint {
+	double x;
+	double y;
+};
+
 struct gds_bounding_box {
 	gboolean scanned;
-	struct gds_point coords[2];
+	struct gds_dpoint coords[2];
 };
 
 struct gds_time_field {

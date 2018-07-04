@@ -170,7 +170,8 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 		g_string_printf(buffer, "\\begin{scope}[rotate=%lf]\n", inst->angle);
 		WRITEOUT_BUFFER(buffer);
 
-		g_string_printf(buffer, "\\begin{scope}[yscale=%s]\n", (inst->flipped ? "-1" : "1"));
+		g_string_printf(buffer, "\\begin{scope}[yscale=%lf, xscale=%lf]\n", (inst->flipped ? -1*inst->magnification : inst->magnification),
+					inst->magnification);
 		WRITEOUT_BUFFER(buffer);
 
 		render_cell(inst->cell_ref, layer_infos, tex_file, buffer);

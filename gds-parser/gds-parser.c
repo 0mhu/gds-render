@@ -350,18 +350,76 @@ void scan_library_references(gpointer library_list_item, gpointer user)
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
 }
 
+static void apply_transforms_on_bounding_box(struct gds_cell_instance *cell_inst, struct gds_bounding_box *result)
+{
+	struct gds_dpoint vertices[4];
+	int i;
+	double xmin= INT_MAX, xmax=INT_MIN, ymin=INT_MAX, ymax= INT_MIN;
+	double temp;
+
+	double phi = M_PI * cell_inst->angle / 180;
+
+	if (cell_inst->cell_ref->bounding_box.scanned == FALSE)
+		return;
+
+	if (!result)
+		return;
+
+	/* Calculate all 4 bounding box points */
+	vertices[0].x = cell_inst->cell_ref->bounding_box.coords[0].x;
+	vertices[0].y = cell_inst->cell_ref->bounding_box.coords[0].y;
+	vertices[1].x = cell_inst->cell_ref->bounding_box.coords[0].x;
+	vertices[1].y = cell_inst->cell_ref->bounding_box.coords[1].y;
+	vertices[2].x = cell_inst->cell_ref->bounding_box.coords[1].x;
+	vertices[2].y = cell_inst->cell_ref->bounding_box.coords[1].y;
+	vertices[3].x = cell_inst->cell_ref->bounding_box.coords[1].x;
+	vertices[3].y = cell_inst->cell_ref->bounding_box.coords[0].y;
+
+	/* Apply flipping and magnification */
+	for (i = 0; i < 4; i++) {
+		vertices[i].x = (vertices[i].x * cell_inst->magnification);
+		vertices[i].y = (vertices[i].y * cell_inst->magnification * (cell_inst->flipped ? -1 : 1));
+	}
+	/* Apply rotation */
+	for (i = 0; i < 4; i++) {
+		temp =(cos(phi) * vertices[i].x - sin(phi) * vertices[i].y);
+		vertices[i].y =(sin(phi) * vertices[i].x + cos(phi) * vertices[i].y);
+		vertices[i].x = temp;
+	}
+
+	/* Translate origin */
+	for (i = 0; i < 4; i++) {
+		vertices[i].x += (double)cell_inst->origin.x;
+		vertices[i].y += (double)cell_inst->origin.y;
+	}
+
+	/* Calculate new bounding box */
+	for (i = 0; i < 4; i++) {
+		xmin = MIN(xmin, vertices[i].x);
+		ymin = MIN(ymin, vertices[i].y);
+		ymax = MAX(ymax, vertices[i].y);
+		xmax = MAX(xmax, vertices[i].x);
+	}
+
+	result->scanned = TRUE;
+	result->coords[0].x = xmin;
+	result->coords[0].y = ymin;
+	result->coords[1].x = xmax;
+	result->coords[1].y = ymax;
+}
+
 static void cell_create_bounding_box(struct gds_cell *cell)
 {
 	GList *ref;
 	GList *gfx_list;
 	GList *vertex_list;
 
+	struct gds_bounding_box box_transform;
 	struct gds_cell_instance *cell_inst;
 	struct gds_graphics *gfx;
 	struct gds_point *vertex;
 
-	int xlow=0, xhigh=0, ylow=0, yhigh=0;
-	gboolean first = TRUE;
+	double xlow=INT_MAX, xhigh=INT_MIN, ylow=INT_MAX, yhigh=INT_MIN;
 
 	if (cell->bounding_box.scanned == TRUE)
 		return;
@@ -372,30 +430,16 @@ static void cell_create_bounding_box(struct gds_cell *cell)
 		if (cell_inst->cell_ref) {
 			if (cell_inst->cell_ref->bounding_box.scanned == FALSE)
 				cell_create_bounding_box(cell_inst->cell_ref);
-			/* TODO: calculate rotation and inversion to process size correctly */
+
+			/* Apply transforms of cell in current cell to calculate the box of the specific instance */
 			if (cell_inst->cell_ref->bounding_box.scanned == TRUE) {
-				if (first == TRUE) {
-					xlow = cell_inst->cell_ref->bounding_box.coords[0].x +
-							cell_inst->origin.x;
-					ylow = cell_inst->cell_ref->bounding_box.coords[0].y +
-							cell_inst->origin.y;
-					xhigh = cell_inst->cell_ref->bounding_box.coords[1].x +
-							cell_inst->origin.x;
-					yhigh = cell_inst->cell_ref->bounding_box.coords[1].y +
-							cell_inst->origin.y;
-					first = FALSE;
-				} else {
-					xlow = MIN(cell_inst->cell_ref->bounding_box.coords[0].x +
-							cell_inst->origin.x, xlow);
-					ylow = MIN(cell_inst->cell_ref->bounding_box.coords[0].y +
-							cell_inst->origin.y, ylow);
-					xhigh = MAX(cell_inst->cell_ref->bounding_box.coords[1].x +
-							cell_inst->origin.x, xhigh);
-					yhigh = MAX(cell_inst->cell_ref->bounding_box.coords[1].y +
-							cell_inst->origin.y, yhigh);
-				}
+				apply_transforms_on_bounding_box(cell_inst, &box_transform);
+				xlow = MIN(xlow, box_transform.coords[0].x);
+				ylow = MIN(ylow, box_transform.coords[0].y);
+				xhigh = MAX(xhigh, box_transform.coords[1].x);
+				yhigh = MAX(yhigh, box_transform.coords[1].y);
 			} else
-				GDS_WARN("Unscanned cells present. This should not happen");
+				GDS_WARN("Unscanned cells present: %s. This should not happen", cell_inst->ref_name);
 		} else
 			GDS_WARN("Cell referenced that does not exist: %s. Bounding box might be incorrect.",
 				 cell_inst->ref_name);
@@ -407,22 +451,16 @@ static void cell_create_bounding_box(struct gds_cell *cell)
 
 		for (vertex_list = gfx->vertices; vertex_list != NULL; vertex_list = vertex_list->next) {
 			vertex = (struct gds_point *)vertex_list->data;
-			if (first == TRUE) {
-				xlow = vertex->x - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2: 0);
-				ylow = vertex->y - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0);
-				xhigh = vertex->x + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2: 0);
-				yhigh = vertex->y + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0);
-				first = FALSE;
-			} else {
-				xlow = MIN(xlow, vertex->x - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
-				ylow = MIN(ylow, vertex->y - (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
-				xhigh = MAX(xhigh, vertex->x + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
-				yhigh = MAX(yhigh, vertex->y + (gfx->gfx_type == GRAPHIC_PATH ? gfx->width_absolute / 2 : 0));
-			}
+
+			xlow = MIN(xlow, (double)vertex->x - (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
+			ylow = MIN(ylow, (double)vertex->y - (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
+			xhigh = MAX(xhigh, (double)vertex->x + (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
+			yhigh = MAX(yhigh, (double)vertex->y + (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
+
 		}
 	}
 
-	printf("Cell '%s' has size: %d / %d\n", cell->name, xhigh - xlow, yhigh - ylow);
+	printf("Cell '%s' has size: %lf / %lf\n", cell->name, xhigh - xlow, yhigh - ylow);
 	cell->bounding_box.coords[0].x = xlow;
 	cell->bounding_box.coords[0].y = ylow;
 	cell->bounding_box.coords[1].x = xhigh;
