@@ -33,6 +33,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+#include <cairo.h>
 
 #define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__)
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__)
@@ -408,16 +409,110 @@ static void apply_transforms_on_bounding_box(struct gds_cell_instance *cell_inst
 	result->coords[1].y = ymax;
 }
 
+static void calculate_bounding_path_box(struct gds_graphics *path, struct gds_bounding_box *box)
+{
+	cairo_surface_t *surf;
+	cairo_t *cr;
+	GList *vertex_list;
+	struct gds_point *vertex;
+
+	double x0, y0, width, height;
+
+	if (path == NULL || box == NULL)
+		return;
+	if (path->vertices == NULL)
+		return;
+	if (path->vertices->data == NULL)
+		return;
+
+	box->scanned = FALSE;
+
+	/* Check path length */
+	if (g_list_length(path->vertices) < 2)
+		return;
+
+	surf = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA, NULL);
+	cr = cairo_create(surf);
+
+	/* Prepare line properties */
+	switch (path->path_render_type) {
+	case PATH_FLUSH:
+		cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+		break;
+	case PATH_ROUNDED:
+		cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+		break;
+	case PATH_SQUARED:
+		cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+		break;
+	default:
+		cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+		break;
+	}
+
+	cairo_set_line_width(cr, path->width_absolute);
+	cairo_set_source_rgba(cr, 1, 1 , 0, 0.5);
+
+	/* Start at first point */
+	vertex = (struct gds_point *)path->vertices->data;
+	cairo_move_to(cr, (double)vertex->x, (double)vertex->y);
+
+	/* Remaining points */
+	for (vertex_list = path->vertices->next; vertex_list != NULL; vertex_list = vertex_list->next) {
+		vertex = (struct gds_point *)vertex_list->data;
+		cairo_line_to(cr, (double)vertex->x, (double)vertex->y);
+	}
+	cairo_stroke(cr);
+
+	cairo_recording_surface_ink_extents(surf, &x0, &y0, &width, &height);
+	box->coords[0].x = x0;
+	box->coords[0].y = y0;
+	box->coords[1].x = (x0+width);
+	box->coords[1].y = (y0+height);
+	box->scanned = TRUE;
+	cairo_destroy(cr);
+	cairo_surface_destroy(surf);
+
+}
+
+static void update_bounding_box_with_gfx(struct gds_graphics *gfx, double *xlow,
+					 double *ylow, double *xhigh, double *yhigh)
+{
+	GList *vertex_list;
+	struct gds_point *vertex;
+	struct gds_bounding_box path_box;
+
+	path_box.scanned = FALSE;
+
+	if (gfx->gfx_type == GRAPHIC_POLYGON) {
+		for (vertex_list = gfx->vertices; vertex_list != NULL; vertex_list = vertex_list->next) {
+			vertex = (struct gds_point *)vertex_list->data;
+
+			*xlow = MIN(*xlow, (double)vertex->x);
+			*ylow = MIN(*ylow, (double)vertex->y);
+			*xhigh = MAX(*xhigh, (double)vertex->x);
+			*yhigh = MAX(*yhigh, (double)vertex->y);
+		}
+	} else if (gfx->gfx_type == GRAPHIC_PATH) {
+		calculate_bounding_path_box(gfx, &path_box);
+		if (path_box.scanned == TRUE) {
+			*xlow = MIN(*xlow, path_box.coords[0].x);
+			*ylow = MIN(*ylow, path_box.coords[0].y);
+			*xhigh = MAX(*xhigh, path_box.coords[1].x);
+			*yhigh = MAX(*yhigh, path_box.coords[1].y);
+		} else
+			GDS_WARN("Bounding box of path not calculated");
+	}
+}
+
 static void cell_create_bounding_box(struct gds_cell *cell)
 {
 	GList *ref;
 	GList *gfx_list;
-	GList *vertex_list;
 
 	struct gds_bounding_box box_transform;
 	struct gds_cell_instance *cell_inst;
 	struct gds_graphics *gfx;
-	struct gds_point *vertex;
 
 	double xlow=INT_MAX, xhigh=INT_MIN, ylow=INT_MAX, yhigh=INT_MIN;
 
@@ -449,15 +544,7 @@ static void cell_create_bounding_box(struct gds_cell *cell)
 	for (gfx_list = cell->graphic_objs; gfx_list != NULL; gfx_list = gfx_list->next) {
 		gfx = (struct gds_graphics *)gfx_list->data;
 
-		for (vertex_list = gfx->vertices; vertex_list != NULL; vertex_list = vertex_list->next) {
-			vertex = (struct gds_point *)vertex_list->data;
-
-			xlow = MIN(xlow, (double)vertex->x - (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
-			ylow = MIN(ylow, (double)vertex->y - (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
-			xhigh = MAX(xhigh, (double)vertex->x + (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
-			yhigh = MAX(yhigh, (double)vertex->y + (gfx->gfx_type == GRAPHIC_PATH ? (double)gfx->width_absolute / 2 : 0));
-
-		}
+		update_bounding_box_with_gfx(gfx, &xlow, &ylow, &xhigh, &yhigh);
 	}
 
 	printf("Cell '%s' has size: %lf / %lf\n", cell->name, xhigh - xlow, yhigh - ylow);
