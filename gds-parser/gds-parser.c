@@ -726,21 +726,22 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			current_cell = NULL;
 			printf("Leaving Cell\n");
 			break;
-			//case BOX:
+		case BOX:
 		case BOUNDARY:
 			if (current_cell == NULL) {
-				GDS_ERROR("Boundary outside of cell");
+				GDS_ERROR("Boundary/Box outside of cell");
 				run = -3;
 				break;
 			}
 			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs,
-								     GRAPHIC_POLYGON, &current_graphics);
+								     (rec_type == BOUNDARY ? GRAPHIC_POLYGON : GRAPHIC_BOX),
+								     &current_graphics);
 			if (current_cell->graphic_objs == NULL) {
 				GDS_ERROR("Memory allocation failed");
 				run = -4;
 				break;
 			}
-			printf("\tEntering boundary\n");
+			printf("\tEntering boundary/Box\n");
 			break;
 		case SREF:
 			if (current_cell == NULL) {
@@ -794,6 +795,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			}
 
 			break;
+
 		case MAG:
 			break;
 		case ANGLE:
