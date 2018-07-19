@@ -38,12 +38,12 @@ typedef struct _LayerElementPriv {
 	GtkCheckButton *export;
 } LayerElementPriv;
 
-typedef struct _LayerElement {
+struct _LayerElement {
 	/* Inheritance */
 	GtkListBoxRow parent;
 	/* Custom Elements */
 	LayerElementPriv priv;
-} LayerElement;
+};
 
 GtkWidget *layer_element_new(void);
 
