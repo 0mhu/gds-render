@@ -3,6 +3,7 @@
   <gresource prefix="/">
     <file compressed="true">main.glade</file>
     <file>layer-widget.glade</file>
+    <file>dialog.glade</file>
   </gresource>
 </gresources>
 
