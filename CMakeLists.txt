@@ -17,6 +17,7 @@ aux_source_directory("widgets" LAYER_SOURCES)
 aux_source_directory("tree-renderer" RENDERER_SOURCES)
 aux_source_directory("gds-parser" PARSER_SOURCES)
 aux_source_directory("latex-output" LATEX_SOURCES)
+aux_source_directory("cairo-output" CAIRO_SOURCES)
 set(SOURCE "main.c" "layer-selector.c")
 
 
@@ -26,6 +27,7 @@ set(SOURCE
   ${RENDERER_SOURCES}
   ${PARSER_SOURCES}
   ${LATEX_SOURCES}
+  ${CAIRO_SOURCES}
 )
 
 add_compile_options(-Wall)

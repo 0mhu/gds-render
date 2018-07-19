@@ -188,7 +188,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 }
 
-void render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file)
+void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file)
 {
 	GString *working_line;
 

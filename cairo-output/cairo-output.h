@@ -17,16 +17,12 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LATEX_OUTPUT_H__
-#define __LATEX_OUTPUT_H__
+#ifndef __CAIRO_OUTPUT_H__
+#define __CAIRO_OUTPUT_H__
 
-#include "../gds-parser/gds-types.h"
-#include <glib.h>
-#include <stdio.h>
 #include "../layer-selector.h"
+#include "../gds-parser/gds-types.h"
 
-#define LATEX_LINE_BUFFER_KB (10)
+void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file);
 
-void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file);
-
-#endif /* __LATEX_OUTPUT_H__ */
+#endif /* __CAIRO_OUTPUT_H__ */

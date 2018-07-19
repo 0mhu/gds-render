@@ -24,6 +24,7 @@
 #include "tree-renderer/tree-store.h"
 #include "latex-output/latex-output.h"
 #include "widgets/conv-settings-dialog.h"
+#include "cairo-output/cairo-output.h"
 
 struct open_button_data {
 	GtkWindow *main_window;
@@ -161,21 +162,22 @@ end_destroy:
 
 static void on_convert_clicked(gpointer button, gpointer user)
 {
+	static struct render_settings sett = {
+		.scale = 1000.0f,
+				.renderer = RENDERER_LATEX_TIKZ,
+	};
 	struct convert_button_data *data = (struct convert_button_data *)user;
 	GtkTreeSelection *selection;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
 	GList *layer_list;
 	struct gds_cell *cell_to_render;
-	FILE *tex_file;
+	FILE *output_file;
 	GtkWidget *dialog;
 	RendererSettingsDialog *settings;
+	GtkFileFilter *filter;
 	gint res;
 	char *file_name;
-
-	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
-	gtk_dialog_run(GTK_DIALOG(settings));
-	gtk_widget_destroy(GTK_WIDGET(settings));
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
@@ -190,21 +192,56 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	/* Get layers that are rendered */
 	layer_list = export_rendered_layer_info();
 
+	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
+	renderer_settings_dialog_set_settings(settings, &sett);
+	res = gtk_dialog_run(GTK_DIALOG(settings));
+	if (res == GTK_RESPONSE_OK) {
+		renderer_settings_dialog_get_settings(settings, &sett);
+		gtk_widget_destroy(GTK_WIDGET(settings));
+	} else {
+		gtk_widget_destroy(GTK_WIDGET(settings));
+		goto ret_layer_destroy;
+	}
+
+
+
 	/* save file dialog */
-	dialog = gtk_file_chooser_dialog_new("Save TeX File", GTK_WINDOW(data->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
+	dialog = gtk_file_chooser_dialog_new((sett.renderer == RENDERER_LATEX_TIKZ
+					      ? "Save LaTeX File" : "Save PDF"),
+					     GTK_WINDOW(data->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
+	/* Set file filter according to settings */
+	filter = gtk_file_filter_new();
+	if (sett.renderer == RENDERER_LATEX_TIKZ) {
+		gtk_file_filter_add_pattern(filter, "*.tex");
+		gtk_file_filter_set_name(filter, "LaTeX-Files");
+	} else {
+		gtk_file_filter_add_pattern(filter, "*.pdf");
+		gtk_file_filter_set_name(filter, "PDF-Files");
+	}
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if (res == GTK_RESPONSE_ACCEPT) {
 		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-		tex_file = fopen(file_name, "w");
-		g_free(file_name);
 		gtk_widget_destroy(dialog);
-		render_cell_to_code(cell_to_render, layer_list, tex_file);
-		fclose(tex_file);
+
+		switch (sett.renderer) {
+		case RENDERER_LATEX_TIKZ:
+			output_file = fopen(file_name, "w");
+			latex_render_cell_to_code(cell_to_render, layer_list, output_file);
+			fclose(output_file);
+			break;
+		case RENDERER_CAIROGRAPHICS:
+			cairo_render_cell_to_pdf(cell_to_render, layer_list, file_name);
+			break;
+		}
+		g_free(file_name);
+
 	} else {
 		gtk_widget_destroy(dialog);
 	}
-
+ret_layer_destroy:
 	g_list_free_full(layer_list, (GDestroyNotify)delete_layer_info_struct);
 }
 

@@ -22,7 +22,8 @@
 struct  _RendererSettingsDialog {
 	GtkDialog parent;
 	/* Private loot */
-	GtkWidget *radio_latex; // Only Latex-radio. Other one is implicit
+	GtkWidget *radio_latex;
+	GtkWidget *radio_cairo;
 	GtkWidget *scale;
 };
 
@@ -48,9 +49,12 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 	builder = gtk_builder_new_from_resource("/dialog.glade");
 	box = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-box"));
 	self->radio_latex = GTK_WIDGET(gtk_builder_get_object(builder, "latex-radio"));
+	self->radio_cairo = GTK_WIDGET(gtk_builder_get_object(builder, "cairo-radio"));
 	self->scale = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-scale"));
 	gtk_dialog_add_buttons(dialog, "Cancel", GTK_RESPONSE_CANCEL, "OK", GTK_RESPONSE_OK, NULL);
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(dialog)), box);
+	gtk_window_set_title(GTK_WINDOW(self), "Renderer Settings");
+
 	g_object_unref(builder);
 }
 
@@ -65,11 +69,25 @@ RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent)
 	return res;
 }
 
-void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
+void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
 {
-	if (!settings)
+	if (!settings || !dialog)
 		return;
 	settings->scale = gtk_range_get_value(GTK_RANGE(dialog->scale));
 	settings->renderer = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_latex)) == TRUE ? RENDERER_LATEX_TIKZ : RENDERER_CAIROGRAPHICS);
 }
-void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings);
+void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
+{
+	if (!settings || !dialog)
+		return;
+	gtk_range_set_value(GTK_RANGE(dialog->scale), settings->scale);
+
+	switch (settings->renderer) {
+	case RENDERER_LATEX_TIKZ:
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->radio_latex), TRUE);
+		break;
+	case RENDERER_CAIROGRAPHICS:
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo), TRUE);
+		break;
+	}
+}
