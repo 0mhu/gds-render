@@ -188,7 +188,8 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 }
 
-void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale)
+void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale,
+			       gboolean create_pdf_layers, gboolean standalone_document)
 {
 	GString *working_line;
 
@@ -200,9 +201,11 @@ void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *
 	working_line = g_string_new_len(NULL, LATEX_LINE_BUFFER_KB*1024);
 
 	/* standalone foo */
-	g_string_printf(working_line, "\\newif\\iftestmode\n\\testmodefalse %% Change to true for standalone rendering\n");
+	g_string_printf(working_line, "\\newif\\iftestmode\n\\testmode%s\n",
+			(standalone_document ? "true" : "false"));
 	WRITEOUT_BUFFER(working_line);
-	g_string_printf(working_line, "\\newif\\ifcreatepdflayers\n\\createpdflayersfalse %% Change to true for Embedded layers in PDF output\n");
+	g_string_printf(working_line, "\\newif\\ifcreatepdflayers\n\\createpdflayers%s\n",
+			(create_pdf_layers ? "true" : "false"));
 	WRITEOUT_BUFFER(working_line);
 	g_string_printf(working_line, "\\iftestmode\n");
 	WRITEOUT_BUFFER(working_line);

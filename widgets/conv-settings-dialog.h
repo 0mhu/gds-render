@@ -35,6 +35,8 @@ RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent);
 struct render_settings {
 	double scale;
 	enum output_renderer renderer;
+	gboolean tex_pdf_layers;
+	gboolean tex_standalone;
 };
 
 G_END_DECLS
