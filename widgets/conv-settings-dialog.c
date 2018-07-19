@@ -19,7 +19,16 @@
 
 #include "conv-settings-dialog.h"
 
+struct  _RendererSettingsDialog {
+	GtkDialog parent;
+	/* Private loot */
+	GtkWidget *radio_latex; // Only Latex-radio. Other one is implicit
+	GtkWidget *scale;
+};
+
 G_DEFINE_TYPE(RendererSettingsDialog, renderer_settings_dialog, GTK_TYPE_DIALOG)
+
+
 
 static void renderer_settings_dialog_class_init(RendererSettingsDialogClass *klass)
 {
@@ -30,19 +39,37 @@ static void renderer_settings_dialog_class_init(RendererSettingsDialogClass *kla
 static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 {
 	GtkBuilder *builder;
-	GtkBox *box;
+	GtkWidget *box;
 	GtkDialog *dialog;
+
 
 	dialog = &(self->parent);
 
 	builder = gtk_builder_new_from_resource("/dialog.glade");
-	box = GTK_BOX(gtk_builder_get_object(builder, "dialog-box"));
+	box = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-box"));
+	self->radio_latex = GTK_WIDGET(gtk_builder_get_object(builder, "latex-radio"));
+	self->scale = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-scale"));
 	gtk_dialog_add_buttons(dialog, "Cancel", GTK_RESPONSE_CANCEL, "OK", GTK_RESPONSE_OK, NULL);
-	gtk_container_add(GTK_CONTAINER(dialog), box);
+	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(dialog)), box);
 	g_object_unref(builder);
 }
 
-GtkWidget *renderer_settings_dialog_new(void)
+RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent)
 {
-	return (GtkWidget *) g_object_new(RENDERER_TYPE_SETTINGS_DIALOG, NULL);
+	RendererSettingsDialog *res;
+
+	res = RENDERER_SETTINGS_DIALOG(g_object_new(RENDERER_TYPE_SETTINGS_DIALOG, NULL));
+	if (res && parent) {
+		gtk_window_set_transient_for(GTK_WINDOW(res), parent);
+	}
+	return res;
 }
+
+void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
+{
+	if (!settings)
+		return;
+	settings->scale = gtk_range_get_value(GTK_RANGE(dialog->scale));
+	settings->renderer = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_latex)) == TRUE ? RENDERER_LATEX_TIKZ : RENDERER_CAIROGRAPHICS);
+}
+void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings);

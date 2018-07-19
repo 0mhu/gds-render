@@ -24,16 +24,23 @@
 
 G_BEGIN_DECLS
 
+enum output_renderer {RENDERER_LATEX_TIKZ, RENDERER_CAIROGRAPHICS};
+
 G_DECLARE_FINAL_TYPE(RendererSettingsDialog, renderer_settings_dialog, RENDERER, SETTINGS_DIALOG, GtkDialog)
 
-GtkWidget *renderer_settings_dialog_new(void);
-
-struct  _RendererSettingsDialog {
-        GtkDialog parent;
-};
+RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent);
 
 #define RENDERER_TYPE_SETTINGS_DIALOG (renderer_settings_dialog_get_type())
 
+struct render_settings {
+	double scale;
+	enum output_renderer renderer;
+};
+
 G_END_DECLS
+
+
+void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struct render_settings *settings);
+void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings);
 
 #endif /* __CONV_SETTINGS_DIALOG_H__ */

@@ -23,6 +23,7 @@
 #include "layer-selector.h"
 #include "tree-renderer/tree-store.h"
 #include "latex-output/latex-output.h"
+#include "widgets/conv-settings-dialog.h"
 
 struct open_button_data {
 	GtkWindow *main_window;
@@ -168,8 +169,13 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	struct gds_cell *cell_to_render;
 	FILE *tex_file;
 	GtkWidget *dialog;
+	RendererSettingsDialog *settings;
 	gint res;
 	char *file_name;
+
+	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
+	gtk_dialog_run(GTK_DIALOG(settings));
+	gtk_widget_destroy(GTK_WIDGET(settings));
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
