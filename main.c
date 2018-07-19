@@ -233,7 +233,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 			fclose(output_file);
 			break;
 		case RENDERER_CAIROGRAPHICS:
-			cairo_render_cell_to_pdf(cell_to_render, layer_list, file_name);
+			cairo_render_cell_to_pdf(cell_to_render, layer_list, file_name, sett.scale);
 			break;
 		}
 		g_free(file_name);

@@ -19,15 +19,58 @@
 
 #include "cairo-output.h"
 #include <math.h>
+#include <stdlib.h>
 #include <cairo.h>
 #include <cairo-pdf.h>
 
-void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file)
+struct cairo_layer {
+	cairo_t *cr;
+	cairo_surface_t *rec;
+	struct layer_info *linfo;
+};
+
+void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file, double scale)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
+	struct layer_info *linfo;
+	struct cairo_layer *layers;
+	struct cairo_layer *lay;
+	GList *info_list;
+	int i;
+
+	layers = (struct cairo_layer *)calloc(MAX_LAYERS, sizeof(struct cairo_layer));
+
+	/* Clear layers */
+	for (i = 0; i < MAX_LAYERS; i++) {
+		layers[i].cr = NULL;
+		layers[i].rec = NULL;
+	}
+
+	/* Create recording surface for each layer */
+	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
+		linfo = (struct layer_info *)info_list->data;
+		if (linfo->layer < MAX_LAYERS) {
+			lay = &(layers[(unsigned int)linfo->layer]);
+			lay->linfo = linfo;
+			lay->rec = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA,
+								  NULL);
+			lay->cr = cairo_create(layers[(unsigned int)linfo->layer].rec);
+			cairo_scale(lay->cr, 1/scale, 1/scale);
+		} else {
+			printf("Layer number (%d) too high!\n", linfo->layer);
+			goto ret_clear_layers;
+		}
+	}
 
 
+ret_clear_layers:
+	for (i = 0; i < MAX_LAYERS; i++) {
+		lay = &layers[i];
+		cairo_destroy(lay->cr);
+		cairo_surface_destroy(lay->rec);
+	}
+	free(layers);
 
 	printf("cairo export not yet implemented!\n");
 }
