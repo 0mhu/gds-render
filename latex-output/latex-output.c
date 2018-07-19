@@ -81,7 +81,7 @@ static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList
 }
 
 
-static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GString *buffer)
+static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GString *buffer, double scale)
 {
 	GList *temp;
 	GList *temp_vertex;
@@ -102,7 +102,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				/* Append vertices */
 				for (temp_vertex = gfx->vertices; temp_vertex != NULL; temp_vertex = temp_vertex->next) {
 					pt = (struct gds_point *)temp_vertex->data;
-					g_string_printf(buffer, "(%lf pt, %lf pt) -- ", ((double)pt->x)/1000.0, ((double)pt->y)/1000.0);
+					g_string_printf(buffer, "(%lf pt, %lf pt) -- ", ((double)pt->x)/scale, ((double)pt->y)/scale);
 					WRITEOUT_BUFFER(buffer);
 				}
 				g_string_printf(buffer, "cycle;\n");
@@ -120,7 +120,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				}
 
 				g_string_printf(buffer, "\\draw[line width=%lf pt, draw={c%d}, opacity={%lf}, cap=%s] ",
-						gfx->width_absolute/1000.0, gfx->layer, color.alpha,
+						gfx->width_absolute/scale, gfx->layer, color.alpha,
 						line_caps[gfx->path_render_type]);
 				WRITEOUT_BUFFER(buffer);
 
@@ -128,8 +128,8 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				for (temp_vertex = gfx->vertices; temp_vertex != NULL; temp_vertex = temp_vertex->next) {
 					pt = (struct gds_point *)temp_vertex->data;
 					g_string_printf(buffer, "(%lf pt, %lf pt)%s",
-							((double)pt->x)/1000.0,
-							((double)pt->y)/1000.0,
+							((double)pt->x)/scale,
+							((double)pt->y)/scale,
 							(temp_vertex->next ? " -- " : ""));
 					WRITEOUT_BUFFER(buffer);
 				}
@@ -145,14 +145,14 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 }
 
 
-static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, GString *buffer)
+static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, GString *buffer, double scale)
 {
 
 	GList *list_child;
 	struct gds_cell_instance *inst;
 
 	/* Draw polygons of current cell */
-	generate_graphics(tex_file, cell->graphic_objs, layer_infos, buffer);
+	generate_graphics(tex_file, cell->graphic_objs, layer_infos, buffer, scale);
 
 	/* Draw polygons of childs */
 	for (list_child = cell->child_cells; list_child != NULL; list_child = list_child->next) {
@@ -164,7 +164,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 		/* generate translation scope */
 		g_string_printf(buffer, "\\begin{scope}[shift={(%lf pt,%lf pt)}]\n",
-				((double)inst->origin.x)/1000.0,((double)inst->origin.y)/1000.0);
+				((double)inst->origin.x)/scale,((double)inst->origin.y)/scale);
 		WRITEOUT_BUFFER(buffer);
 
 		g_string_printf(buffer, "\\begin{scope}[rotate=%lf]\n", inst->angle);
@@ -174,7 +174,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 					inst->magnification);
 		WRITEOUT_BUFFER(buffer);
 
-		render_cell(inst->cell_ref, layer_infos, tex_file, buffer);
+		render_cell(inst->cell_ref, layer_infos, tex_file, buffer, scale);
 
 		g_string_printf(buffer, "\\end{scope}\n");
 		WRITEOUT_BUFFER(buffer);
@@ -188,7 +188,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 }
 
-void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file)
+void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale)
 {
 	GString *working_line;
 
@@ -219,7 +219,7 @@ void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *
 	WRITEOUT_BUFFER(working_line);
 
 	/* Generate graphics output */
-	render_cell(cell, layer_infos, tex_file, working_line);
+	render_cell(cell, layer_infos, tex_file, working_line, scale);
 
 
 	g_string_printf(working_line, "\\end{tikzpicture}\n");

@@ -27,6 +27,6 @@
 
 #define LATEX_LINE_BUFFER_KB (10)
 
-void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file);
+void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale);
 
 #endif /* __LATEX_OUTPUT_H__ */

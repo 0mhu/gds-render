@@ -229,7 +229,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		switch (sett.renderer) {
 		case RENDERER_LATEX_TIKZ:
 			output_file = fopen(file_name, "w");
-			latex_render_cell_to_code(cell_to_render, layer_list, output_file);
+			latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett.scale);
 			fclose(output_file);
 			break;
 		case RENDERER_CAIROGRAPHICS:
