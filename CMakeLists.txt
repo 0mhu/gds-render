@@ -13,7 +13,7 @@ link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
 
 
-aux_source_directory("layer-widget" LAYER_SOURCES)
+aux_source_directory("widgets" LAYER_SOURCES)
 aux_source_directory("tree-renderer" RENDERER_SOURCES)
 aux_source_directory("gds-parser" PARSER_SOURCES)
 aux_source_directory("latex-output" LATEX_SOURCES)

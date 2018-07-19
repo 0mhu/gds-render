@@ -19,7 +19,7 @@
 
 #include "layer-selector.h"
 #include "gds-parser/gds-parser.h"
-#include "layer-widget/layer-element.h"
+#include "widgets/layer-element.h"
 #include <glib.h>
 #include <string.h>
 #include <stdio.h>

@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include "gds-parser/gds-parser.h"
 #include <gtk/gtk.h>
-#include "layer-widget/layer-element.h"
 #include "layer-selector.h"
 #include "tree-renderer/tree-store.h"
 #include "latex-output/latex-output.h"
