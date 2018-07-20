@@ -95,7 +95,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 		if (write_layer_env(tex_file, &color, (int)gfx->layer, linfo, buffer) == TRUE) {
 
 			/* Layer is defined => create graphics */
-			if (gfx->gfx_type == GRAPHIC_POLYGON) {
+			if (gfx->gfx_type == GRAPHIC_POLYGON || gfx->gfx_type == GRAPHIC_BOX ) {
 				g_string_printf(buffer, "\\draw[line width=0.00001 pt, draw={c%d}, fill={c%d}, fill opacity={%lf}] ",
 						gfx->layer, gfx->layer, color.alpha);
 				WRITEOUT_BUFFER(buffer);
@@ -107,7 +107,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				}
 				g_string_printf(buffer, "cycle;\n");
 				WRITEOUT_BUFFER(buffer);
-			} else if(gfx->gfx_type == GRAPHIC_PATH) {
+			} else if (gfx->gfx_type == GRAPHIC_PATH) {
 
 				if (g_list_length(gfx->vertices) < 2) {
 					printf("Cannot write path with less than 2 points\n");
@@ -116,7 +116,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 
 				if (gfx->path_render_type < 0 || gfx->path_render_type > 2) {
 					printf("Path type unrecognized. Setting to 'flushed'\n");
-					gfx->path_render_type = 0;
+					gfx->path_render_type = PATH_FLUSH;
 				}
 
 				g_string_printf(buffer, "\\draw[line width=%lf pt, draw={c%d}, opacity={%lf}, cap=%s] ",
@@ -171,7 +171,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 		WRITEOUT_BUFFER(buffer);
 
 		g_string_printf(buffer, "\\begin{scope}[yscale=%lf, xscale=%lf]\n", (inst->flipped ? -1*inst->magnification : inst->magnification),
-					inst->magnification);
+				inst->magnification);
 		WRITEOUT_BUFFER(buffer);
 
 		render_cell(inst->cell_ref, layer_infos, tex_file, buffer, scale);

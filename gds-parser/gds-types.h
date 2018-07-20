@@ -6,7 +6,7 @@
 
 #define CELL_NAME_MAX (100)
 
-enum graphics_type {GRAPHIC_PATH = 0, GRAPHIC_POLYGON = 1};
+enum graphics_type {GRAPHIC_PATH = 0, GRAPHIC_POLYGON = 1, GRAPHIC_BOX};
 enum path_type {PATH_FLUSH = 0, PATH_ROUNDED = 1, PATH_SQUARED = 2};
 
 struct gds_point {
