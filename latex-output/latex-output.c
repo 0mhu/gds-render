@@ -116,7 +116,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 
 				if (gfx->path_render_type < 0 || gfx->path_render_type > 2) {
 					printf("Path type unrecognized. Setting to 'flushed'\n");
-					gfx->path_render_type = 0;
+					gfx->path_render_type = PATH_FLUSH;
 				}
 
 				g_string_printf(buffer, "\\draw[line width=%lf pt, draw={c%d}, opacity={%lf}, cap=%s] ",
