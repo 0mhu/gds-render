@@ -23,7 +23,7 @@
 #include "../layer-selector.h"
 #include "../gds-parser/gds-types.h"
 
-#define MAX_LAYERS (2048)
+#define MAX_LAYERS (300)
 
 void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file, double scale);
 
