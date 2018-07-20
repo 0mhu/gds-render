@@ -132,6 +132,7 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 		case GRAPHIC_PATH:
 			cairo_stroke(cr);
 			break;
+		case GRAPHIC_BOX:
 		case GRAPHIC_POLYGON:
 			cairo_close_path(cr);
 			cairo_fill(cr);
