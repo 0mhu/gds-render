@@ -24,9 +24,9 @@
 #include <cairo-pdf.h>
 
 struct cairo_layer {
-	cairo_t *cr;
-	cairo_surface_t *rec;
-	struct layer_info *linfo;
+		cairo_t *cr;
+		cairo_surface_t *rec;
+		struct layer_info *linfo;
 };
 
 static void revert_inherited_transform(struct cairo_layer *layers)
@@ -35,7 +35,7 @@ static void revert_inherited_transform(struct cairo_layer *layers)
 
 	for (i = 0; i < MAX_LAYERS; i++) {
 		if (layers[i].cr == NULL)
-				continue;
+			continue;
 		cairo_restore(layers[i].cr);
 	}
 }
@@ -101,7 +101,7 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 			continue;
 
 		/* Apply settings */
-		cairo_set_line_width(cr, (gfx->width_absolute ? gfx->width_absolute : 1));
+		cairo_set_line_width(cr, (gfx->width_absolute ? gfx->width_absolute/scale : 1));
 
 		switch (gfx->path_render_type) {
 		case PATH_FLUSH:
@@ -134,7 +134,9 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 			break;
 		case GRAPHIC_BOX:
 		case GRAPHIC_POLYGON:
+			cairo_set_line_width(cr, 0.1/scale);
 			cairo_close_path(cr);
+			cairo_stroke_preserve(cr); // Prevent graphic glitches
 			cairo_fill(cr);
 			break;
 		}
@@ -145,13 +147,15 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 
 void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file, double scale)
 {
-	cairo_surface_t *surface;
-	cairo_t *cr;
+	cairo_surface_t *pdf_surface;
+	cairo_t *pdf_cr;
 	struct layer_info *linfo;
 	struct cairo_layer *layers;
 	struct cairo_layer *lay;
 	GList *info_list;
 	int i;
+	double rec_x0, rec_y0, rec_width, rec_height;
+	double xmin = INT32_MAX, xmax = INT32_MIN, ymin = INT32_MAX, ymax = INT32_MIN;
 
 	layers = (struct cairo_layer *)calloc(MAX_LAYERS, sizeof(struct cairo_layer));
 
@@ -171,7 +175,7 @@ void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *p
 								  NULL);
 			lay->cr = cairo_create(layers[(unsigned int)linfo->layer].rec);
 			cairo_scale(lay->cr, 1, -1); // Fix coordinate system
-			cairo_set_source_rgb(lay->cr, 1, 0, 0);
+			cairo_set_source_rgb(lay->cr, linfo->color.red, linfo->color.green, linfo->color.blue);
 		} else {
 			printf("Layer number (%d) too high!\n", linfo->layer);
 			goto ret_clear_layers;
@@ -181,16 +185,64 @@ void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *p
 
 	render_cell(cell, layers, scale);
 
-	/* Todo: Tranfer all layers in order to output file */
+	/* get size of image and top left coordinate */
+	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
+		linfo = (struct layer_info *)info_list->data;
 
+		if (linfo->layer >= MAX_LAYERS) {
+			printf("Layer outside of Spec.\n");
+			continue;
+		}
+
+		/* Print size */
+		cairo_recording_surface_ink_extents(layers[linfo->layer].rec, &rec_x0, &rec_y0,
+				&rec_width, &rec_height);
+		printf("Size of layer %d: %lf -- %lf\n", linfo->layer,
+		       rec_width, rec_height);
+
+		/* update bounding box */
+		xmin = MIN(xmin, rec_x0);
+		xmax = MAX(xmax, rec_x0);
+		ymin = MIN(ymin, rec_y0);
+		ymax = MAX(ymax, rec_y0);
+		xmin = MIN(xmin, rec_x0+rec_width);
+		xmax = MAX(xmax, rec_x0+rec_width);
+		ymin = MIN(ymin, rec_y0+rec_height);
+		ymax = MAX(ymax, rec_y0+rec_height);
+
+	}
+
+	printf("Bounding box: (%lf,%lf) -- (%lf,%lf)\n", xmin, ymin, xmax, ymax);
+
+	pdf_surface = cairo_pdf_surface_create(pdf_file, xmax-xmin, ymax-ymin);
+	pdf_cr = cairo_create(pdf_surface);
+
+	/* Write layers to PDF */
+	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
+		linfo = (struct layer_info *)info_list->data;
+
+		if (linfo->layer >= MAX_LAYERS) {
+			printf("Layer outside of Spec.\n");
+			continue;
+		}
+
+		cairo_set_source_surface(pdf_cr, layers[linfo->layer].rec, -xmin, -ymin);
+		cairo_paint_with_alpha(pdf_cr, linfo->color.alpha);
+	}
+
+	cairo_show_page(pdf_cr);
+	cairo_destroy(pdf_cr);
+	cairo_surface_destroy(pdf_surface);
 
 ret_clear_layers:
 	for (i = 0; i < MAX_LAYERS; i++) {
 		lay = &layers[i];
-		cairo_destroy(lay->cr);
-		cairo_surface_destroy(lay->rec);
+		if(lay->cr) {
+			cairo_destroy(lay->cr);
+			cairo_surface_destroy(lay->rec);
+		}
 	}
 	free(layers);
 
-	printf("cairo export not yet implemented!\n");
+	printf("cairo export finished. It might still be buggy!\n");
 }
