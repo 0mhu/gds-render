@@ -126,7 +126,7 @@ int main(int argc, char **argv)
 	  { "mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
 	  { "cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
 	  { "tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
-	  { "tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create standalone PDF", NULL },
+	  { "tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
 	  { NULL }
 	};
 
