@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/">
     <file compressed="true">main.glade</file>
+    <file compressed="true">about.glade</file>
     <file>layer-widget.glade</file>
     <file>dialog.glade</file>
   </gresource>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkAboutDialog" id="about-dialog">
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="program_name">GDS-Render Tool </property>
+    <property name="comments" translatable="yes">Tool for rendering GDS(II) layout files into LaTeX/TikZ code or directly into a PDF file</property>
+    <property name="website">https://git.shimatta.de/mhu/gds-render</property>
+    <property name="website_label" translatable="yes">Git Repository</property>
+    <property name="authors">Mario Hüttel &lt;mario.huettel@gmx.net&gt;</property>
+    <property name="logo_icon_name">applications-graphics</property>
+    <property name="license_type">gpl-2-0-only</property>
+    <child>
+      <placeholder/>
+    </child>
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
