@@ -108,8 +108,10 @@ int main(int argc, char **argv)
 {
 	GError *error = NULL;
 	GOptionContext *context;
-	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL;
-	gboolean tikz = TRUE, pdf = FALSE;
+	gchar *gds_name;
+	gchar *basename;
+	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL, *cellname = NULL;
+	gboolean tikz = FALSE, pdf = FALSE, pdf_layers = FALSE, pdf_standalone = FALSE;
 	int scale = 1000;
 	int app_status;
 
@@ -122,6 +124,9 @@ int main(int argc, char **argv)
 	  { "tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
 	  { "pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
 	  { "mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
+	  { "cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
+	  { "tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
+	  { "tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create standalone PDF", NULL },
 	  { NULL }
 	};
 
@@ -135,7 +140,39 @@ int main(int argc, char **argv)
 	    }
 
 	if (argc >= 2) {
-		command_line_convert_gds(NULL, pdfname, texname, pdf, tikz, mappingname);
+		if (scale < 1) {
+			printf("Scale < 1 not allowed. Setting to 1\n");
+			scale = 1;
+		}
+
+		/* No format selected */
+		if (!(tikz || pdf)) {
+			tikz = TRUE;
+		}
+
+		/* Get gds name */
+		gds_name = argv[1];
+
+		/* Check if PDF/TeX names are supplied. if not generate */
+		basename = g_path_get_basename(gds_name);
+
+		if (!texname) {
+			texname = g_strdup_printf("./%s.tex", basename);
+		}
+
+		if (!pdfname) {
+			pdfname = g_strdup_printf("./%s.pdf", basename);
+		}
+
+		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz, mappingname, cellname,
+					 (double)scale, pdf_layers, pdf_standalone);
+		/* Clean up */
+		g_free(pdfname);
+		g_free(texname);
+		if (mappingname)
+			g_free(mappingname);
+		if (cellname)
+			g_free(cellname);
 		app_status = 0;
 	} else {
 		app_status = start_gui(argc, argv);

@@ -21,6 +21,7 @@
 #define _COMMAND_LINE_H_
 #include <glib.h>
 
-void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex, char *layer_file);
+void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
+			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers, gboolean pdf_standalone);
 
 #endif /* _COMMAND_LINE_H_ */
