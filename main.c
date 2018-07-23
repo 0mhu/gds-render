@@ -19,7 +19,9 @@
 
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib.h>
 #include "main-window.h"
+#include "command-line.h"
 
 struct application_data {
 	GtkApplication *app;
@@ -44,7 +46,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), appdata->main_window);
 	gtk_dialog_run(dialog);
 
-	gtk_widget_destroy(dialog);
+	gtk_widget_destroy(GTK_WIDGET(dialog));
 	g_object_unref(builder);
 }
 
@@ -64,11 +66,12 @@ static void gapp_activate(GApplication *app, gpointer user_data)
 	gtk_widget_show(GTK_WIDGET(main_window));
 }
 
-int main(int argc, char **argv)
+static int start_gui(int argc, char **argv)
 {
+
 	GtkApplication *gapp;
 	int app_status;
-	struct application_data appdata;
+	static struct application_data appdata;
 	GMenu *menu;
 	GMenu *m_quit;
 	GMenu *m_about;
@@ -97,6 +100,46 @@ int main(int argc, char **argv)
 
 	app_status = g_application_run (G_APPLICATION(gapp), argc, argv);
 	g_object_unref (gapp);
+
+	return app_status;
+}
+
+int main(int argc, char **argv)
+{
+	GError *error = NULL;
+	GOptionContext *context;
+	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL;
+	gboolean tikz = TRUE, pdf = FALSE;
+	int scale = 1000;
+	int app_status;
+
+
+	GOptionEntry entries[] =
+	{
+	  { "tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
+	  { "pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
+	  { "scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide putput coordinates by <SCALE>", "<SCALE>" },
+	  { "tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
+	  { "pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
+	  { "mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
+	  { NULL }
+	};
+
+	context = g_option_context_new(" FILE - Convert GDS file <FILE> to graphic");
+	g_option_context_add_main_entries(context, entries, NULL);
+	g_option_context_add_group(context, gtk_get_option_group(TRUE));
+	if (!g_option_context_parse (context, &argc, &argv, &error))
+	    {
+	      g_print ("Option parsing failed: %s\n", error->message);
+	      exit (1);
+	    }
+
+	if (argc >= 2) {
+		command_line_convert_gds(NULL, pdfname, texname, pdf, tikz, mappingname);
+	} else {
+		app_status = start_gui(argc, argv);
+	}
+
 
 	return app_status;
 }

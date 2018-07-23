@@ -17,17 +17,10 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LAYER_SELECTOR_H__
-#define __LAYER_SELECTOR_H__
-
-#include <gtk/gtk.h>
+#ifndef _COMMAND_LINE_H_
+#define _COMMAND_LINE_H_
 #include <glib.h>
-#include "mapping-parser.h"
 
-void generate_layer_widgets(GtkListBox *listbox, GList *libs);
-void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
-void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
-GList *export_rendered_layer_info();
-void delete_layer_info_struct(struct layer_info *info);
+void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex, char *layer_file);
 
-#endif /* __LAYER_SELECTOR_H__ */
+#endif /* _COMMAND_LINE_H_ */

@@ -17,17 +17,19 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __LAYER_SELECTOR_H__
-#define __LAYER_SELECTOR_H__
+#ifndef __MAPPING_PARSER_H__
+#define __MAPPING_PARSER_H__
 
 #include <gtk/gtk.h>
-#include <glib.h>
-#include "mapping-parser.h"
 
-void generate_layer_widgets(GtkListBox *listbox, GList *libs);
-void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
-void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
-GList *export_rendered_layer_info();
-void delete_layer_info_struct(struct layer_info *info);
+struct layer_info
+{
+        int layer;
+        char *name;
+        int stacked_position; ///< Lower is bottom, higher is top
+        GdkRGBA color;
+};
 
-#endif /* __LAYER_SELECTOR_H__ */
+int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color);
+
+#endif /* __MAPPING_PARSER_H__ */
