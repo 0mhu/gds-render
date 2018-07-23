@@ -224,7 +224,6 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 		cell->child_cells = NULL;
 		cell->graphic_objs = NULL;
 		cell->name[0] = 0;
-		cell->bounding_box.scanned = FALSE;
 	} else
 		return NULL;
 	/* return cell */
@@ -304,7 +303,7 @@ static int name_cell(struct gds_cell *cell, unsigned int bytes,
 }
 
 
-void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
+static void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 {
 	struct gds_cell_instance *inst = (struct gds_cell_instance *)gcell_ref;
 	struct gds_library *lib = (struct gds_library *)glibrary;
@@ -330,7 +329,7 @@ void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 	GDS_WARN("referenced cell could not be found in library");
 }
 
-void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
+static void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
 {
 	struct gds_cell *cell = (struct gds_cell *)gcell;
 
@@ -341,7 +340,7 @@ void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
 
 }
 
-void scan_library_references(gpointer library_list_item, gpointer user)
+static void scan_library_references(gpointer library_list_item, gpointer user)
 {
 	struct gds_library *lib = (struct gds_library *)library_list_item;
 
@@ -349,222 +348,7 @@ void scan_library_references(gpointer library_list_item, gpointer user)
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
 }
 
-static void apply_transforms_on_bounding_box(struct gds_cell_instance *cell_inst, struct gds_bounding_box *result)
-{
-	struct gds_dpoint vertices[4];
-	int i;
-	double xmin= INT_MAX, xmax=INT_MIN, ymin=INT_MAX, ymax= INT_MIN;
-	double temp;
-
-	double phi = M_PI * cell_inst->angle / 180;
-
-	if (cell_inst->cell_ref->bounding_box.scanned == FALSE)
-		return;
-
-	if (!result)
-		return;
-
-	/* Calculate all 4 bounding box points */
-	vertices[0].x = cell_inst->cell_ref->bounding_box.coords[0].x;
-	vertices[0].y = cell_inst->cell_ref->bounding_box.coords[0].y;
-	vertices[1].x = cell_inst->cell_ref->bounding_box.coords[0].x;
-	vertices[1].y = cell_inst->cell_ref->bounding_box.coords[1].y;
-	vertices[2].x = cell_inst->cell_ref->bounding_box.coords[1].x;
-	vertices[2].y = cell_inst->cell_ref->bounding_box.coords[1].y;
-	vertices[3].x = cell_inst->cell_ref->bounding_box.coords[1].x;
-	vertices[3].y = cell_inst->cell_ref->bounding_box.coords[0].y;
-
-	/* Apply flipping and magnification */
-	for (i = 0; i < 4; i++) {
-		vertices[i].x = (vertices[i].x * cell_inst->magnification);
-		vertices[i].y = (vertices[i].y * cell_inst->magnification * (cell_inst->flipped ? -1 : 1));
-	}
-	/* Apply rotation */
-	for (i = 0; i < 4; i++) {
-		temp =(cos(phi) * vertices[i].x - sin(phi) * vertices[i].y);
-		vertices[i].y =(sin(phi) * vertices[i].x + cos(phi) * vertices[i].y);
-		vertices[i].x = temp;
-	}
-
-	/* Translate origin */
-	for (i = 0; i < 4; i++) {
-		vertices[i].x += (double)cell_inst->origin.x;
-		vertices[i].y += (double)cell_inst->origin.y;
-	}
-
-	/* Calculate new bounding box */
-	for (i = 0; i < 4; i++) {
-		xmin = MIN(xmin, vertices[i].x);
-		ymin = MIN(ymin, vertices[i].y);
-		ymax = MAX(ymax, vertices[i].y);
-		xmax = MAX(xmax, vertices[i].x);
-	}
-
-	result->scanned = TRUE;
-	result->coords[0].x = xmin;
-	result->coords[0].y = ymin;
-	result->coords[1].x = xmax;
-	result->coords[1].y = ymax;
-}
-
-static void calculate_bounding_path_box(struct gds_graphics *path, struct gds_bounding_box *box)
-{
-	cairo_surface_t *surf;
-	cairo_t *cr;
-	GList *vertex_list;
-	struct gds_point *vertex;
-
-	double x0, y0, width, height;
-
-	if (path == NULL || box == NULL)
-		return;
-	if (path->vertices == NULL)
-		return;
-	if (path->vertices->data == NULL)
-		return;
-
-	box->scanned = FALSE;
-
-	/* Check path length */
-	if (g_list_length(path->vertices) < 2)
-		return;
-
-	surf = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA, NULL);
-	cr = cairo_create(surf);
-
-	/* Prepare line properties */
-	switch (path->path_render_type) {
-	case PATH_FLUSH:
-		cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
-		break;
-	case PATH_ROUNDED:
-		cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-		break;
-	case PATH_SQUARED:
-		cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
-		break;
-	default:
-		cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
-		break;
-	}
-
-	cairo_set_line_width(cr, path->width_absolute);
-	cairo_set_source_rgba(cr, 1, 1 , 0, 0.5);
-
-	/* Start at first point */
-	vertex = (struct gds_point *)path->vertices->data;
-	cairo_move_to(cr, (double)vertex->x, (double)vertex->y);
-
-	/* Remaining points */
-	for (vertex_list = path->vertices->next; vertex_list != NULL; vertex_list = vertex_list->next) {
-		vertex = (struct gds_point *)vertex_list->data;
-		cairo_line_to(cr, (double)vertex->x, (double)vertex->y);
-	}
-	cairo_stroke(cr);
-
-	cairo_recording_surface_ink_extents(surf, &x0, &y0, &width, &height);
-	box->coords[0].x = x0;
-	box->coords[0].y = y0;
-	box->coords[1].x = (x0+width);
-	box->coords[1].y = (y0+height);
-	box->scanned = TRUE;
-	cairo_destroy(cr);
-	cairo_surface_destroy(surf);
-
-}
-
-static void update_bounding_box_with_gfx(struct gds_graphics *gfx, double *xlow,
-					 double *ylow, double *xhigh, double *yhigh)
-{
-	GList *vertex_list;
-	struct gds_point *vertex;
-	struct gds_bounding_box path_box;
-
-	path_box.scanned = FALSE;
-
-	if (gfx->gfx_type == GRAPHIC_POLYGON) {
-		for (vertex_list = gfx->vertices; vertex_list != NULL; vertex_list = vertex_list->next) {
-			vertex = (struct gds_point *)vertex_list->data;
-
-			*xlow = MIN(*xlow, (double)vertex->x);
-			*ylow = MIN(*ylow, (double)vertex->y);
-			*xhigh = MAX(*xhigh, (double)vertex->x);
-			*yhigh = MAX(*yhigh, (double)vertex->y);
-		}
-	} else if (gfx->gfx_type == GRAPHIC_PATH) {
-		calculate_bounding_path_box(gfx, &path_box);
-		if (path_box.scanned == TRUE) {
-			*xlow = MIN(*xlow, path_box.coords[0].x);
-			*ylow = MIN(*ylow, path_box.coords[0].y);
-			*xhigh = MAX(*xhigh, path_box.coords[1].x);
-			*yhigh = MAX(*yhigh, path_box.coords[1].y);
-		} else
-			GDS_WARN("Bounding box of path not calculated");
-	}
-}
-
-static void cell_create_bounding_box(struct gds_cell *cell)
-{
-	GList *ref;
-	GList *gfx_list;
-
-	struct gds_bounding_box box_transform;
-	struct gds_cell_instance *cell_inst;
-	struct gds_graphics *gfx;
-
-	double xlow=INT_MAX, xhigh=INT_MIN, ylow=INT_MAX, yhigh=INT_MIN;
-
-	if (cell->bounding_box.scanned == TRUE)
-		return;
-
-	/* Generate bounding boxes of child cells and update current box*/
-	for (ref = cell->child_cells; ref != NULL; ref = ref->next) {
-		cell_inst = (struct gds_cell_instance *)ref->data;
-		if (cell_inst->cell_ref) {
-			if (cell_inst->cell_ref->bounding_box.scanned == FALSE)
-				cell_create_bounding_box(cell_inst->cell_ref);
-
-			/* Apply transforms of cell in current cell to calculate the box of the specific instance */
-			if (cell_inst->cell_ref->bounding_box.scanned == TRUE) {
-				apply_transforms_on_bounding_box(cell_inst, &box_transform);
-				xlow = MIN(xlow, box_transform.coords[0].x);
-				ylow = MIN(ylow, box_transform.coords[0].y);
-				xhigh = MAX(xhigh, box_transform.coords[1].x);
-				yhigh = MAX(yhigh, box_transform.coords[1].y);
-			} else
-				GDS_WARN("Unscanned cells present: %s. This should not happen", cell_inst->ref_name);
-		} else
-			GDS_WARN("Cell referenced that does not exist: %s. Bounding box might be incorrect.",
-				 cell_inst->ref_name);
-	}
-
-	/* Generate update box using graphic objects*/
-	for (gfx_list = cell->graphic_objs; gfx_list != NULL; gfx_list = gfx_list->next) {
-		gfx = (struct gds_graphics *)gfx_list->data;
-
-		update_bounding_box_with_gfx(gfx, &xlow, &ylow, &xhigh, &yhigh);
-	}
-
-	printf("Cell '%s' has size: %lf / %lf\n", cell->name, xhigh - xlow, yhigh - ylow);
-	cell->bounding_box.coords[0].x = xlow;
-	cell->bounding_box.coords[0].y = ylow;
-	cell->bounding_box.coords[1].x = xhigh;
-	cell->bounding_box.coords[1].y = yhigh;
-	cell->bounding_box.scanned = TRUE;
-}
-
-static void library_create_bounding_boxes(gpointer library_list_item, gpointer user)
-{
-	GList *cell_list;
-	struct gds_library *lib = (struct gds_library *)library_list_item;
-	if (!lib)
-		return;
-	for (cell_list = lib->cells; cell_list != NULL; cell_list = cell_list->next) {
-		cell_create_bounding_box((struct gds_cell *)cell_list->data);
-	}
-}
-
-void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_date, struct gds_time_field *access_date)
+static void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_date, struct gds_time_field *access_date)
 {
 
 	struct gds_time_field *temp_date;
@@ -946,8 +730,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	if (!run) {
 		/* Iterate and find references to cells */
 		g_list_foreach(lib_list, scan_library_references, NULL);
-		/* Create bounding boxes */
-		g_list_foreach(lib_list, library_create_bounding_boxes, NULL);
 	}
 
 

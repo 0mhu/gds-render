@@ -16,16 +16,6 @@ struct gds_point {
 	int y;
 };
 
-struct gds_dpoint {
-	double x;
-	double y;
-};
-
-struct gds_bounding_box {
-	gboolean scanned;
-	struct gds_dpoint coords[2];
-};
-
 struct gds_time_field {
 	uint16_t year;
 	uint16_t month;
@@ -59,7 +49,6 @@ struct gds_cell {
 	struct gds_time_field access_time;
 	GList *child_cells;
 	GList *graphic_objs;
-	struct gds_bounding_box bounding_box;
 };
 
 struct gds_library {
