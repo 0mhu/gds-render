@@ -21,13 +21,29 @@
 #include "gds-parser/gds-parser.h"
 #include "mapping-parser.h"
 
+static void delete_layer_info_with_name(struct layer_info *info)
+{
+	if (info) {
+		if (info->name)
+			g_free(info->name);
+		free(info);
+	}
+}
+
 void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex, char *layer_file)
 {
 	GList *libs = NULL;
 	int res;
 	GFile *file;
+	int i;
 	GFileInputStream *stream;
 	GDataInputStream *dstream;
+	gboolean layer_export;
+	GdkRGBA layer_color;
+	int layer;
+	char *layer_name;
+	GList *layer_info_list = NULL;
+	struct layer_info *linfo_temp;
 
 	/* Check if parameters are valid */
 	if (!gds_name || ! pdf_name || !tex_name || !layer_file) {
@@ -48,8 +64,28 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 		goto destroy_file;
 
 	dstream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+	i = 0;
+	do {
+		res = load_csv_line(dstream, &layer_export, &layer_name, &layer, &layer_color);
+		if (res == 0) {
+			linfo_temp = (struct layer_info *)malloc(sizeof(struct layer_info));
+			if (!linfo_temp) {
+				printf("Out of memory\n");
+				goto ret_clear_list;
+			}
+			linfo_temp->color.alpha = layer_color.alpha;
+			linfo_temp->color.red = layer_color.red;
+			linfo_temp->color.green = layer_color.green;
+			linfo_temp->color.blue = layer_color.blue;
+			linfo_temp->name = layer_name;
+			linfo_temp->stacked_position = i++;
+			linfo_temp->layer = layer;
+			layer_info_list = g_list_append(layer_info_list, (gpointer)linfo_temp);
+		}
+	} while(res >= 0);
 
-
+ret_clear_list:
+	g_list_free_full(layer_info_list, (GDestroyNotify)delete_layer_info_with_name);
 
 	g_object_unref(dstream);
 	g_object_unref(stream);

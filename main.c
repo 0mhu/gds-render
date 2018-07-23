@@ -136,6 +136,7 @@ int main(int argc, char **argv)
 
 	if (argc >= 2) {
 		command_line_convert_gds(NULL, pdfname, texname, pdf, tikz, mappingname);
+		app_status = 0;
 	} else {
 		app_status = start_gui(argc, argv);
 	}
