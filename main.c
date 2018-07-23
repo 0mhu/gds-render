@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 	{
 	  { "tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
 	  { "pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
-	  { "scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide putput coordinates by <SCALE>", "<SCALE>" },
+	  { "scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
 	  { "tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
 	  { "pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
 	  { "mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
