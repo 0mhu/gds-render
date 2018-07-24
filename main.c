@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 	if (!g_option_context_parse (context, &argc, &argv, &error))
 	    {
 	      g_print ("Option parsing failed: %s\n", error->message);
-	      exit (1);
+	      exit(1);
 	    }
 
 	if (argc >= 2) {
