@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file layer-selection.c
+ * @brief Implementation of the layer selector
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup MainApplication
+ * @{
+ */
+
 #include "layer-selector.h"
 #include "gds-parser/gds-parser.h"
 #include "widgets/layer-element.h"
@@ -89,6 +100,11 @@ void clear_list_box_widgets(GtkListBox *box)
 	gtk_widget_set_sensitive(global_save_button, FALSE);
 }
 
+/**
+ * @brief Check if specific layer number is present in list box
+ * @param layer Layer nu,ber
+ * @return TRUE if present
+ */
 static gboolean check_if_layer_widget_exists(int layer) {
 	GList *list;
 	GList *temp;
@@ -110,6 +126,11 @@ static gboolean check_if_layer_widget_exists(int layer) {
 	return ret;
 }
 
+/**
+ * @brief Analyze \p cell and append used layers to list box
+ * @param listbox listbox to add layer
+ * @param cell Cell to analyze
+ */
 static void analyze_cell_layers(GtkListBox *listbox, struct gds_cell *cell)
 {
 	GList *graphics;
@@ -129,7 +150,15 @@ static void analyze_cell_layers(GtkListBox *listbox, struct gds_cell *cell)
 	}
 }
 
-gint sort_func(GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer unused)
+/**
+ * @brief sort_func Sort callback for list box
+ * @param row1
+ * @param row2
+ * @param unused
+ * @note Do not use this function
+ * @return
+ */
+static gint sort_func(GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer unused)
 {
 	LayerElement *le1, *le2;
 	gint ret;
@@ -170,6 +199,12 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
 	gtk_widget_set_sensitive(global_save_button, TRUE);
 }
 
+/**
+ * @brief Find LayerElement in list with specified layer number
+ * @param el_list List with elements of type LayerElement
+ * @param layer Layer number
+ * @return Found LayerElement. If nothing is found, NULL.
+ */
 static LayerElement *find_layer_element_in_list(GList *el_list, int layer)
 {
 	LayerElement *ret = NULL;
@@ -182,6 +217,10 @@ static LayerElement *find_layer_element_in_list(GList *el_list, int layer)
 	return ret;
 }
 
+/**
+ * @brief Load file and apply layer definitions to listbox
+ * @param file_name CSV Layer Mapping File
+ */
 static void load_layer_mapping_from_file(gchar *file_name)
 {
 	GFile *file;
@@ -252,6 +291,11 @@ destroy_file:
 	g_object_unref(file);
 }
 
+/**
+ * @brief Callback for Load Mapping Button
+ * @param button
+ * @param user_data
+ */
 static void load_mapping_clicked(GtkWidget *button, gpointer user_data)
 {
 	GtkWidget *dialog;
@@ -269,6 +313,12 @@ static void load_mapping_clicked(GtkWidget *button, gpointer user_data)
 	gtk_widget_destroy(dialog);
 }
 
+/**
+ * @brief Create Line for LayerMapping file with supplied information
+ * @param layer_element information
+ * @param line_buffer buffer to write to
+ * @param max_len Maximum length that cna be used in \p line_buffer
+ */
 static void create_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len)
 {
 	GString *string;
@@ -304,6 +354,11 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	g_string_free(string, TRUE);
 }
 
+/**
+ * @brief Save layer mapping of whole list box into file
+ * @param file_name layer mapping file
+ * @param list_box listbox
+ */
 static void save_layer_mapping_data(const gchar *file_name, GtkListBox *list_box)
 {
 	FILE *file;
@@ -331,6 +386,11 @@ static void save_layer_mapping_data(const gchar *file_name, GtkListBox *list_box
 	fclose(file);
 }
 
+/**
+ * @brief Callback for Save Layer Mapping Button
+ * @param button
+ * @param user_data
+ */
 static void save_mapping_clicked(GtkWidget *button, gpointer user_data)
 {
 	GtkWidget *dialog;
@@ -361,3 +421,5 @@ void setup_save_mapping_callback(GtkWidget *button,  GtkWindow *main_window)
 	global_save_button = button;
 	g_signal_connect(button, "clicked", G_CALLBACK(save_mapping_clicked), main_window);
 }
+
+/** @} */

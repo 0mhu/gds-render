@@ -17,6 +17,12 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file layer-selector.h
+ * @brief Implementation of the Layer selection list
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
 #ifndef __LAYER_SELECTOR_H__
 #define __LAYER_SELECTOR_H__
 
@@ -24,10 +30,38 @@
 #include <glib.h>
 #include "mapping-parser.h"
 
+/**
+ * @brief Generate layer widgets in \p listbox
+ * @note This clears all previously inserted elements
+ * @param listbox
+ * @param libs The library to add
+ */
 void generate_layer_widgets(GtkListBox *listbox, GList *libs);
-void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
-void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
-GList *export_rendered_layer_info();
-void delete_layer_info_struct(struct layer_info *info);
 
+/**
+ * @brief Supply button for loading the layer mapping
+ * @param button
+ * @param main_window Parent window for dialogs
+ */
+void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
+
+/**
+ * @brief Supply button for saving the layer mapping
+ * @param button
+ * @param main_window
+ */
+void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
+
+/**
+ * @brief get the layer information present in the listbox of the selector
+ * @return List with layer_info elements
+ */
+GList *export_rendered_layer_info();
+
+/**
+ * @brief Delete a layer_info struct
+ * @param info Struct to be deleted.
+ * @note The layer_info::name Element has to be freed manually
+ */
+void delete_layer_info_struct(struct layer_info *info);
 #endif /* __LAYER_SELECTOR_H__ */

@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file command-line.c
+ * @brief Render according to command line parameters
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup MainApplication
+ * @{
+ */
+
 #ifndef _COMMAND_LINE_H_
 #define _COMMAND_LINE_H_
 #include <glib.h>
@@ -25,3 +36,5 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers, gboolean pdf_standalone);
 
 #endif /* _COMMAND_LINE_H_ */
+
+/** @} */

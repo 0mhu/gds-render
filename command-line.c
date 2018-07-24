@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file command-line.c
+ * @brief Function to render according to command line parameters
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup MainApplication
+ * @{
+ */
+
 #include <stdio.h>
 #include "command-line.h"
 #include "gds-parser/gds-parser.h"
@@ -24,6 +35,12 @@
 #include "cairo-output/cairo-output.h"
 #include "latex-output/latex-output.h"
 
+/**
+ * @brief Delete layer_info and free nem element.
+ *
+ * Like delete_layer_info_struct() but also frees layer_info::name
+ * @param info
+ */
 static void delete_layer_info_with_name(struct layer_info *info)
 {
 	if (info) {
@@ -33,6 +50,19 @@ static void delete_layer_info_with_name(struct layer_info *info)
 	}
 }
 
+/**
+ * @brief Convert GDS according to supplied parameters
+ * @param gds_name GDS File path
+ * @param pdf_name Cairo-PDF path
+ * @param tex_name TeX/TikZ path
+ * @param pdf Render Cairo
+ * @param tex Render LaTeX
+ * @param layer_file Layer mapping file
+ * @param cell_name Cell name to render
+ * @param scale Scale image down by this value
+ * @param pdf_layers TikZ creates OCG layers
+ * @param pdf_standalone LaTeX document is standalone
+ */
 void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
 			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers, gboolean pdf_standalone)
 {
@@ -135,3 +165,5 @@ destroy_file:
 
 
 }
+
+/** @} */

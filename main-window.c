@@ -17,6 +17,16 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file main-window.c
+ * @brief Handling of GUI
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/** @addtogroup MainApplication
+ * @{
+ */
+
 #include "main-window.h"
 #include <stdio.h>
 #include "gds-parser/gds-parser.h"
@@ -27,6 +37,9 @@
 #include "widgets/conv-settings-dialog.h"
 #include "cairo-output/cairo-output.h"
 
+/**
+ * @brief User data supplied to callback function of the open button
+ */
 struct open_button_data {
 	GtkWindow *main_window;
 	GList **list_ptr;
@@ -34,17 +47,33 @@ struct open_button_data {
 	GtkListBox *layer_box;
 };
 
+/**
+ * @brief User data supplied to callback function of the convert button
+ */
 struct convert_button_data {
 	GtkTreeView *tree_view;
 	GtkWindow *main_window;
 };
 
+/**
+ * @brief Window close event of main window
+ *
+ * Closes the main window. This leads to the termination of the whole application
+ * @param window main window
+ * @param user not used
+ * @return TRUE. This indicates that the event has been fully handled
+ */
 static gboolean on_window_close(gpointer window, gpointer user)
 {
 	gtk_widget_destroy(GTK_WIDGET(window));
 	return TRUE;
 }
 
+/**
+ * @brief generate string from gds_time_field
+ * @param date Date to convert
+ * @return String with date
+ */
 static GString *generate_string_from_date(struct gds_time_field *date)
 {
 	GString *str;
@@ -59,7 +88,11 @@ static GString *generate_string_from_date(struct gds_time_field *date)
 	return str;
 }
 
-
+/**
+ * @brief Callback function of Load GDS button
+ * @param button
+ * @param user Necessary Data
+ */
 static void on_load_gds(gpointer button, gpointer user)
 {
 	GList *cell;
@@ -161,6 +194,11 @@ end_destroy:
 	gtk_widget_destroy(open_dialog);
 }
 
+/**
+ * @brief Convert button callback
+ * @param button
+ * @param user
+ */
 static void on_convert_clicked(gpointer button, gpointer user)
 {
 	static struct render_settings sett = {
@@ -247,8 +285,15 @@ ret_layer_destroy:
 	g_list_free_full(layer_list, (GDestroyNotify)delete_layer_info_struct);
 }
 
-/* This function activates/deactivates the convert button depending on whether
- * a cell is selected for conversion or not */
+
+/**
+ * @brief Callback for cell-selection change event
+ *
+ * This function activates/deactivates the convert button depending on whether
+ * a cell is selected for conversion or not
+ * @param sel
+ * @param convert_button
+ */
 static void cell_selection_changed(GtkTreeSelection *sel, GtkWidget *convert_button)
 {
 	GtkTreeModel *model = NULL;
@@ -314,3 +359,5 @@ GtkWindow *create_main_window()
 
 	return (conv_data.main_window);
 }
+
+/** @} */
