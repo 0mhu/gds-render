@@ -16,15 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+/**
+ * @file cairo-output.h
+ * @brief Header File for Cairo output renderer
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
 #ifndef __CAIRO_OUTPUT_H__
 #define __CAIRO_OUTPUT_H__
 
 #include "../layer-selector.h"
 #include "../gds-parser/gds-types.h"
 
-#define MAX_LAYERS (300)
+/** @addtogroup Cairo-Renderer
+ *  @{
+ */
 
+#define MAX_LAYERS (300) /**< \brief Maximum layer count the output renderer can process. Typically GDS only specifies up to 255 layers.*/
+
+/**
+ * @brief Render \p cell to a PDF file specified by \p pdf_file
+ * @param cell Toplevel cell to render
+ * @param layer_infos List of layer information. Specifies color and layer stacking
+ * @param pdf_file Output file
+ * @param scale Scale the output image down by \p scale
+ */
 void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file, double scale);
+
+/** @} */
 
 #endif /* __CAIRO_OUTPUT_H__ */

@@ -18,12 +18,25 @@
  */
 
 /*
+
+ */
+
+
+/**
+ * @file gds_parser.h
+ * @brief Header file for the GDS-Parser
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ *
  * What's missing? - A lot:
- * Support for Boxes
  * Support for 4 Byte real
  * Support for pathtypes
  * Support for datatypes (only layer so far)
  * etc...
+ */
+
+/**
+ * @addtogroup GDS-Parser
+ * @{
  */
 
 
@@ -35,10 +48,10 @@
 #include <math.h>
 #include <cairo.h>
 
-#define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__)
-#define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__)
+#define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS error*/
+#define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS warning */
 
-enum record {
+enum gds_record {
 	INVALID = 0x0000,
 	HEADER = 0x0002,
 	BGNLIB = 0x0102,
@@ -63,6 +76,13 @@ enum record {
 	PATHTYPE = 0x2102
 };
 
+/**
+ * @brief Name cell reference
+ * @param cell_inst Cell reference
+ * @param bytes Length of name
+ * @param data Name
+ * @return 0 if successful
+ */
 static int name_cell_ref(struct gds_cell_instance *cell_inst,
 			 unsigned int bytes, char *data)
 {
@@ -73,7 +93,7 @@ static int name_cell_ref(struct gds_cell_instance *cell_inst,
 		return -1;
 	}
 	data[bytes] = 0; // Append '0'
-	len = strlen(data);
+	len = (int)strlen(data);
 	if (len > CELL_NAME_MAX-1) {
 		GDS_ERROR("Cell name '%s' too long: %d\n", data, len);
 		return -1;
@@ -86,6 +106,11 @@ static int name_cell_ref(struct gds_cell_instance *cell_inst,
 	return 0;
 }
 
+/**
+ * @brief Convert GDS 8-byte real to double
+ * @param data 8 Byte GDS real
+ * @return result
+ */
 static double gds_convert_double(const char *data)
 {
 	bool sign_bit;
@@ -126,6 +151,11 @@ static double gds_convert_double(const char *data)
 	return ret_val;
 }
 
+/**
+ * @brief Convert GDS INT32 to int
+ * @param data Buffer containing the int
+ * @return result
+ */
 static signed int gds_convert_signed_int(const char *data)
 {
 	int ret;
@@ -142,6 +172,11 @@ static signed int gds_convert_signed_int(const char *data)
 	return ret;
 }
 
+/**
+ * @brief Convert GDS INT16 to int16
+ * @param data Buffer containing the INT16
+ * @return result
+ */
 static int16_t gds_convert_signed_int16(const char *data)
 {
 	if (!data) {
@@ -152,6 +187,11 @@ static int16_t gds_convert_signed_int16(const char *data)
 			(((int16_t)(data[1]) & 0xFF) <<  0));
 }
 
+/**
+ * @brief Convert GDS UINT16 String to uint16
+ * @param data Buffer containing the uint16
+ * @return result
+ */
 static uint16_t gds_convert_unsigend_int16(const char *data)
 {
 	if (!data) {
@@ -162,6 +202,12 @@ static uint16_t gds_convert_unsigend_int16(const char *data)
 			(((uint16_t)(data[1]) & 0xFF) <<  0));
 }
 
+/**
+ * @brief Append library to list
+ * @param curr_list List containing gds_library elements. May be NULL.
+ * @param library_ptr Return of newly created library.
+ * @return Newly created list pointer
+ */
 static GList *append_library(GList *curr_list, struct gds_library **library_ptr)
 {
 	struct gds_library *lib;
@@ -180,6 +226,13 @@ static GList *append_library(GList *curr_list, struct gds_library **library_ptr)
 	return g_list_append(curr_list, lib);
 }
 
+/**
+ * @brief Append graphics to list
+ * @param curr_list List containing gds_graphics elements. May be NULL
+ * @param type Type of graphics
+ * @param graphics_ptr newly created graphic is written here
+ * @return new list pointer
+ */
 static GList *append_graphics(GList *curr_list, enum graphics_type type,
 			      struct gds_graphics **graphics_ptr)
 {
@@ -202,6 +255,13 @@ static GList *append_graphics(GList *curr_list, enum graphics_type type,
 	return g_list_append(curr_list, gfx);
 }
 
+/**
+ * @brief Appends vertext List
+ * @param curr_list List containing gds_point elements. May be NULL.
+ * @param x x-coordinate of new point
+ * @param y y-coordinate of new point
+ * @return new Pointer to List.
+ */
 static GList *append_vertex(GList *curr_list, int x, int y)
 {
 	struct gds_point *vertex;
@@ -215,6 +275,14 @@ static GList *append_vertex(GList *curr_list, int x, int y)
 	return g_list_append(curr_list, vertex);
 }
 
+/**
+ * @brief append_cell Append a gds_cell to a list
+ *
+ * Usage similar to append_cell_ref().
+ * @param curr_list List containing gds_cell elements. May be NULL
+ * @param cell_ptr newly created cell
+ * @return new pointer to list
+ */
 static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 {
 	struct gds_cell *cell;
@@ -233,6 +301,14 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 	return g_list_append(curr_list, cell);
 }
 
+/**
+ * @brief Append a cell reference to the reference GList.
+ *
+ * Appends a new gds_cell_instance to \p curr_list and returns the new element via \p instance_ptr
+ * @param curr_list List of gds_cell_instance elements. May be NULL
+ * @param instance_ptr newly created element
+ * @return new GList pointer
+ */
 static GList *append_cell_ref(GList *curr_list, struct gds_cell_instance **instance_ptr)
 {
 	struct gds_cell_instance *inst;
@@ -254,6 +330,13 @@ static GList *append_cell_ref(GList *curr_list, struct gds_cell_instance **insta
 	return g_list_append(curr_list, inst);
 }
 
+/**
+ * @brief Name a gds_library
+ * @param current_library Library to name
+ * @param bytes Lenght of name
+ * @param data Name
+ * @return 0 if successful
+ */
 static int name_library(struct gds_library *current_library,
 			unsigned int bytes, char *data)
 {
@@ -265,7 +348,7 @@ static int name_library(struct gds_library *current_library,
 	}
 
 	data[bytes] = 0; // Append '0'
-	len = strlen(data);
+	len = (int)strlen(data);
 	if (len > CELL_NAME_MAX-1) {
 		GDS_ERROR("Library name '%s' too long: %d\n", data, len);
 		return -1;
@@ -277,6 +360,14 @@ static int name_library(struct gds_library *current_library,
 	return 0;
 }
 
+/**
+ * @brief Names a gds_cell
+ * @param cell Cell to name
+ * @param bytes Length of name
+ * @param data Name
+ * @param lib Library in which \p cell is located
+ * @return 0 id successful
+ */
 static int name_cell(struct gds_cell *cell, unsigned int bytes,
 		     char *data, struct gds_library *lib)
 {
@@ -302,7 +393,13 @@ static int name_cell(struct gds_cell *cell, unsigned int bytes,
 	return 0;
 }
 
-
+/**
+ * @brief Search for cell reference \p gcell_ref in \p glibrary
+ *
+ * Search cell referenced by \p gcell_ref inside \p glibrary and update gds_cell_instance::cell_ref with found #gds_cell
+ * @param gcell_ref gpointer cast of struct gds_cell_instance *
+ * @param glibrary gpointer cast of struct gds_library *
+ */
 static void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 {
 	struct gds_cell_instance *inst = (struct gds_cell_instance *)gcell_ref;
@@ -329,6 +426,12 @@ static void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 	GDS_WARN("referenced cell could not be found in library");
 }
 
+/**
+ * @brief Scans cell references inside cell
+ This function searches all the references in \p gcell and updates the gds_cell_instance::cell_ref field in each instance
+ * @param gcell pointer cast of #gds_cell *
+ * @param library Library where the cell references are searched in
+ */
 static void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
 {
 	struct gds_cell *cell = (struct gds_cell *)gcell;
@@ -340,6 +443,13 @@ static void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
 
 }
 
+/**
+ * @brief Scans library's cell references
+ *
+ * This function searches all the references between cells and updates the gds_cell_instance::cell_ref field in each instance
+ * @param library_list_item List containing #gds_library elements
+ * @param user not used
+ */
 static void scan_library_references(gpointer library_list_item, gpointer user)
 {
 	struct gds_library *lib = (struct gds_library *)library_list_item;
@@ -348,6 +458,13 @@ static void scan_library_references(gpointer library_list_item, gpointer user)
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
 }
 
+/**
+ * @brief gds_parse_date
+ * @param buffer Buffer that contains the GDS Date field
+ * @param length Length of \p buffer
+ * @param mod_date Modification Date
+ * @param access_date Last Access Date
+ */
 static void gds_parse_date(const char *buffer, int length, struct gds_time_field *mod_date, struct gds_time_field *access_date)
 {
 
@@ -390,7 +507,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	int run = 1;
 	FILE *gds_file = NULL;
 	uint16_t rec_data_length;
-	enum record rec_type;
+	enum gds_record rec_type;
 	struct gds_library *current_lib = NULL;
 	struct gds_cell *current_cell = NULL;
 	struct gds_graphics *current_graphics = NULL;
@@ -628,10 +745,10 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			gds_parse_date(workbuff, read, &current_cell->mod_time, &current_cell->access_time);
 			break;
 		case LIBNAME:
-			name_library(current_lib, read, workbuff);
+			name_library(current_lib, (unsigned int)read, workbuff);
 			break;
 		case STRNAME:
-			name_cell(current_cell, read, workbuff, current_lib);
+			name_cell(current_cell, (unsigned int)read, workbuff, current_lib);
 			break;
 		case XY:
 			if (current_s_reference) {
@@ -742,22 +859,38 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	return run;
 }
 
+/**
+ * @brief delete_cell_inst_element
+ * @param cell_inst
+ */
 static void delete_cell_inst_element(struct gds_cell_instance *cell_inst)
 {
 	free(cell_inst);
 }
 
+/**
+ * @brief delete_vertex
+ * @param vertex
+ */
 static void delete_vertex(struct gds_point *vertex)
 {
 	free(vertex);
 }
 
+/**
+ * @brief delete_graphics_obj
+ * @param gfx
+ */
 static void delete_graphics_obj(struct gds_graphics *gfx)
 {
 	g_list_free_full(gfx->vertices, (GDestroyNotify)delete_vertex);
 	free(gfx);
 }
 
+/**
+ * @brief delete_cell_element
+ * @param cell
+ */
 static void delete_cell_element(struct gds_cell *cell)
 {
 	g_list_free_full(cell->child_cells, (GDestroyNotify)delete_cell_inst_element);
@@ -765,6 +898,10 @@ static void delete_cell_element(struct gds_cell *cell)
 	free(cell);
 }
 
+/**
+ * @brief delete_library_element
+ * @param lib
+ */
 static void delete_library_element(struct gds_library *lib)
 {
 	g_list_free(lib->cell_names);
@@ -780,3 +917,5 @@ int clear_lib_list(GList **library_list)
 	*library_list = NULL;
 	return 0;
 }
+
+/** @} */

@@ -16,6 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
+ /**
+  * @file cairo-output.c
+  * @brief Output renderer for Cairo PDF export
+  * @author Mario Hüttel <mario.huettel@gmx.net>
+  */
+
+/** @addtogroup Cairo-Renderer
+ *  @{
+ */
 
 #include "cairo-output.h"
 #include <math.h>
@@ -23,12 +32,20 @@
 #include <cairo.h>
 #include <cairo-pdf.h>
 
+/**
+ * @brief The cairo_layer struct
+ * Each rendered layer is represented by this struct.
+ */
 struct cairo_layer {
-		cairo_t *cr;
-		cairo_surface_t *rec;
-		struct layer_info *linfo;
+		cairo_t *cr; /**< @brief cairo context for layer*/
+		cairo_surface_t *rec; /**< @brief Recording surface to hold the layer */
+		struct layer_info *linfo; /**< @brief Reference to layer information */
 };
 
+/**
+ * @brief Revert the last transformation on all layers
+ * @param layers Pointer to #cairo_layer structures
+ */
 static void revert_inherited_transform(struct cairo_layer *layers)
 {
 	int i;
@@ -40,6 +57,15 @@ static void revert_inherited_transform(struct cairo_layer *layers)
 	}
 }
 
+/**
+ * @brief Applies transformation to all layers
+ * @param layers Array of layers
+ * @param origin Origin translation
+ * @param magnification Scaling
+ * @param flipping Mirror image on x-axis before rotating
+ * @param rotation Rotattion in degrees
+ * @param scale Scale the image down by. Only used for sclaing origin coordinates. Not applied to layer.
+ */
 static void apply_inherited_transform_to_all_layers(struct cairo_layer *layers,
 						    const struct gds_point *origin,
 						    double magnification,
@@ -64,6 +90,12 @@ static void apply_inherited_transform_to_all_layers(struct cairo_layer *layers,
 	}
 }
 
+/**
+ * @brief render_cell Render a cell with its sub-cells
+ * @param cell Cell to render
+ * @param layers Cell will be rendered into these layers
+ * @param scale sclae image down by this factor
+ */
 static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, double scale)
 {
 	GList *instance_list;
@@ -246,3 +278,5 @@ ret_clear_layers:
 
 	printf("cairo export finished. It might still be buggy!\n");
 }
+
+/** @} */

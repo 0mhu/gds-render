@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file gds_parser.h
+ * @brief Header file for the GDS-Parser
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup GDS-Parser
+ * @{
+ */
+
 #ifndef __GDSPARSE_H__
 #define __GDSPARSE_H__
 
@@ -24,6 +35,13 @@
 #include "gds-types.h"
 
 int parse_gds_from_file(const char *filename, GList **library_array);
+/**
+ * @brief Deletes all libraries including cells, references etc.
+ * @param Pointer to a list of #gds_library. Is set to NULL after completion.
+ * @return 0
+ */
 int clear_lib_list(GList **library_list);
+
+/** @} */
 
 #endif /* __GDSPARSE_H__ */
