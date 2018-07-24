@@ -51,6 +51,11 @@
 #define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS error*/
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS warning */
 
+#if GDS_PRINT_DEBUG_INFOS
+	#define GDS_INF(fmt, ...) printf(fmt, ##__VA_ARGS__) /**< @brief standard printf. But cna be disabled in code */
+#else
+	#define GDS_INF(fmt, ...)
+#endif
 enum gds_record {
 	INVALID = 0x0000,
 	HEADER = 0x0002,
@@ -101,7 +106,7 @@ static int name_cell_ref(struct gds_cell_instance *cell_inst,
 
 	/* else: */
 	strcpy(cell_inst->ref_name, data);
-	printf("\tCell referenced: %s\n", cell_inst->ref_name);
+	GDS_INF("\tCell referenced: %s\n", cell_inst->ref_name);
 
 	return 0;
 }
@@ -355,7 +360,7 @@ static int name_library(struct gds_library *current_library,
 	}
 
 	strcpy(current_library->name, data);
-	printf("Named library: %s\n", current_library->name);
+	GDS_INF("Named library: %s\n", current_library->name);
 
 	return 0;
 }
@@ -385,7 +390,7 @@ static int name_cell(struct gds_cell *cell, unsigned int bytes,
 	}
 
 	strcpy(cell->name, data);
-	printf("Named cell: %s\n", cell->name);
+	GDS_INF("Named cell: %s\n", cell->name);
 
 	/* Append cell name to lib's list of names */
 	lib->cell_names = g_list_append(lib->cell_names, cell->name);
@@ -407,7 +412,7 @@ static void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 	GList *cell_item;
 	struct gds_cell *cell;
 
-	printf("\t\t\tReference: %s: ", inst->ref_name);
+	GDS_INF("\t\t\tReference: %s: ", inst->ref_name);
 	/* Find cell */
 	for (cell_item = lib->cells; cell_item != NULL;
 	     cell_item = cell_item->next) {
@@ -415,14 +420,14 @@ static void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 		cell = (struct gds_cell *)cell_item->data;
 		/* Check if cell is found */
 		if (!strcmp(cell->name, inst->ref_name)) {
-			printf("found\n");
+			GDS_INF("found\n");
 			/* update reference link */
 			inst->cell_ref = cell;
 			return;
 		}
 	}
 
-	printf("MISSING!\n");
+	GDS_INF("MISSING!\n");
 	GDS_WARN("referenced cell could not be found in library");
 }
 
@@ -436,7 +441,7 @@ static void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
 {
 	struct gds_cell *cell = (struct gds_cell *)gcell;
 
-	printf("\tScanning cell: %s\n", cell->name);
+	GDS_INF("\tScanning cell: %s\n", cell->name);
 
 	/* Scan all library references */
 	g_list_foreach(cell->child_cells, parse_reference_list, library);
@@ -454,7 +459,7 @@ static void scan_library_references(gpointer library_list_item, gpointer user)
 {
 	struct gds_library *lib = (struct gds_library *)library_list_item;
 
-	printf("Scanning Library: %s\n", lib->name);
+	GDS_INF("Scanning Library: %s\n", lib->name);
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
 }
 
@@ -583,7 +588,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 
 			}
-			printf("Entering Lib\n");
+			GDS_INF("Entering Lib\n");
 			break;
 		case ENDLIB:
 			if (current_lib == NULL) {
@@ -599,7 +604,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			}
 			current_lib = NULL;
-			printf("Leaving Library\n");
+			GDS_INF("Leaving Library\n");
 			break;
 		case BGNSTR:
 			current_lib->cells = append_cell(current_lib->cells, &current_cell);
@@ -608,7 +613,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -3;
 				break;
 			}
-			printf("Entering Cell\n");
+			GDS_INF("Entering Cell\n");
 			break;
 		case ENDSTR:
 			if (current_cell == NULL) {
@@ -623,7 +628,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			}
 			current_cell = NULL;
-			printf("Leaving Cell\n");
+			GDS_INF("Leaving Cell\n");
 			break;
 		case BOX:
 		case BOUNDARY:
@@ -640,7 +645,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -4;
 				break;
 			}
-			printf("\tEntering boundary/Box\n");
+			GDS_INF("\tEntering boundary/Box\n");
 			break;
 		case SREF:
 			if (current_cell == NULL) {
@@ -656,7 +661,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			}
 
-			printf("\tEntering reference\n");
+			GDS_INF("\tEntering reference\n");
 			break;
 		case PATH:
 			if (current_cell == NULL) {
@@ -671,16 +676,16 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -4;
 				break;
 			}
-			printf("\tEntering Path\n");
+			GDS_INF("\tEntering Path\n");
 			break;
 		case ENDEL:
 			if (current_graphics != NULL) {
 
-				printf("\tLeaving %s\n", (current_graphics->gfx_type == GRAPHIC_POLYGON ? "boundary" : "path"));
+				GDS_INF("\tLeaving %s\n", (current_graphics->gfx_type == GRAPHIC_POLYGON ? "boundary" : "path"));
 				current_graphics = NULL;
 			}
 			if (current_s_reference != NULL) {
-				printf("\tLeaving Reference\n");
+				GDS_INF("\tLeaving Reference\n");
 				current_s_reference = NULL;
 			}
 			break;
@@ -755,7 +760,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				/* Get origin of reference */
 				current_s_reference->origin.x = gds_convert_signed_int(workbuff);
 				current_s_reference->origin.y = gds_convert_signed_int(&workbuff[4]);
-				printf("\t\tSet origin to: %d/%d\n", current_s_reference->origin.x,
+				GDS_INF("\t\tSet origin to: %d/%d\n", current_s_reference->origin.x,
 				       current_s_reference->origin.y);
 			} else if (current_graphics) {
 				for (i = 0; i < read/8; i++) {
@@ -763,7 +768,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 					y = gds_convert_signed_int(&workbuff[i*8+4]);
 					current_graphics->vertices =
 							append_vertex(current_graphics->vertices, x, y);
-					printf("\t\tSet coordinate: %d/%d\n", x, y);
+					GDS_INF("\t\tSet coordinate: %d/%d\n", x, y);
 
 				}
 			}
@@ -794,7 +799,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			if (current_graphics->layer < 0) {
 				GDS_WARN("Layer negative!\n");
 			}
-			printf("\t\tAdded layer %d\n", (int)current_graphics->layer);
+			GDS_INF("\t\tAdded layer %d\n", (int)current_graphics->layer);
 			break;
 		case MAG:
 			if (rec_data_length != 8) {
@@ -807,7 +812,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			}
 			if (current_s_reference != NULL) {
 				current_s_reference->magnification = gds_convert_double(workbuff);
-				printf("\t\tMagnification defined: %lf\n", current_s_reference->magnification);
+				GDS_INF("\t\tMagnification defined: %lf\n", current_s_reference->magnification);
 			}
 			break;
 		case ANGLE:
@@ -821,7 +826,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			}
 			if (current_s_reference != NULL) {
 				current_s_reference->angle = gds_convert_double(workbuff);
-				printf("\t\tAngle defined: %lf\n", current_s_reference->angle);
+				GDS_INF("\t\tAngle defined: %lf\n", current_s_reference->angle);
 			}
 			break;
 		case PATHTYPE:
@@ -831,7 +836,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			}
 			if (current_graphics->gfx_type == GRAPHIC_PATH) {
 				current_graphics->path_render_type = (int)gds_convert_signed_int16(workbuff);
-				printf("\t\tPathtype: %d\n", current_graphics->path_render_type);
+				GDS_INF("\t\tPathtype: %d\n", current_graphics->path_render_type);
 			} else {
 				GDS_WARN("Path type defined inside non-path graphics object. Ignoring");
 			}

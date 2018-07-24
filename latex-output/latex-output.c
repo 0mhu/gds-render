@@ -17,11 +17,35 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file latex-output.c
+ * @brief LaTeX output renderer
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
 #include "latex-output.h"
 #include <math.h>
 
+/**
+ * @addtogroup LaTeX-Renderer
+ * @{
+ */
+
+/** @brief Writes a GString \p buffer to the fixed file tex_file */
 #define WRITEOUT_BUFFER(buff) fwrite((buff)->str, sizeof(char), (buff)->len, tex_file)
 
+/**
+ * @brief Write the layer declarration to TeX file
+ *
+ * This writes the declaration of the layers and the mapping in which order
+ * the layers shall be rendered by TikZ. Layers are written in the order they are
+ * positioned inside the \p layer_infos list.
+ *
+ * @param tex_file TeX-File to write to
+ * @param layer_infos List containing layer_info structs.
+ * @param buffer
+ * @note  The field layer_info::stacked_position is ignored. Stack depends on list order.
+ */
 static void write_layer_definitions(FILE *tex_file, GList *layer_infos, GString *buffer)
 {
 	GList *list;
@@ -53,11 +77,30 @@ static void write_layer_definitions(FILE *tex_file, GList *layer_infos, GString 
 }
 
 /**
- * @brief write_layer_env
- * @param tex_file
- * @param layer
- * @param buffer
- * @return TRUE if layer is placeable
+ * @brief Write layer Envirmonment
+ *
+ * If the requested layer shall be rendered, this code writes the necessary code
+ * to open the layer. It also returns the color the layer shall be rendered in.
+ *
+ * The followingenvironments are generated:
+ *
+ * @code{.tex}
+ * \begin{pgfonlayer}{<layer>}
+ * % If pdf layers shall be used also this is enabled:
+ * \begin{scope}[ocg={ref=<layer>, status=visible,name={<Layer Name>}}]
+ * @endcode
+ *
+ *
+ * If the layer shall not be rendered, FALSE is returned and the color is not filled in and
+ * the cod eis not written to the file.
+ *
+ * @param tex_file TeX file to write to
+ * @param color Return of the layer's color
+ * @param layer Requested layer number
+ * @param linfo Layer information list containing layer_info structs
+ * @param buffer Some working buffer
+ * @return TRUE, if the layer shall be rendered.
+ * @note The opened environments have to be closed afterwards
  */
 static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList *linfo, GString *buffer)
 {
@@ -80,7 +123,17 @@ static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList
 	return FALSE;
 }
 
-
+/**
+ * @brief Writes a graphics object to the specified tex_file
+ *
+ * This function opens the layer, writes a graphics object and closes the layer
+ *
+ * @param tex_file File to write to
+ * @param graphics Object to render
+ * @param linfo Layer information
+ * @param buffer Working buffer
+ * @param scale Scale abject down by this value
+ */
 static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GString *buffer, double scale)
 {
 	GList *temp;
@@ -144,7 +197,14 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 	} /* For graphics */
 }
 
-
+/**
+ * @brief Render cell to file
+ * @param cell Cell to render
+ * @param layer_infos Layer information
+ * @param tex_file File to write to
+ * @param buffer Working buffer
+ * @param scale Scale output down by this value
+ */
 static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, GString *buffer, double scale)
 {
 
@@ -238,3 +298,5 @@ void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *
 	fflush(tex_file);
 	g_string_free(working_line, TRUE);
 }
+
+/** @} */

@@ -18,18 +18,19 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mapping-parser.h"
+/**
+ * @file mapping-parser.c
+ * @brief Function to read a mapping file line and parse it.
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
 
 /**
- * @brief load_csv_line
- * @param file
- * @param export
- * @param name
- * @param layer
- * @param color
- * @param opacity
- * @return 0 if succesfull, 1 if line was malformatted or parameters are broken, -1 if file end
+ * @addtogroup MainApplication
+ * @{
  */
+
+#include "mapping-parser.h"
+
 int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color)
 {
 	int ret;
@@ -92,4 +93,6 @@ ret_direct:
 	return ret;
 
 }
+
+/** @} */
 

@@ -34,6 +34,8 @@
 #include <glib.h>
 #include "gds-types.h"
 
+#define GDS_PRINT_DEBUG_INFOS (0) /**< @brief 1: Print infos, 0: Don't print */
+
 int parse_gds_from_file(const char *filename, GList **library_array);
 /**
  * @brief Deletes all libraries including cells, references etc.
