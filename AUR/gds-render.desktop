@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GDS-Render
+Comment=Converter for GDS layout files
+Icon=gds-render
+Exec=gds-render
+Categories=Graphics
+
