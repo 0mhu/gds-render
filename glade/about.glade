@@ -10,7 +10,7 @@
     <property name="website">https://git.shimatta.de/mhu/gds-render</property>
     <property name="website_label" translatable="yes">Git Repository</property>
     <property name="authors">Mario Hüttel &lt;mario.huettel@gmx.net&gt;</property>
-    <property name="logo_icon_name">applications-graphics</property>
+    <property name="logo_icon_name">gds-render</property>
     <property name="license_type">gpl-2-0-only</property>
     <child>
       <placeholder/>
