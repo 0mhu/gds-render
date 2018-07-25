@@ -23,8 +23,8 @@
 
 
 /**
- * @file gds_parser.h
- * @brief Header file for the GDS-Parser
+ * @file gds-parser.c
+ * @brief Implementation of the GDS-Parser
  * @author Mario Hüttel <mario.huettel@gmx.net>
  *
  * What's missing? - A lot:

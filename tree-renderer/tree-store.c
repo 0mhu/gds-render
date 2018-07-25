@@ -1,7 +1,46 @@
+/*
+ * GDSII-Converter
+ * Copyright (C) 2018  Mario Hüttel <mario.huettel@gmx.net>
+ *
+ * This file is part of GDSII-Converter.
+ *
+ * GDSII-Converter is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * GDSII-Converter is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file tree-store.h
+ * @brief Tree store implementation
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup MainApplication
+ * @{
+ */
+
 #include "tree-store.h"
 #include "lib-cell-renderer.h"
 #include "../gds-parser/gds-types.h"
 
+/**
+ * @brief this function olny allows cells to be selected
+ * @param selection
+ * @param model
+ * @param path
+ * @param path_currently_selected
+ * @param data
+ * @return TRUE if element is selectable, FALSE if not
+ */
 static gboolean tree_sel_func(GtkTreeSelection *selection,
 				GtkTreeModel *model,
 				GtkTreePath *path,
@@ -21,6 +60,11 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
 		return FALSE;
 }
 
+/**
+ * @brief Setup a GtkTreeView with the necessary columns
+ * @param view Tree view to set up
+ * @return TreeStore for storing data inside the GtkTreeView
+ */
 GtkTreeStore *setup_cell_selector(GtkTreeView* view)
 {
 	GtkTreeStore *cell_store;
@@ -77,3 +121,4 @@ GtkTreeStore *setup_cell_selector(GtkTreeView* view)
 
 	return cell_store;
 }
+/** @} */

@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file conv-settings-dilaog.c
+ * @brief Implementation of the setting dialog
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup Widgets
+ * @{
+ */
+
 #include "conv-settings-dialog.h"
 
 struct  _RendererSettingsDialog {
@@ -126,3 +137,5 @@ void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struc
 		break;
 	}
 }
+
+/** @} */

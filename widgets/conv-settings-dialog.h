@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file conv-settings-dialog.h
+ * @brief Header file for the Conversion Settings Dialog
+ * @author Mario.Huettel@gmx.net <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup Widgets
+ * @{
+ */
+
 #ifndef __CONV_SETTINGS_DIALOG_H__
 #define __CONV_SETTINGS_DIALOG_H__
 
@@ -24,25 +35,46 @@
 
 G_BEGIN_DECLS
 
+/** @brief return type of the RedererSettingsDialog */
 enum output_renderer {RENDERER_LATEX_TIKZ, RENDERER_CAIROGRAPHICS};
 
 G_DECLARE_FINAL_TYPE(RendererSettingsDialog, renderer_settings_dialog, RENDERER, SETTINGS_DIALOG, GtkDialog)
 
+/**
+ * @brief Create a new RedererSettingsDialog GObject
+ * @param parent Parent window
+ * @return Created dialog object
+ */
 RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent);
 
 #define RENDERER_TYPE_SETTINGS_DIALOG (renderer_settings_dialog_get_type())
 
+/**
+ * @brief This struct holds the renderer configuration
+ */
 struct render_settings {
-	double scale;
-	enum output_renderer renderer;
-	gboolean tex_pdf_layers;
-	gboolean tex_standalone;
+	double scale; /**< @brief Scale image down by this factor. @note Used to keep image in bound of maximum coordinate limit */
+	enum output_renderer renderer; /**< The renderer to use */
+	gboolean tex_pdf_layers; /**< Create OCG layers when rendering with TikZ */
+	gboolean tex_standalone; /**< Create a standalone compile TeX file */
 };
 
 G_END_DECLS
 
-
+/**
+ * @brief Apply settings to dialog
+ * @param dialog
+ * @param settings
+ */
 void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struct render_settings *settings);
+
+/**
+ * @brief Get the settings configured in the dialog
+ * @param dialog
+ * @param settings
+ */
 void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings);
 
 #endif /* __CONV_SETTINGS_DIALOG_H__ */
+
+/** @} */

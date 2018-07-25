@@ -1,0 +1,6 @@
+/* This file only contains help information for doxygen */
+
+/**
+ * @defgroup Widgets Custom GTK Widgets
+ *
+ */

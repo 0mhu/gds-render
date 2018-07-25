@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file layer-element.c
+ * @brief Omplementation of the layer element used for configuring layer colors etc.
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup Widgets
+ * @{
+ */
+
 #include "layer-element.h"
 
 G_DEFINE_TYPE(LayerElement, layer_element, GTK_TYPE_LIST_BOX_ROW)
@@ -187,3 +198,5 @@ void layer_element_set_color(LayerElement *elem, GdkRGBA *rgba)
 {
 	gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(elem->priv.color), rgba);
 }
+
+/** @} */

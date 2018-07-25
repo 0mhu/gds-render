@@ -18,7 +18,7 @@
  */
 
 /**
- * @file gds_parser.h
+ * @file gds-parser.h
  * @brief Header file for the GDS-Parser
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
