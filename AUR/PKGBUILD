@@ -4,38 +4,34 @@ pkgname=gds-render
 pkgver=20180725.001
 pkgrel=1
 pkgdesc="Conversion tool for converting GDS layout files into TikZ Code and PDF"
-arch=('i686', 'x86_64')
+arch=('i686' 'x86_64')
 url="https://git.shimatta.de/mhu/gds-render"
 licence=('GPLv2')
 depends=('glib2' 'gtk3' 'cairo')
 makedepends=('cmake' 'git')
 privides=('gds-render')
-source=("$pkgname"::"git+https://git.shimatta.de/mhu/gds-render.git")
+source=("${pkgname}-git"::"git+https://git.shimatta.de/mhu/gds-render.git")
 sha1sums=('SKIP')
 
 pkgver () {
 	_date=`date +"%Y%m%d"`
-	cd "${srcdir}/${pkgname}"
+	cd "${srcdir}/${pkgname}-git"
 	echo "$_date.$(git rev-list --count master).$(git rev-parse --short master)"
 }
 
-prepare () {
-
-}
-
 build () {
-	cd "$srcdir/$pkgname"
+	cd "$srcdir/$pkgname-git"
 	cmake .
 	make
 }
 
 package () {
-	cd "$srcdir/$pkgname"
+	cd "$srcdir/$pkgname-git"
 	make DESTDIR="${pkgdir}" install 
-	install -D -m664 "$srcdir/$pkgname/AUR/gds-render.desktop" \
+	install -D -m664 "$srcdir/$pkgname-git/AUR/gds-render.desktop" \
 			 "$pkgdir/usr/share/applications/gds-render.desktop"
-	install -D -m664 "$srcdir/$pkgname/icon/gds-render.svg" \
+	install -D -m664 "$srcdir/$pkgname-git/icon/gds-render.svg" \
 			 "$pkgdir/usr/share/icons/hicolor/scalable/apps/gds-render.svg"
-	install -D -m664 "$srcdir/$pkgname/icon/128x128/gds-render.png" \
+	install -D -m664 "$srcdir/$pkgname-git/icon/128x128/gds-render.png" \
 			 "$pkgdir/usr/share/icons/hicolor/128x128/apps/gds-render.png"
 }
