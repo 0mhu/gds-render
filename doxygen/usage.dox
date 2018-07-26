@@ -1,0 +1,25 @@
+/**
+@page usage Usage
+@section cmd Command Line Interface
+To use the application on the command line check 'gds-render --help'.
+
+Application options:
+-  -t, --tikz                Output TikZ code
+-  -p, --pdf                 Output PDF document
+-  -s, --scale=<SCALE>       Divide output coordinates by <SCALE>
+-  -o, --tex-output=PATH     Optional path for TeX file
+-  -O, --pdf-output=PATH     Optional path for PDF file
+-  -m, --mapping=PATH        Path for Layer Mapping File (see @ref lmf-spec)
+-  -c, --cell=NAME           Cell to render
+-  -a, --tex-standalone      Configure TeX Code standalone
+-  -l, --tex-layers          configure TeX code to create PDF Layers (OCG)
+
+@section gui Graphical User Interface
+
+The graphical user interface (GUI) can be used to open GDS Files, configure the layer rendering (colors, order, transparency etc.), and convert cells.
+
+It is possible to export the layer configurations so theycan be used later on. Even in the @ref cmd 
+
+@image html gui.svg
+
+*/
