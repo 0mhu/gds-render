@@ -1,0 +1,34 @@
+/**
+@page lmf-spec Layer Mapping File Specification
+
+File Format
+-----------
+
+The layer mapping file contains information on how to render the layers.
+The information is stored in CSV format.
+
+Each line representing a layer consists of following fields:
+
+> layer,r,g,b,a,export,name
+
+- **layer**: Layer number identifiying this layer.
+- **r**,**b**,**g**,**a**: RGBA color value uning double precision float values in the range from 0 to 1.
+- **export**: Either '1' or '0'. Defining whether to render this layer into the output file.
+- **name**: The name of the layer.
+
+the order of the layers inside the layer mapping file defines the layer stack in the rendered output.
+The first layer is at the bottom, the last at the top.
+
+
+Handling Inside the GUI
+-----------------------
+
+The layer mapping file can be imported and exported inside the GUI.
+
+### Export 
+During export, all layer configurations are written to the mapping file
+
+### Import
+During import, all layer configurations are loaded from the mapping file. This overwrites any configuration done to that layer. Layers that are not present in the layer mapping file are appended at the end of the list. This means, they are rendered on top of the other layers. Because the layer mapping file does not contain any information on these layers, their configuration is not reset during import.
+
+*/
