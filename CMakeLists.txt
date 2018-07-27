@@ -18,6 +18,7 @@ aux_source_directory("tree-renderer" RENDERER_SOURCES)
 aux_source_directory("gds-parser" PARSER_SOURCES)
 aux_source_directory("latex-output" LATEX_SOURCES)
 aux_source_directory("cairo-output" CAIRO_SOURCES)
+aux_source_directory("trigonometric" TRIG_SOURCES)
 set(SOURCE "main.c" "layer-selector.c" "mapping-parser.c" "command-line.c" "main-window.c")
 
 set(SOURCE
@@ -27,6 +28,7 @@ set(SOURCE
   ${PARSER_SOURCES}
   ${LATEX_SOURCES}
   ${CAIRO_SOURCES}
+  ${TRIG_SOURCES}
 )
 
 add_compile_options(-Wall)

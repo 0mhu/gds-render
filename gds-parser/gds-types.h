@@ -35,8 +35,8 @@
 #include <glib.h>
 
 #define CELL_NAME_MAX (100) /**< @brief Maximum length of a gds_cell::name or a gds_library::name */
-#define MIN(a,b) (((a) < (b)) ? (a) : (b)) /**< @brief Find return smaller number */
-#define MAX(a,b) (((a) > (b)) ? (a) : (b)) /**< @brief Find return bigger number */
+#define MIN(a,b) (((a) < (b)) ? (a) : (b)) /**< @brief Return smaller number */
+#define MAX(a,b) (((a) > (b)) ? (a) : (b)) /**< @brief Return bigger number */
 
 /** @brief Types of graphic objects */
 enum graphics_type
