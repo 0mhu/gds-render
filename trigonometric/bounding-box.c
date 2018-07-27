@@ -56,3 +56,26 @@ void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t
 	box->vectors.upper_right.x = xmax;
 	box->vectors.upper_right.y = ymax;
 }
+
+void bounding_box_update_box(union bounding_box *destination, union bounding_box *update)
+{
+	if (!destination || !update)
+		return;
+
+	destination->vectors.lower_left.x = MIN(destination->vectors.lower_left.x,
+						update->vectors.lower_left.x);
+	destination->vectors.lower_left.y = MIN(destination->vectors.lower_left.y,
+						update->vectors.lower_left.y);
+	destination->vectors.upper_right.x = MAX(destination->vectors.upper_right.x,
+						update->vectors.upper_right.x);
+	destination->vectors.upper_right.y = MAX(destination->vectors.upper_right.y,
+						update->vectors.upper_right.y);
+}
+
+void bounding_box_prepare_empty(union bounding_box *box)
+{
+	box->vectors.lower_left.x = DBL_MAX;
+	box->vectors.lower_left.y = DBL_MAX;
+	box->vectors.upper_right.x = DBL_MIN;
+	box->vectors.upper_right.y = DBL_MIN;
+}
