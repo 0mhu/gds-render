@@ -31,4 +31,14 @@ struct vector_2d {
     double y;
 };
 
+
+double vector_2d_scalar_multipy(struct vector_2d *a, struct vector_2d *b);
+void vector_2d_normalize(struct vector_2d *vec);
+void vecor_2d_rotate(struct vector_2d *vec, double angle);
+struct vector_2d *vecor_2d_copy(struct vector_2d *opt_res, struct vector_2d *vec);
+struct vector_2d *vector_2d_alloc(void);
+void vector_2d_free(struct vector_2d *vec);
+void vector_2d_scale(struct vector_2d *vec, double scale);
+double vector_2d_abs(struct vector_2d *vec);
+
 #endif /* _VECTOR_OPERATIONS_H_ */
