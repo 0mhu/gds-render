@@ -260,6 +260,8 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	}
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 
+	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if (res == GTK_RESPONSE_ACCEPT) {
 		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
