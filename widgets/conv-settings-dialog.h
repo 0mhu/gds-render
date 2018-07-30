@@ -36,7 +36,7 @@
 G_BEGIN_DECLS
 
 /** @brief return type of the RedererSettingsDialog */
-enum output_renderer {RENDERER_LATEX_TIKZ, RENDERER_CAIROGRAPHICS};
+enum output_renderer {RENDERER_LATEX_TIKZ, RENDERER_CAIROGRAPHICS_PDF, RENDERER_CAIROGRAPHICS_SVG};
 
 G_DECLARE_FINAL_TYPE(RendererSettingsDialog, renderer_settings_dialog, RENDERER, SETTINGS_DIALOG, GtkDialog)
 

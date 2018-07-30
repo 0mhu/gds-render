@@ -32,8 +32,24 @@
 #define _COMMAND_LINE_H_
 #include <glib.h>
 
+/**
+ * @brief Convert GDS according to supplied parameters
+ * @param gds_name GDS File path
+ * @param pdf_name Cairo-PDF path
+ * @param tex_name TeX/TikZ path
+ * @param pdf Render Cairo
+ * @param tex Render LaTeX
+ * @param layer_file Layer mapping file
+ * @param cell_name Cell name to render
+ * @param scale Scale image down by this value
+ * @param pdf_layers TikZ creates OCG layers
+ * @param pdf_standalone LaTeX document is standalone7
+ * @param svg Render to SVG file
+ * @param svg_name SVG file name
+ */
 void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
-			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers, gboolean pdf_standalone);
+			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers,
+			      gboolean pdf_standalone, gboolean svg, char *svg_name);
 
 #endif /* _COMMAND_LINE_H_ */
 

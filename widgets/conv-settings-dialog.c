@@ -34,7 +34,8 @@ struct  _RendererSettingsDialog {
 		GtkDialog parent;
 		/* Private loot */
 		GtkWidget *radio_latex;
-		GtkWidget *radio_cairo;
+		GtkWidget *radio_cairo_pdf;
+		GtkWidget *radio_cairo_svg;
 		GtkWidget *scale;
 		GtkWidget *layer_check;
 		GtkWidget *standalone_check;
@@ -83,7 +84,8 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 	builder = gtk_builder_new_from_resource("/dialog.glade");
 	box = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-box"));
 	self->radio_latex = GTK_WIDGET(gtk_builder_get_object(builder, "latex-radio"));
-	self->radio_cairo = GTK_WIDGET(gtk_builder_get_object(builder, "cairo-radio"));
+	self->radio_cairo_pdf = GTK_WIDGET(gtk_builder_get_object(builder, "cairo-pdf-radio"));
+	self->radio_cairo_svg = GTK_WIDGET(gtk_builder_get_object(builder, "cairo-svg-radio"));
 	self->scale = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-scale"));
 	self->standalone_check = GTK_WIDGET(gtk_builder_get_object(builder, "standalone-check"));
 	self->layer_check = GTK_WIDGET(gtk_builder_get_object(builder, "layer-check"));
@@ -110,13 +112,27 @@ RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent)
 
 void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
 {
+	GList *radio_buttons;
+	GList *temp_button_list;
+	GtkToggleButton *temp_button = NULL;
+
 	if (!settings || !dialog)
 		return;
 	settings->scale = gtk_range_get_value(GTK_RANGE(dialog->scale));
-	settings->renderer = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_latex)) == TRUE ? RENDERER_LATEX_TIKZ : RENDERER_CAIROGRAPHICS);
+
+	/* Get active radio button selection */
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_latex)) == TRUE) {
+		settings->renderer = RENDERER_LATEX_TIKZ;
+	} else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_pdf)) == TRUE) {
+		settings->renderer = RENDERER_CAIROGRAPHICS_PDF;
+	} else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_svg)) == TRUE) {
+		settings->renderer = RENDERER_CAIROGRAPHICS_SVG;
+	}
+
 	settings->tex_pdf_layers = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->layer_check));
 	settings->tex_standalone = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->standalone_check));
 }
+
 void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
 {
 	if (!settings || !dialog)
@@ -131,10 +147,16 @@ void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struc
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->radio_latex), TRUE);
 		show_tex_options(dialog);
 		break;
-	case RENDERER_CAIROGRAPHICS:
+	case RENDERER_CAIROGRAPHICS_PDF:
 		hide_tex_options(dialog);
-		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo), TRUE);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_pdf), TRUE);
 		break;
+	case RENDERER_CAIROGRAPHICS_SVG:
+		hide_tex_options(dialog);
+		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_svg), TRUE);
+		break;
+
+
 	}
 }
 

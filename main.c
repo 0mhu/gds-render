@@ -110,8 +110,8 @@ int main(int argc, char **argv)
 	GOptionContext *context;
 	gchar *gds_name;
 	gchar *basename;
-	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL, *cellname = NULL;
-	gboolean tikz = FALSE, pdf = FALSE, pdf_layers = FALSE, pdf_standalone = FALSE;
+	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL, *cellname = NULL, *svgname = NULL;
+	gboolean tikz = FALSE, pdf = FALSE, pdf_layers = FALSE, pdf_standalone = FALSE, svg = FALSE;
 	int scale = 1000;
 	int app_status;
 
@@ -120,9 +120,11 @@ int main(int argc, char **argv)
 	{
 	  { "tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
 	  { "pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
+	  //{ "svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
 	  { "scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
 	  { "tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
 	  { "pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
+	  //{ "svg-output", 0, 0, G_OPTION_ARG_FILENAME, &svgname, "Optional path for PDF file", "PATH"},
 	  { "mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
 	  { "cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
 	  { "tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
@@ -146,7 +148,7 @@ int main(int argc, char **argv)
 		}
 
 		/* No format selected */
-		if (!(tikz || pdf)) {
+		if (!(tikz || pdf || svg)) {
 			tikz = TRUE;
 		}
 
@@ -164,11 +166,18 @@ int main(int argc, char **argv)
 			pdfname = g_strdup_printf("./%s.pdf", basename);
 		}
 
+		if (!pdfname) {
+			pdfname = g_strdup_printf("./%s.svg", basename);
+		}
+
+
 		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz, mappingname, cellname,
-					 (double)scale, pdf_layers, pdf_standalone);
+					 (double)scale, pdf_layers, pdf_standalone, svg, svgname);
 		/* Clean up */
 		g_free(pdfname);
 		g_free(texname);
+		g_free(svgname);
+		g_free(basename);
 		if (mappingname)
 			g_free(mappingname);
 		if (cellname)

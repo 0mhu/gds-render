@@ -251,13 +251,21 @@ static void on_convert_clicked(gpointer button, gpointer user)
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
 	/* Set file filter according to settings */
 	filter = gtk_file_filter_new();
-	if (sett.renderer == RENDERER_LATEX_TIKZ) {
+	switch (sett.renderer) {
+	case RENDERER_LATEX_TIKZ:
 		gtk_file_filter_add_pattern(filter, "*.tex");
 		gtk_file_filter_set_name(filter, "LaTeX-Files");
-	} else {
+		break;
+	case RENDERER_CAIROGRAPHICS_PDF:
 		gtk_file_filter_add_pattern(filter, "*.pdf");
 		gtk_file_filter_set_name(filter, "PDF-Files");
+		break;
+	case RENDERER_CAIROGRAPHICS_SVG:
+		gtk_file_filter_add_pattern(filter, "*.svg");
+		gtk_file_filter_set_name(filter, "SVG-Files");
+		break;
 	}
+
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
@@ -274,8 +282,12 @@ static void on_convert_clicked(gpointer button, gpointer user)
 						  sett.tex_pdf_layers, sett.tex_standalone);
 			fclose(output_file);
 			break;
-		case RENDERER_CAIROGRAPHICS:
-			cairo_render_cell_to_pdf(cell_to_render, layer_list, file_name, sett.scale);
+		case RENDERER_CAIROGRAPHICS_SVG:
+		case RENDERER_CAIROGRAPHICS_PDF:
+			cairo_render_cell_to_vector_file(cell_to_render, layer_list,
+							 (sett.renderer == RENDERER_CAIROGRAPHICS_PDF ? file_name : NULL),
+							 (sett.renderer == RENDERER_CAIROGRAPHICS_SVG ? file_name : NULL),
+							 sett.scale);
 			break;
 		}
 		g_free(file_name);
