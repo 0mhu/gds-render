@@ -258,7 +258,7 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 	}
 
 	if (svg_file) {
-		svg_surface = cairo_svg_surface_create(svg_file, 200, 200);
+		svg_surface = cairo_svg_surface_create(svg_file, xmax-xmin, ymax-ymin);
 		svg_cr = cairo_create(svg_surface);
 	}
 
