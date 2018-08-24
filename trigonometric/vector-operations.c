@@ -27,6 +27,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define ABS_DBL(a) ((a) < 0 ? -(a) : (a))
+
 double vector_2d_scalar_multipy(struct vector_2d *a, struct vector_2d *b)
 {
 	if (a && b)
@@ -35,7 +37,7 @@ double vector_2d_scalar_multipy(struct vector_2d *a, struct vector_2d *b)
 		return 0.0;
 }
 
-void vector_2d_normaize(struct vector_2d *vec)
+void vector_2d_normalize(struct vector_2d *vec)
 {
 	double len;
 	if (!vec)
@@ -53,14 +55,14 @@ void vector_2d_rotate(struct vector_2d *vec, double angle)
 	sin_val = sin(angle);
 	cos_val = cos(angle);
 
-	vecor_2d_copy(&temp, vec);
+	vector_2d_copy(&temp, vec);
 
 	/* Apply rotation matrix */
 	vec->x = (cos_val * temp.x) - (sin_val * temp.y);
 	vec->y = (sin_val * temp.x) + (cos_val * temp.y);
 }
 
-struct vector_2d *vecor_2d_copy(struct vector_2d *opt_res, struct vector_2d *vec)
+struct vector_2d *vector_2d_copy(struct vector_2d *opt_res, struct vector_2d *vec)
 {
 	struct vector_2d *res;
 
@@ -108,4 +110,31 @@ double vector_2d_abs(struct vector_2d *vec)
 		len = sqrt(pow(vec->x,2)+pow(vec->y,2));
 	}
 	return len;
+}
+
+double vector_2d_calculate_angle_between(struct vector_2d *a, struct vector_2d *b)
+{
+	double cos_angle;
+
+	if (!a || !b)
+		return 0.0;
+
+	cos_angle = ABS_DBL(vector_2d_scalar_multipy(a, b)) / (vector_2d_abs(a) * vector_2d_abs(b));
+	return acos(cos_angle);
+}
+
+void vector_2d_subtract(struct vector_2d *res, struct vector_2d *a, struct vector_2d *b)
+{
+	if (res && a && b) {
+		res->x = a->x - b->x;
+		res->y = a->y - b->y;
+	}
+}
+
+void vector_2d_add(struct vector_2d *res, struct vector_2d *a, struct vector_2d *b)
+{
+	if (res && a && b) {
+		res->x = a->x +b->x;
+		res->y = a->y + b->y;
+	}
 }
