@@ -52,6 +52,9 @@ void vector_2d_rotate(struct vector_2d *vec, double angle)
 	double sin_val, cos_val;
 	struct vector_2d temp;
 
+	if (!vec)
+		return;
+
 	sin_val = sin(angle);
 	cos_val = cos(angle);
 

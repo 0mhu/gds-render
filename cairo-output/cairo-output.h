@@ -37,10 +37,11 @@
  * @brief Render \p cell to a PDF file specified by \p pdf_file
  * @param cell Toplevel cell to render
  * @param layer_infos List of layer information. Specifies color and layer stacking
- * @param pdf_file Output file
+ * @param pdf_file PDF output file. Set to NULL if no PDF file has to be generated
+ * @param svg_file SVG output file. Set to NULL if no SVG file has to be generated
  * @param scale Scale the output image down by \p scale
  */
-void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file, double scale);
+void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, char *pdf_file, char *svg_file, double scale);
 
 /** @} */
 

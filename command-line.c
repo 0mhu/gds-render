@@ -50,21 +50,9 @@ static void delete_layer_info_with_name(struct layer_info *info)
 	}
 }
 
-/**
- * @brief Convert GDS according to supplied parameters
- * @param gds_name GDS File path
- * @param pdf_name Cairo-PDF path
- * @param tex_name TeX/TikZ path
- * @param pdf Render Cairo
- * @param tex Render LaTeX
- * @param layer_file Layer mapping file
- * @param cell_name Cell name to render
- * @param scale Scale image down by this value
- * @param pdf_layers TikZ creates OCG layers
- * @param pdf_standalone LaTeX document is standalone
- */
 void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
-			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers, gboolean pdf_standalone)
+			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers,
+			      gboolean pdf_standalone, gboolean svg, char *svg_name)
 {
 	GList *libs = NULL;
 	FILE *tex_file;
@@ -143,8 +131,9 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	}
 
 	/* Render outputs */
-	if (pdf == TRUE) {
-		cairo_render_cell_to_pdf(toplevel_cell, layer_info_list, pdf_name, scale);
+	if (pdf == TRUE || svg == TRUE) {
+		cairo_render_cell_to_vector_file(toplevel_cell, layer_info_list, (pdf == TRUE ? pdf_name : NULL),
+						 (svg == TRUE ? svg_name : NULL), scale);
 	}
 
 	if (tex == TRUE) {

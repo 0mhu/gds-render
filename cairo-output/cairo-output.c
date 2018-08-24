@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
- /**
+/**
   * @file cairo-output.c
   * @brief Output renderer for Cairo PDF export
   * @author Mario Hüttel <mario.huettel@gmx.net>
@@ -31,15 +31,16 @@
 #include <stdlib.h>
 #include <cairo.h>
 #include <cairo-pdf.h>
+#include <cairo-svg.h>
 
 /**
  * @brief The cairo_layer struct
  * Each rendered layer is represented by this struct.
  */
 struct cairo_layer {
-		cairo_t *cr; /**< @brief cairo context for layer*/
-		cairo_surface_t *rec; /**< @brief Recording surface to hold the layer */
-		struct layer_info *linfo; /**< @brief Reference to layer information */
+	cairo_t *cr; /**< @brief cairo context for layer*/
+	cairo_surface_t *rec; /**< @brief Recording surface to hold the layer */
+	struct layer_info *linfo; /**< @brief Reference to layer information */
 };
 
 /**
@@ -177,10 +178,10 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 
 }
 
-void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *pdf_file, double scale)
+void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, char *pdf_file, char *svg_file, double scale)
 {
-	cairo_surface_t *pdf_surface;
-	cairo_t *pdf_cr;
+	cairo_surface_t *pdf_surface, *svg_surface;
+	cairo_t *pdf_cr, *svg_cr;
 	struct layer_info *linfo;
 	struct cairo_layer *layers;
 	struct cairo_layer *lay;
@@ -188,6 +189,11 @@ void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *p
 	int i;
 	double rec_x0, rec_y0, rec_width, rec_height;
 	double xmin = INT32_MAX, xmax = INT32_MIN, ymin = INT32_MAX, ymax = INT32_MIN;
+
+	if (pdf_file == NULL && svg_file == NULL) {
+		/* No output specified */
+		return;
+	}
 
 	layers = (struct cairo_layer *)calloc(MAX_LAYERS, sizeof(struct cairo_layer));
 
@@ -246,8 +252,15 @@ void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *p
 
 	printf("Bounding box: (%lf,%lf) -- (%lf,%lf)\n", xmin, ymin, xmax, ymax);
 
-	pdf_surface = cairo_pdf_surface_create(pdf_file, xmax-xmin, ymax-ymin);
-	pdf_cr = cairo_create(pdf_surface);
+	if (pdf_file) {
+		pdf_surface = cairo_pdf_surface_create(pdf_file, xmax-xmin, ymax-ymin);
+		pdf_cr = cairo_create(pdf_surface);
+	}
+
+	if (svg_file) {
+		svg_surface = cairo_svg_surface_create(svg_file, xmax-xmin, ymax-ymin);
+		svg_cr = cairo_create(svg_surface);
+	}
 
 	/* Write layers to PDF */
 	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
@@ -258,13 +271,29 @@ void cairo_render_cell_to_pdf(struct gds_cell *cell, GList *layer_infos, char *p
 			continue;
 		}
 
-		cairo_set_source_surface(pdf_cr, layers[linfo->layer].rec, -xmin, -ymin);
-		cairo_paint_with_alpha(pdf_cr, linfo->color.alpha);
+		if (pdf_file) {
+			cairo_set_source_surface(pdf_cr, layers[linfo->layer].rec, -xmin, -ymin);
+			cairo_paint_with_alpha(pdf_cr, linfo->color.alpha);
+		}
+
+		if (svg_file) {
+			cairo_set_source_surface(svg_cr, layers[linfo->layer].rec, -xmin, -ymin);
+			cairo_paint_with_alpha(svg_cr, linfo->color.alpha);
+		}
+
 	}
 
-	cairo_show_page(pdf_cr);
-	cairo_destroy(pdf_cr);
-	cairo_surface_destroy(pdf_surface);
+	if (pdf_file) {
+		cairo_show_page(pdf_cr);
+		cairo_destroy(pdf_cr);
+		cairo_surface_destroy(pdf_surface);
+	}
+
+	if (svg_file) {
+		cairo_show_page(svg_cr);
+		cairo_destroy(svg_cr);
+		cairo_surface_destroy(svg_surface);
+	}
 
 ret_clear_layers:
 	for (i = 0; i < MAX_LAYERS; i++) {
