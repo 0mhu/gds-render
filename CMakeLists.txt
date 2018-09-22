@@ -1,17 +1,16 @@
+project(gds-render)
+
 cmake_minimum_required(VERSION 2.8)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLIB REQUIRED glib-2.0)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(CAIRO REQUIRED cairo)
 
-project(gds-render)
-
 add_subdirectory(glade)
 
 include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS})
 link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
-
 
 aux_source_directory("widgets" LAYER_SOURCES)
 aux_source_directory("tree-renderer" RENDERER_SOURCES)
