@@ -50,7 +50,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	g_object_unref(builder);
 }
 
-const GActionEntry app_actions[] = {
+const static GActionEntry app_actions[] = {
 	{ "quit", app_quit },
 	{ "about", app_about }
 };
