@@ -39,7 +39,7 @@
 int parse_gds_from_file(const char *filename, GList **library_array);
 /**
  * @brief Deletes all libraries including cells, references etc.
- * @param Pointer to a list of #gds_library. Is set to NULL after completion.
+ * @param library_list Pointer to a list of #gds_library. Is set to NULL after completion.
  * @return 0
  */
 int clear_lib_list(GList **library_list);

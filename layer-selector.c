@@ -18,7 +18,7 @@
  */
 
 /**
- * @file layer-selection.c
+ * @file layer-selector.c
  * @brief Implementation of the layer selector
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
