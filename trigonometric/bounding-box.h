@@ -23,6 +23,11 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+/**
+ * @addtogroup trigonometric
+ * @{
+ */
+
 #ifndef _BOUNDING_BOX_H_
 #define _BOUNDING_BOX_H_
 #include <glib.h>
@@ -42,4 +47,7 @@ void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t
 void bounding_box_update_box(union bounding_box *destination, union bounding_box *update);
 void bounding_box_prepare_empty(union bounding_box *box);
 void bounding_box_update_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt);
+
 #endif /* _BOUNDING_BOX_H_ */
+
+/** @} */

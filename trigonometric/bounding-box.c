@@ -23,6 +23,11 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+/**
+ * @addtogroup trigonometric
+ * @{
+ */
+
 #include <stdio.h>
 #include "bounding-box.h"
 #include <math.h>
@@ -137,3 +142,5 @@ void bounding_box_update_point(union bounding_box *destination, conv_generic_to_
 {
 
 }
+
+/** @} */

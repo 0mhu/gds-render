@@ -23,6 +23,12 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+/**
+ * @addtogroup trigonometric
+ * @{
+ */
+
+
 #ifndef _VECTOR_OPERATIONS_H_
 #define _VECTOR_OPERATIONS_H_
 
@@ -48,3 +54,5 @@ void vector_2d_subtract(struct vector_2d *res, struct vector_2d *a, struct vecto
 void vector_2d_add(struct vector_2d *res, struct vector_2d *a, struct vector_2d *b);
 
 #endif /* _VECTOR_OPERATIONS_H_ */
+
+/** @} */

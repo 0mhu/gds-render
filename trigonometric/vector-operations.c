@@ -23,6 +23,11 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+/**
+ * @addtogroup trigonometric
+ * @{
+ */
+
 #include "vector-operations.h"
 #include <math.h>
 #include <stdlib.h>
@@ -141,3 +146,5 @@ void vector_2d_add(struct vector_2d *res, struct vector_2d *a, struct vector_2d 
 		res->y = a->y + b->y;
 	}
 }
+
+/** @} */

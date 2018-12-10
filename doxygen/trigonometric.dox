@@ -1,0 +1,8 @@
+/* This file only contains help information for doxygen */
+
+/**
+ * @defgroup trigonometric Trigonometric Helper Functions
+ * @description The trigonometric helper function will be used in future releases to pcalculate bounding boxes
+ * @note Currently not in use!
+ * @warning Code is incomplete. DO NOT USE!
+ */
