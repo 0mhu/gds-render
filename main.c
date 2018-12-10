@@ -32,6 +32,7 @@ struct application_data {
 static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
 	struct application_data *appdata = (struct application_data *)user_data;
+
 	gtk_widget_destroy(GTK_WIDGET(appdata->main_window));
 }
 
@@ -78,8 +79,7 @@ static int start_gui(int argc, char **argv)
 
 	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_FLAGS_NONE);
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
-	//g_action_map_add_action_entries(G_ACTION_MAP(gapp), app_actions, G_N_ELEMENTS(app_actions), &appdata);
-	g_signal_connect (gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
+	g_signal_connect(gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
 
 
 
@@ -90,7 +90,8 @@ static int start_gui(int argc, char **argv)
 	g_menu_append(m_about, "About", "app.about");
 	g_menu_append_section(menu, NULL, G_MENU_MODEL(m_about));
 	g_menu_append_section(menu, NULL, G_MENU_MODEL(m_quit));
-	g_action_map_add_action_entries(G_ACTION_MAP(gapp), app_actions, G_N_ELEMENTS(app_actions), &appdata);
+	g_action_map_add_action_entries(G_ACTION_MAP(gapp), app_actions,
+					G_N_ELEMENTS(app_actions), &appdata);
 	gtk_application_set_app_menu(GTK_APPLICATION(gapp), G_MENU_MODEL(menu));
 
 	g_object_unref(m_quit);
@@ -98,8 +99,8 @@ static int start_gui(int argc, char **argv)
 	g_object_unref(menu);
 
 
-	app_status = g_application_run (G_APPLICATION(gapp), argc, argv);
-	g_object_unref (gapp);
+	app_status = g_application_run(G_APPLICATION(gapp), argc, argv);
+	g_object_unref(gapp);
 
 	return app_status;
 }
@@ -116,8 +117,7 @@ int main(int argc, char **argv)
 	int app_status;
 
 
-	GOptionEntry entries[] =
-	{
+	GOptionEntry entries[] = {
 	  { "tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
 	  { "pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
 	  //{ "svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
@@ -135,11 +135,11 @@ int main(int argc, char **argv)
 	context = g_option_context_new(" FILE - Convert GDS file <FILE> to graphic");
 	g_option_context_add_main_entries(context, entries, NULL);
 	g_option_context_add_group(context, gtk_get_option_group(TRUE));
-	if (!g_option_context_parse (context, &argc, &argv, &error))
-	    {
-	      g_print ("Option parsing failed: %s\n", error->message);
-	      exit(1);
-	    }
+
+	if (!g_option_context_parse(context, &argc, &argv, &error)) {
+		g_print("Option parsing failed: %s\n", error->message);
+		exit(1);
+	}
 
 	if (argc >= 2) {
 		if (scale < 1) {
@@ -148,9 +148,8 @@ int main(int argc, char **argv)
 		}
 
 		/* No format selected */
-		if (!(tikz || pdf || svg)) {
+		if (!(tikz || pdf || svg))
 			tikz = TRUE;
-		}
 
 		/* Get gds name */
 		gds_name = argv[1];
@@ -158,21 +157,18 @@ int main(int argc, char **argv)
 		/* Check if PDF/TeX names are supplied. if not generate */
 		basename = g_path_get_basename(gds_name);
 
-		if (!texname) {
+		if (!texname)
 			texname = g_strdup_printf("./%s.tex", basename);
-		}
 
-		if (!pdfname) {
+		if (!pdfname)
 			pdfname = g_strdup_printf("./%s.pdf", basename);
-		}
 
-		if (!pdfname) {
+		if (!pdfname)
 			pdfname = g_strdup_printf("./%s.svg", basename);
-		}
 
-
-		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz, mappingname, cellname,
-					 (double)scale, pdf_layers, pdf_standalone, svg, svgname);
+		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz,
+					mappingname, cellname, (double)scale,
+					pdf_layers, pdf_standalone, svg, svgname);
 		/* Clean up */
 		g_free(pdfname);
 		g_free(texname);

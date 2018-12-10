@@ -112,10 +112,10 @@ RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent)
 
 void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
 {
-	GList *radio_buttons;
-	GList *temp_button_list;
-	GtkToggleButton *temp_button = NULL;
-
+	/*GList *radio_buttons;
+	 *GList *temp_button_list;
+	 *GtkToggleButton *temp_button = NULL;
+	 */
 	if (!settings || !dialog)
 		return;
 	settings->scale = gtk_range_get_value(GTK_RANGE(dialog->scale));
