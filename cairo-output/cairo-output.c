@@ -178,6 +178,15 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 
 }
 
+/**
+ * @brief Toplevel function of cairo output renderer
+ * @param cell Cell to render
+ * @param layer_infos Layer information
+ * @param pdf_file Destination PDF file
+ * @param svg_file Destination SVG file
+ * @param scale Image will be scaled by scale^-1
+ * @warning SVG output doesn't behave as expected
+ */
 void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, char *pdf_file, char *svg_file, double scale)
 {
 	cairo_surface_t *pdf_surface, *svg_surface;

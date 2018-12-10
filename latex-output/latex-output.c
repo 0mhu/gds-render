@@ -248,6 +248,16 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 }
 
+/**
+ * @brief Renders \p cell with its subcells to TikZ code.
+ * @note Preferences \p create_pdf_layers and \p standalone_document can be changed in LaTeX code afterwards.
+ * @param cell Cell to render
+ * @param layer_infos Layer information
+ * @param tex_file Destination file
+ * @param scale Scaling factor. Image will be scaled by scale^-1
+ * @param create_pdf_layers Default value for pdf OCR layers
+ * @param standalone_document Default value for standalone document class
+ */
 void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale,
 			       gboolean create_pdf_layers, gboolean standalone_document)
 {
