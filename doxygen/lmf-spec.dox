@@ -5,7 +5,7 @@ File Format
 -----------
 
 The layer mapping file contains information on how to render the layers.
-The information is stored in CSV format.
+The information is stored in CSV format -- *True CSV*; not that rubbish with semicolons that Excel calls CSV.
 
 Each line representing a layer consists of following fields:
 
