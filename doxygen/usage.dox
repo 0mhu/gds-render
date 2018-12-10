@@ -21,5 +21,6 @@ The graphical user interface (GUI) can be used to open GDS Files, configure the 
 It is possible to export the layer configurations so they can be used later on. Even in the @ref cmd 
 
 @image html gui.svg
+@image latex gui.pdf
 
 */
