@@ -35,7 +35,7 @@
 
 /**
  * @brief Render \p cell to a PDF file specified by \p pdf_file
- * @param cell Toplevel cell to render
+ * @param cell Toplevel cell to @ref Cairo-Renderer
  * @param layer_infos List of layer information. Specifies color and layer stacking
  * @param pdf_file PDF output file. Set to NULL if no PDF file has to be generated
  * @param svg_file SVG output file. Set to NULL if no SVG file has to be generated
