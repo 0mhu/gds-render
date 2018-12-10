@@ -34,7 +34,7 @@
 #include "vector-operations.h"
 
 union bounding_box {
-	/** Coordinate System is (y up | x right)^ */
+	/** Coordinate System is (y up | x right) */
 	struct _vectors {
 		struct vector_2d lower_left;
 		struct vector_2d upper_right;
