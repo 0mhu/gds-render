@@ -34,11 +34,12 @@
 #include "vector-operations.h"
 
 union bounding_box {
-    struct _vectors {
-	struct vector_2d lower_left;
-	struct vector_2d upper_right;
-    } vectors;
-    struct vector_2d vector_array[2];
+	/** Coordinate System is (y up | x right)^ */
+	struct _vectors {
+		struct vector_2d lower_left;
+		struct vector_2d upper_right;
+	} vectors;
+	struct vector_2d vector_array[2];
 };
 
 typedef void (*conv_generic_to_vector_2d_t)(void *, struct vector_2d *);
