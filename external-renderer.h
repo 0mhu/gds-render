@@ -18,7 +18,7 @@
  */
 
 /**
- * @file command-line.c
+ * @file external-renderer.h
  * @brief Render according to command line parameters
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
