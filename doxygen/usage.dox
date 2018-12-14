@@ -3,16 +3,20 @@
 @section cmd Command Line Interface
 To use the application on the command line check 'gds-render --help'.
 
-Application options:
--  -t, --tikz                Output TikZ code
--  -p, --pdf                 Output PDF document
--  -s, --scale=<SCALE>       Divide output coordinates by <SCALE>
--  -o, --tex-output=PATH     Optional path for TeX file
--  -O, --pdf-output=PATH     Optional path for PDF file
--  -m, --mapping=PATH        Path for Layer Mapping File (see @ref lmf-spec)
--  -c, --cell=NAME           Cell to render
--  -a, --tex-standalone      Configure TeX Code standalone
--  -l, --tex-layers          configure TeX code to create PDF Layers (OCG)
+Application Options:
+-  -t, --tikz                         Output TikZ code
+-  -p, --pdf                          Output PDF document
+-  -s, --scale=<SCALE>                Divide output coordinates by <SCALE>
+-  -o, --tex-output=PATH              Optional path for TeX file
+-  -O, --pdf-output=PATH              Optional path for PDF file
+-  -m, --mapping=PATH                 Path for Layer Mapping File
+-  -c, --cell=NAME                    Cell to render
+-  -a, --tex-standalone               Create standalone PDF
+-  -l, --tex-layers                   Create PDF Layers (OCG)
+-  -P, --custom-render-lib=PATH       Path to a custom shared object, that implements the render_cell_to_file function
+-  -e, --external-lib-output=PATH     Output path for external render library
+-  --display=DISPLAY                  X display to use
+
 
 @section gui Graphical User Interface
 
