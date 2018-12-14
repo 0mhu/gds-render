@@ -34,6 +34,7 @@
 #include "mapping-parser.h"
 #include "cairo-output/cairo-output.h"
 #include "latex-output/latex-output.h"
+#include "external-renderer.h"
 
 /**
  * @brief Delete layer_info and free nem element.
@@ -52,7 +53,7 @@ static void delete_layer_info_with_name(struct layer_info *info)
 
 void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
 			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers,
-			      gboolean pdf_standalone, gboolean svg, char *svg_name)
+			      gboolean pdf_standalone, gboolean svg, char *svg_name, char *so_name, char *so_out_file)
 {
 	GList *libs = NULL;
 	FILE *tex_file;
@@ -71,7 +72,7 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	struct gds_cell *toplevel_cell = NULL, *temp_cell;
 
 	/* Check if parameters are valid */
-	if (!gds_name || ! pdf_name || !tex_name || !layer_file || !cell_name) {
+	if (!gds_name || (!pdf_name && pdf)  || (!tex_name && tex) || !layer_file || !cell_name) {
 		printf("Probably missing argument. Check --help option\n");
 		return;
 	}
@@ -142,6 +143,16 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 			goto ret_clear_list;
 		latex_render_cell_to_code(toplevel_cell, layer_info_list, tex_file, scale, pdf_layers, pdf_standalone);
 		fclose(tex_file);
+	}
+
+	if (so_name && so_out_file) {
+		if (strlen(so_name) == 0 || strlen(so_out_file) == 0)
+			goto ret_clear_list;
+
+		/* Render output using external renderer */
+		printf("Invoking external renderer!\n");
+		external_renderer_render_cell(toplevel_cell, layer_info_list, so_out_file, so_name);
+		printf("External renderer finished!\n");
 	}
 
 ret_clear_list:

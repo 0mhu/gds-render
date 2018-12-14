@@ -19,7 +19,7 @@ aux_source_directory("gds-parser" PARSER_SOURCES)
 aux_source_directory("latex-output" LATEX_SOURCES)
 aux_source_directory("cairo-output" CAIRO_SOURCES)
 aux_source_directory("trigonometric" TRIG_SOURCES)
-set(SOURCE "main.c" "layer-selector.c" "mapping-parser.c" "command-line.c" "main-window.c")
+set(SOURCE "main.c" "layer-selector.c" "mapping-parser.c" "command-line.c" "main-window.c" "external-renderer.c")
 
 set(SOURCE
   ${SOURCE}
@@ -36,6 +36,6 @@ add_compile_options(-Wall)
 add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/glade/resources.c)
 add_dependencies(${PROJECT_NAME} glib-resources)
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/glade/resources.c PROPERTIES GENERATED 1)
-target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m)
+target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m ${CMAKE_DL_LIBS})
 install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 

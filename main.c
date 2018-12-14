@@ -22,6 +22,7 @@
 #include <glib.h>
 #include "main-window.h"
 #include "command-line.h"
+#include "external-renderer.h"
 
 struct application_data {
 	GtkApplication *app;
@@ -116,22 +117,26 @@ int main(int argc, char **argv)
 	gchar *basename;
 	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL, *cellname = NULL, *svgname = NULL;
 	gboolean tikz = FALSE, pdf = FALSE, pdf_layers = FALSE, pdf_standalone = FALSE, svg = FALSE;
+	gchar *custom_library_path = NULL;
+	gchar *custom_library_file_name = NULL;
 	int scale = 1000;
 	int app_status;
 
 
 	GOptionEntry entries[] = {
-	  { "tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
-	  { "pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
-	  //{ "svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
-	  { "scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
-	  { "tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
-	  { "pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
-	  //{ "svg-output", 0, 0, G_OPTION_ARG_FILENAME, &svgname, "Optional path for PDF file", "PATH"},
-	  { "mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
-	  { "cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
-	  { "tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
-	  { "tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
+	  {"tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
+	  {"pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
+	  //{"svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
+	  {"scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
+	  {"tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
+	  {"pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
+	  //{"svg-output", 0, 0, G_OPTION_ARG_FILENAME, &svgname, "Optional path for PDF file", "PATH"},
+	  {"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
+	  {"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
+	  {"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
+	  {"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
+	  {"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
+	  {"external-lib-output", 'e', 0, G_OPTION_ARG_FILENAME, &custom_library_file_name, "Output path for external render library", "PATH"},
 	  { NULL }
 	};
 
@@ -171,7 +176,8 @@ int main(int argc, char **argv)
 
 		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz,
 					mappingname, cellname, (double)scale,
-					pdf_layers, pdf_standalone, svg, svgname);
+					pdf_layers, pdf_standalone, svg, svgname,
+					custom_library_path, custom_library_file_name);
 		/* Clean up */
 		g_free(pdfname);
 		g_free(texname);
