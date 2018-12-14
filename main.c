@@ -28,10 +28,11 @@ struct application_data {
 	GtkWindow *main_window;
 };
 
-
 static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
 	struct application_data *appdata = (struct application_data *)user_data;
+	(void)action;
+	(void)parameter;
 
 	gtk_widget_destroy(GTK_WIDGET(appdata->main_window));
 }
@@ -41,6 +42,8 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	GtkBuilder *builder;
 	GtkDialog *dialog;
 	struct application_data *appdata = (struct application_data *)user_data;
+	(void)action;
+	(void)parameter;
 
 	builder = gtk_builder_new_from_resource("/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
