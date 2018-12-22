@@ -85,8 +85,6 @@ static int start_gui(int argc, char **argv)
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
 	g_signal_connect(gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
 
-
-
 	menu = g_menu_new();
 	m_quit = g_menu_new();
 	m_about = g_menu_new();
@@ -101,7 +99,6 @@ static int start_gui(int argc, char **argv)
 	g_object_unref(m_quit);
 	g_object_unref(m_about);
 	g_object_unref(menu);
-
 
 	app_status = g_application_run(G_APPLICATION(gapp), argc, argv);
 	g_object_unref(gapp);
@@ -121,7 +118,6 @@ int main(int argc, char **argv)
 	gchar *custom_library_file_name = NULL;
 	int scale = 1000;
 	int app_status;
-
 
 	GOptionEntry entries[] = {
 	  {"tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
@@ -191,7 +187,6 @@ int main(int argc, char **argv)
 	} else {
 		app_status = start_gui(argc, argv);
 	}
-
 
 	return app_status;
 }
