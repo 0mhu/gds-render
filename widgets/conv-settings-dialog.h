@@ -75,6 +75,20 @@ void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struc
  */
 void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings);
 
+/**
+ * @brief renderer_settings_dialog_set_cell_width Set width for rendered cell
+ * @param dialog
+ * @param width Width in meters
+ */
+void renderer_settings_dialog_set_cell_width(RendererSettingsDialog *dialog, double width);
+
+/**
+ * @brief renderer_settings_dialog_set_cell_height Set height for rendered cell
+ * @param dialog
+ * @param height Height in meters
+ */
+void renderer_settings_dialog_set_cell_height(RendererSettingsDialog *dialog, double height);
+
 #endif /* __CONV_SETTINGS_DIALOG_H__ */
 
 /** @} */

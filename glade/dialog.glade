@@ -4,7 +4,7 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="lower">1</property>
-    <property name="upper">3000</property>
+    <property name="upper">4000</property>
     <property name="value">1000</property>
     <property name="step_increment">10</property>
     <property name="page_increment">1000</property>
@@ -69,6 +69,7 @@
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="adjustment">adjustment1</property>
+        <property name="fill_level">4000</property>
         <property name="round_digits">0</property>
         <property name="digits">0</property>
       </object>
@@ -108,7 +109,7 @@
     </child>
     <child>
       <object class="GtkDrawingArea" id="shape-drawer">
-        <property name="height_request">100</property>
+        <property name="height_request">200</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
       </object>
@@ -116,6 +117,39 @@
         <property name="expand">False</property>
         <property name="fill">True</property>
         <property name="position">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkLabel" id="x-label">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="y-label">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">7</property>
       </packing>
     </child>
   </object>
