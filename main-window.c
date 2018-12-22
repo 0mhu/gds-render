@@ -242,8 +242,6 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		goto ret_layer_destroy;
 	}
 
-
-
 	/* save file dialog */
 	dialog = gtk_file_chooser_dialog_new((sett.renderer == RENDERER_LATEX_TIKZ
 					      ? "Save LaTeX File" : "Save PDF"),

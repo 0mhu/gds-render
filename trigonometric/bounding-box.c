@@ -135,12 +135,26 @@ static void calculate_path_miter_points(struct vector_2d *a, struct vector_2d *b
 
 void bounding_box_calculate_path_box(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
 {
-
+	printf("Error! Function bounding_box_calculate_path_box not yet implemented!\n");
 }
 
 void bounding_box_update_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt)
 {
+	struct vector_2d point;
 
+	if (!destination || !pt) {
+		return;
+	}
+
+	if (!conv_func)
+		conv_func(pt, &point);
+	else
+		(void)vector_2d_copy(&point, (struct vector_2d *)pt);
+
+	destination->vectors.lower_left.x = MIN(destination->vectors.lower_left.x, point.x);
+	destination->vectors.lower_left.y = MIN(destination->vectors.lower_left.y, point.y);
+	destination->vectors.upper_right.x = MAX(destination->vectors.upper_right.x, point.x);
+	destination->vectors.upper_right.y = MAX(destination->vectors.upper_right.y, point.y);
 }
 
 /** @} */
