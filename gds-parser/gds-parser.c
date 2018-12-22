@@ -48,6 +48,12 @@
 #include <math.h>
 #include <cairo.h>
 
+/**
+ * @brief Default units assumed for library.
+ * @note This value is usually overwritten with the value defined in the library.
+ */
+#define GDS_DEFAULT_UNITS (10E-9)
+
 #define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS error*/
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS warning */
 
@@ -221,7 +227,7 @@ static GList *append_library(GList *curr_list, struct gds_library **library_ptr)
 	if (lib) {
 		lib->cells = NULL;
 		lib->name[0] = 0;
-		lib->unit_to_meters = 1; // Default. Will be overwritten
+		lib->unit_in_meters = GDS_DEFAULT_UNITS; // Default. Will be overwritten
 		lib->cell_names = NULL;
 	} else
 		return NULL;
@@ -383,7 +389,7 @@ static int name_cell(struct gds_cell *cell, unsigned int bytes,
 		return -1;
 	}
 	data[bytes] = 0; // Append '0'
-	len = strlen(data);
+	len = (int)strlen(data);
 	if (len > CELL_NAME_MAX-1) {
 		GDS_ERROR("Cell name '%s' too long: %d\n", data, len);
 		return -1;
@@ -710,6 +716,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		case PATHTYPE:
 			break;
+		case UNITS:
+			break;
 		default:
 			//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
 			break;
@@ -731,7 +739,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		switch (rec_type) {
 
 		case HEADER:
-		case UNITS:
 		case ENDLIB:
 		case ENDSTR:
 		case BOUNDARY:
@@ -742,6 +749,20 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		case INVALID:
 			break;
 
+		case UNITS:
+			if (!current_lib) {
+				GDS_WARN("Units defined outside of library!\n");
+				break;
+			}
+
+			if (rec_data_length != 16) {
+				GDS_WARN("Unit define incomplete. Will assume database unit of %E meters\n", current_lib->unit_in_meters);
+				break;
+			}
+
+			current_lib->unit_in_meters = gds_convert_double(&workbuff[8]);
+			GDS_INF("Length of database unit: %E meters\n", current_lib->unit_in_meters);
+			break;
 		case BGNLIB:
 			/* Parse date record */
 			gds_parse_date(workbuff, read, &current_lib->mod_time, &current_lib->access_time);
