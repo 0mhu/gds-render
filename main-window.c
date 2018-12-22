@@ -202,8 +202,8 @@ end_destroy:
 static void on_convert_clicked(gpointer button, gpointer user)
 {
 	static struct render_settings sett = {
-		.scale = 1000.0f,
-				.renderer = RENDERER_LATEX_TIKZ,
+		.scale = 1000.0,
+		.renderer = RENDERER_LATEX_TIKZ,
 	};
 	struct convert_button_data *data = (struct convert_button_data *)user;
 	GtkTreeSelection *selection;
