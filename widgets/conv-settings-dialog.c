@@ -123,13 +123,21 @@ static gboolean shape_drawer_drawing_callback(GtkWidget *widget, cairo_t *cr, gp
 	return FALSE;
 }
 
+static void renderer_settings_dialog_update_labels(RendererSettingsDialog *self)
+{
+	char default_buff[100];
+
+	snprintf(default_buff, sizeof(default_buff), "Width: %E", self->cell_width);
+	gtk_label_set_text(self->x_label, default_buff);
+	snprintf(default_buff, sizeof(default_buff), "Height: %E", self->cell_height);
+	gtk_label_set_text(self->y_label, default_buff);
+}
+
 static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 {
 	GtkBuilder *builder;
 	GtkWidget *box;
 	GtkDialog *dialog;
-	char default_buff[100];
-
 
 	dialog = &(self->parent);
 
@@ -156,11 +164,7 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 	/* Default values */
 	self->cell_width = 1E-6;
 	self->cell_height = 1E-6;
-
-	snprintf(default_buff, sizeof(default_buff), "Width: %E", self->cell_width);
-	gtk_label_set_text(self->x_label, default_buff);
-	snprintf(default_buff, sizeof(default_buff), "Height: %E", self->cell_height);
-	gtk_label_set_text(self->y_label, default_buff);
+	renderer_settings_dialog_update_labels(self);
 
 	g_object_unref(builder);
 }
@@ -236,6 +240,7 @@ void renderer_settings_dialog_set_cell_width(RendererSettingsDialog *dialog, dou
 		width = -width;
 
 	dialog->cell_width = width;
+	renderer_settings_dialog_update_labels(dialog);
 }
 
 void renderer_settings_dialog_set_cell_height(RendererSettingsDialog *dialog, double height)
@@ -250,6 +255,7 @@ void renderer_settings_dialog_set_cell_height(RendererSettingsDialog *dialog, do
 		height = -height;
 
 	dialog->cell_height = height;
+	renderer_settings_dialog_update_labels(dialog);
 }
 
 /** @} */
