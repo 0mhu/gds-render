@@ -51,7 +51,6 @@
         <property name="label" translatable="yes">Render SVG using Cairographics (too buggy at the moment)</property>
         <property name="use_action_appearance">True</property>
         <property name="visible">True</property>
-        <property name="sensitive">False</property>
         <property name="can_focus">True</property>
         <property name="receives_default">False</property>
         <property name="active">True</property>
