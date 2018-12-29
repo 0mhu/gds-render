@@ -157,4 +157,9 @@ void bounding_box_update_point(union bounding_box *destination, conv_generic_to_
 	destination->vectors.upper_right.y = MAX(destination->vectors.upper_right.y, point.y);
 }
 
+void bounding_box_apply_transform(double scale, double rotation, union bounding_box *box)
+{
+
+}
+
 /** @} */

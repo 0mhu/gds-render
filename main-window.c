@@ -36,6 +36,7 @@
 #include "latex-output/latex-output.h"
 #include "widgets/conv-settings-dialog.h"
 #include "cairo-output/cairo-output.h"
+#include "trigonometric/cell-trigonometrics.h"
 
 /**
  * @brief User data supplied to callback function of the open button
@@ -217,6 +218,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	GtkFileFilter *filter;
 	gint res;
 	char *file_name;
+	union bounding_box *cell_box;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
@@ -231,6 +233,9 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	/* Get layers that are rendered */
 	layer_list = export_rendered_layer_info();
 
+	/* Calculate cell size in DB units */
+
+	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
 	renderer_settings_dialog_set_settings(settings, &sett);
 	res = gtk_dialog_run(GTK_DIALOG(settings));
