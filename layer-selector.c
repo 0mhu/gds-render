@@ -342,6 +342,11 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 			color.blue, color.alpha, (export == TRUE ? 1 : 0), name);
 	/* Fix broken locale settings */
 	for (i = 0; string->str[i]; i++) {
+		if (string->str[i] == ',')
+			string->str[i] = '.';
+	}
+
+	for (i = 0; string->str[i]; i++) {
 		if (string->str[i] == ':')
 			string->str[i] = ',';
 	}
