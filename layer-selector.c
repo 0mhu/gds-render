@@ -337,7 +337,7 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	layer_element_get_color(layer_element, &color);
 
 	/* print values to line */
-	g_string_printf(string, "%d:%lf:%lf:0%lf:%lf:%d:%s\n",
+	g_string_printf(string, "%d:%lf:%lf:%lf:%lf:%d:%s\n",
 			layer, color.red, color.green,
 			color.blue, color.alpha, (export == TRUE ? 1 : 0), name);
 	/* Fix broken locale settings */
