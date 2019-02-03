@@ -20,7 +20,6 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
-#include <locale.h>
 #include "main-window.h"
 #include "command-line.h"
 #include "external-renderer.h"
@@ -114,19 +113,12 @@ int main(int argc, char **argv)
 	GOptionContext *context;
 	gchar *gds_name;
 	gchar *basename;
-	struct lconv *temp_locale;
 	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL, *cellname = NULL, *svgname = NULL;
 	gboolean tikz = FALSE, pdf = FALSE, pdf_layers = FALSE, pdf_standalone = FALSE, svg = FALSE;
 	gchar *custom_library_path = NULL;
 	gchar *custom_library_file_name = NULL;
 	int scale = 1000;
 	int app_status;
-
-	/* Set locale for layer mapping file */
-	setlocale(LC_NUMERIC, "");
-	temp_locale     = localeconv();
-	strcpy(temp_locale->decimal_point, ".");
-	strcpy(temp_locale->thousands_sep, "'");
 
 	GOptionEntry entries[] = {
 	  {"tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
