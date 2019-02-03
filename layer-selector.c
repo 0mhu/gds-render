@@ -321,6 +321,7 @@ static void load_mapping_clicked(GtkWidget *button, gpointer user_data)
  */
 static void create_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len)
 {
+	int i;
 	GString *string;
 	gboolean export;
 	const gchar *name;
@@ -336,9 +337,19 @@ static void create_csv_line(LayerElement *layer_element, char *line_buffer, size
 	layer_element_get_color(layer_element, &color);
 
 	/* print values to line */
-	g_string_printf(string, "%d,%lf,%lf,%lf,%lf,%d,%s\n",
+	g_string_printf(string, "%d:%lf:%lf:%lf:%lf:%d:%s\n",
 			layer, color.red, color.green,
 			color.blue, color.alpha, (export == TRUE ? 1 : 0), name);
+	/* Fix broken locale settings */
+	for (i = 0; string->str[i]; i++) {
+		if (string->str[i] == ',')
+			string->str[i] = '.';
+	}
+
+	for (i = 0; string->str[i]; i++) {
+		if (string->str[i] == ':')
+			string->str[i] = ',';
+	}
 
 	if (string->len > (max_len-1)) {
 		printf("Layer Definition too long. Please shorten Layer Name!!\n");
