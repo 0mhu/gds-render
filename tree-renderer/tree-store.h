@@ -37,12 +37,13 @@
 enum cell_store_columns {
         CELL_SEL_LIBRARY = 0,
         CELL_SEL_CELL,
+	CELL_SEL_CELL_COLOR, /**< Cell column color */
         CELL_SEL_MODDATE,
         CELL_SEL_ACCESSDATE,
 	CELL_SEL_COLUMN_COUNT /**< Not a column. Used to determine count of coumns **/
 };
 
-GtkTreeStore *setup_cell_selector(GtkTreeView* view);
+GtkTreeStore *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry);
 
 #endif /* __TREE_STORE_H__ */
 
