@@ -61,69 +61,53 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
 }
 
 /**
- * @brief tree_sel_search_func
+ * @brief cell_store_filter_visible_func Decides whether an element of the tree model @p model is visible.
  * @param model Tree model
- * @param column Column id
- * @param key Search key
- * @param iter Iterator
- * @param search_data User data. In this case always NULL
- * @return returns false (!) if matches
+ * @param iter Current element / iter in Model to check
+ * @param data Data. Set to static stores variable
+ * @return TRUE if visible, else FALSE
+ * @note TODO: Maybe implement Damerau-Levenshtein distance matching
  */
-static gboolean tree_sel_search_func(GtkTreeModel *model, gint column, const gchar *key, GtkTreeIter *iter, gpointer *search_data)
+static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
-	(void)search_data;
-	(void)column;
+	struct tree_stores *stores = (struct tree_stores *)data;
 	struct gds_cell *cell;
 	struct gds_library *lib;
-	GtkTreePath *path;
-	GtkTreeIter lib_iter;
-	char *lib_str = NULL, *cell_str = NULL, *div_str = NULL, *key_copy;
-	gboolean result = TRUE;
+	gboolean result = FALSE;
+	const char *search_string;
 
-	gtk_tree_model_get(model, iter, CELL_SEL_CELL, &cell, -1);
-	path = gtk_tree_model_get_path(model, iter);
+	if (!model || !iter || !stores)
+		goto exit_filter;
 
-	/* Libraries not selectable */
+	gtk_tree_model_get(model, iter, CELL_SEL_CELL, &cell, CELL_SEL_LIBRARY, &lib, -1);
+
+	if (lib) {
+		result = TRUE;
+		goto exit_filter;
+	}
+
 	if (!cell)
-		return TRUE;
+		goto exit_filter;
 
-	if (!gtk_tree_path_up(path)) {
-		gtk_tree_path_free(path);
-		printf("Cell without parent library found during search! Somethings really wrong!!!\n");
-		return TRUE;
-	}
+	search_string = gtk_entry_get_text(stores->search_entry);
 
-	/* Find name of parent library */
-	gtk_tree_model_get_iter(model, &lib_iter, path);
-	gtk_tree_model_get(model, &lib_iter, CELL_SEL_LIBRARY, &lib, -1);
-	gtk_tree_path_free(path);
+	/* Show all, if field is empty */
+	if (!strlen(search_string))
+		result = TRUE;
 
-	if (!lib) {
-		printf("Parent library invalid!\n");
-		return TRUE;
-	}
+	if (strstr(cell->name, search_string))
+		result = TRUE;
 
-	/* Search for Library/Cell division operator */
-	key_copy = strdup(key);
-	if (!key_copy)
-		goto abort_search;
+	gtk_tree_view_expand_all(stores->base_tree_view);
 
-	if ((div_str = strstr(key_copy, ":"))) {
-		lib_str = key_copy;
-		*div_str = 0x00;
-		cell_str = div_str + 1;
-
-		if (!strncmp(lib_str, lib->name, sizeof(lib->name))) {
-			if (!strncmp(cell_str, cell->name, sizeof(cell->name)))
-				result = FALSE;
-		}
-
-	} else {
-		result = (strncmp(key, cell->name, sizeof(cell->name)) ? TRUE : FALSE);
-	}
-
-abort_search:
+exit_filter:
 	return result;
+}
+
+static void change_filter(GtkWidget *entry, gpointer data)
+{
+	struct tree_stores *stores = (struct tree_stores *)data;
+	gtk_tree_model_filter_refilter(stores->filter);
 }
 
 /**
@@ -135,16 +119,26 @@ abort_search:
 struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry)
 {
 	static struct tree_stores stores;
-
-	GtkTreeStore *cell_store;
-
 	GtkCellRenderer *render_dates;
 	GtkCellRenderer *render_cell;
 	GtkCellRenderer *render_lib;
 	GtkTreeViewColumn *column;
 
-	cell_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_RGBA, G_TYPE_STRING, G_TYPE_STRING);
-	gtk_tree_view_set_model(view, GTK_TREE_MODEL(cell_store));
+	stores.base_tree_view = view;
+	stores.search_entry = search_entry;
+
+	stores.base_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_RGBA, G_TYPE_STRING, G_TYPE_STRING);
+
+	/* Searching */
+	if (search_entry) {
+		stores.filter = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(stores.base_store), NULL));
+		gtk_tree_model_filter_set_visible_func (stores.filter,
+								(GtkTreeModelFilterVisibleFunc)cell_store_filter_visible_func,
+								 &stores, NULL);
+		g_signal_connect(GTK_SEARCH_ENTRY(search_entry), "search-changed", G_CALLBACK(change_filter), &stores);
+	}
+
+	gtk_tree_view_set_model(view, GTK_TREE_MODEL(stores.filter));
 
 	render_dates = gtk_cell_renderer_text_new();
 	render_cell = lib_cell_renderer_new();
@@ -166,16 +160,6 @@ struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entr
 	/* Callback for selection
 	 * This prevents selecting a library */
 	gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(view), tree_sel_func, NULL, NULL);
-
-	/* Searching */
-	if (search_entry) {
-		gtk_tree_view_set_enable_search(view, TRUE);
-		gtk_tree_view_set_search_column(view, CELL_SEL_CELL);
-		gtk_tree_view_set_search_equal_func(view, (GtkTreeViewSearchEqualFunc)tree_sel_search_func, NULL, NULL);
-		gtk_tree_view_set_search_entry(view, search_entry);
-	}
-
-	stores.base_store = cell_store;
 
 	return &stores;
 }

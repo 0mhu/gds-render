@@ -44,7 +44,10 @@ enum cell_store_columns {
 };
 
 struct tree_stores {
+		GtkTreeView *base_tree_view;
 		GtkTreeStore *base_store;
+		GtkTreeModelFilter *filter;
+		GtkEntry *search_entry;
 };
 
 struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry);
