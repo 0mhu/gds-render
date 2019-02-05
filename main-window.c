@@ -337,26 +337,23 @@ GtkWindow *create_main_window()
 {
 	GtkBuilder *main_builder;
 	GtkTreeView *cell_tree;
-	GtkTreeStore *cell_store;
 	GtkWidget *listbox;
 	GtkWidget *conv_button;
 	GtkWidget *search_entry;
 	static GList *gds_libs;
 	static struct open_button_data open_data;
 	static struct convert_button_data conv_data;
+	struct tree_stores *cell_selector_stores;
 
 	main_builder = gtk_builder_new_from_resource("/main.glade");
 	gtk_builder_connect_signals(main_builder, NULL);
 
-
-
 	cell_tree = GTK_TREE_VIEW(gtk_builder_get_object(main_builder, "cell-tree"));
 	search_entry = GTK_WIDGET(gtk_builder_get_object(main_builder, "cell-search"));
 	open_data.search_entry = GTK_SEARCH_ENTRY(search_entry);
-	cell_store = setup_cell_selector(cell_tree, GTK_ENTRY(search_entry));
+	cell_selector_stores = setup_cell_selector(cell_tree, GTK_ENTRY(search_entry));
 
-
-	open_data.cell_store = cell_store;
+	open_data.cell_store = cell_selector_stores->base_store;
 	open_data.list_ptr = &gds_libs;
 	open_data.main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),

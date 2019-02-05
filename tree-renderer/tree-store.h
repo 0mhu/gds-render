@@ -43,7 +43,11 @@ enum cell_store_columns {
 	CELL_SEL_COLUMN_COUNT /**< Not a column. Used to determine count of coumns **/
 };
 
-GtkTreeStore *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry);
+struct tree_stores {
+		GtkTreeStore *base_store;
+};
+
+struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry);
 
 #endif /* __TREE_STORE_H__ */
 

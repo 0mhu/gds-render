@@ -130,10 +130,12 @@ abort_search:
  * @brief Setup a GtkTreeView with the necessary columns
  * @param view Tree view to set up
  * @param search_entry Entry field for search
- * @return TreeStore for storing data inside the GtkTreeView
+ * @return Tree stores for storing data inside the GtkTreeView
  */
-GtkTreeStore *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry)
+struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry)
 {
+	static struct tree_stores stores;
+
 	GtkTreeStore *cell_store;
 
 	GtkCellRenderer *render_dates;
@@ -173,6 +175,8 @@ GtkTreeStore *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry)
 		gtk_tree_view_set_search_entry(view, search_entry);
 	}
 
-	return cell_store;
+	stores.base_store = cell_store;
+
+	return &stores;
 }
 /** @} */
