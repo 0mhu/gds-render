@@ -63,6 +63,7 @@ static void layer_element_drag_begin(GtkWidget *widget,
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	int x, y;
+	(void)data;
 
 	row = gtk_widget_get_ancestor (widget, GTK_TYPE_LIST_BOX_ROW);
 	gtk_widget_get_allocation (row, &alloc);
@@ -81,35 +82,37 @@ static void layer_element_drag_begin(GtkWidget *widget,
 	cairo_surface_destroy (surface);
 }
 
-static void layer_element_drag_data_get(GtkWidget *widget,
-					GdkDragContext *context,
-					GtkSelectionData *selection_data,
-					guint info,
-					guint time,
-					gpointer data)
+static void layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
+					guint info, guint time, gpointer data)
 {
+	(void)context;
+	(void)info;
+	(void)time;
+	(void)data;
+
 	gtk_selection_data_set(selection_data, gdk_atom_intern_static_string("GTK_LIST_BOX_ROW"),
 			       32, (const guchar *)&widget, sizeof(gpointer));
 }
 
-static void layer_element_drag_data_received(GtkWidget        *widget,
-					     GdkDragContext   *context,
-					     gint              x,
-					     gint              y,
-					     GtkSelectionData *selection_data,
-					     guint             info,
-					     guint32           time,
-					     gpointer          data)
+static void layer_element_drag_data_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+					     GtkSelectionData *selection_data, guint info, guint32 time,
+					     gpointer data)
 {
 	GtkWidget *target;
 	GtkWidget *row;
 	GtkWidget *source;
 	int pos;
+	(void)context;
+	(void)x;
+	(void)y;
+	(void)info;
+	(void)time;
+	(void)data;
 
 	target = widget;
 
 	pos = gtk_list_box_row_get_index (GTK_LIST_BOX_ROW (target));
-	row = (gpointer) *(gpointer *)gtk_selection_data_get_data (selection_data);
+	row = (gpointer)(*(gpointer *)gtk_selection_data_get_data(selection_data));
 	source = gtk_widget_get_ancestor (row, GTK_TYPE_LIST_BOX_ROW);
 
 	if (source == target)
