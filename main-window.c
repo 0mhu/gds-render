@@ -46,6 +46,7 @@ struct open_button_data {
 	GList **list_ptr;
 	GtkTreeStore *cell_store;
 	GtkListBox *layer_box;
+	GtkSearchEntry *search_entry;
 };
 
 /**
@@ -113,6 +114,7 @@ static void on_load_gds(gpointer button, gpointer user)
 	char *filename;
 	GString *mod_date;
 	GString *acc_date;
+	GdkRGBA cell_text_color;
 
 	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", ptr->main_window, GTK_FILE_CHOOSER_ACTION_OPEN,
 						  "Cancel", GTK_RESPONSE_CANCEL, "Open GDSII", GTK_RESPONSE_ACCEPT, NULL);
@@ -173,10 +175,20 @@ static void on_load_gds(gpointer button, gpointer user)
 				mod_date = generate_string_from_date(&gds_c->mod_time);
 				acc_date = generate_string_from_date(&gds_c->access_time);
 
+				cell_text_color.alpha = 1;
+				cell_text_color.red = (double)61.0/(double)255.0;
+				cell_text_color.green = (double)152.0/(double)255.0;
+				cell_text_color.blue = 0.0;
+
+				/* Add cell to tree store model
+				 * CELL_SEL_CELL_COLOR will always be green,
+				 * because no cell cehcker is implemented, yet.
+				 */
 				gtk_tree_store_set (store, &celliter,
 						    CELL_SEL_CELL, gds_c,
 						    CELL_SEL_MODDATE, mod_date->str,
 						    CELL_SEL_ACCESSDATE, acc_date->str,
+						    CELL_SEL_CELL_COLOR, &cell_text_color, // TODO: implement cell checker
 						    -1);
 
 				/* Delete GStrings including string data. */
@@ -328,23 +340,23 @@ GtkWindow *create_main_window()
 {
 	GtkBuilder *main_builder;
 	GtkTreeView *cell_tree;
-	GtkTreeStore *cell_store;
 	GtkWidget *listbox;
 	GtkWidget *conv_button;
+	GtkWidget *search_entry;
 	static GList *gds_libs;
 	static struct open_button_data open_data;
 	static struct convert_button_data conv_data;
+	struct tree_stores *cell_selector_stores;
 
 	main_builder = gtk_builder_new_from_resource("/main.glade");
 	gtk_builder_connect_signals(main_builder, NULL);
 
-
-
 	cell_tree = GTK_TREE_VIEW(gtk_builder_get_object(main_builder, "cell-tree"));
-	cell_store = setup_cell_selector(cell_tree);
+	search_entry = GTK_WIDGET(gtk_builder_get_object(main_builder, "cell-search"));
+	open_data.search_entry = GTK_SEARCH_ENTRY(search_entry);
+	cell_selector_stores = setup_cell_selector(cell_tree, GTK_ENTRY(search_entry));
 
-
-	open_data.cell_store = cell_store;
+	open_data.cell_store = cell_selector_stores->base_store;
 	open_data.list_ptr = &gds_libs;
 	open_data.main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),
@@ -373,6 +385,8 @@ GtkWindow *create_main_window()
 	/* Callback for selection change of cell selector */
 	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(cell_tree)), "changed",
 			 G_CALLBACK(cell_selection_changed), conv_button);
+
+	g_object_unref(main_builder);
 
 	return (conv_data.main_window);
 }

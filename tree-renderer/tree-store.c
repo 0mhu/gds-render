@@ -61,52 +61,94 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
 }
 
 /**
+ * @brief cell_store_filter_visible_func Decides whether an element of the tree model @p model is visible.
+ * @param model Tree model
+ * @param iter Current element / iter in Model to check
+ * @param data Data. Set to static stores variable
+ * @return TRUE if visible, else FALSE
+ * @note TODO: Maybe implement Damerau-Levenshtein distance matching
+ */
+static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+{
+	struct tree_stores *stores = (struct tree_stores *)data;
+	struct gds_cell *cell;
+	struct gds_library *lib;
+	gboolean result = FALSE;
+	const char *search_string;
+
+	if (!model || !iter || !stores)
+		goto exit_filter;
+
+	gtk_tree_model_get(model, iter, CELL_SEL_CELL, &cell, CELL_SEL_LIBRARY, &lib, -1);
+
+	if (lib) {
+		result = TRUE;
+		goto exit_filter;
+	}
+
+	if (!cell)
+		goto exit_filter;
+
+	search_string = gtk_entry_get_text(stores->search_entry);
+
+	/* Show all, if field is empty */
+	if (!strlen(search_string))
+		result = TRUE;
+
+	if (strstr(cell->name, search_string))
+		result = TRUE;
+
+	gtk_tree_view_expand_all(stores->base_tree_view);
+
+exit_filter:
+	return result;
+}
+
+static void change_filter(GtkWidget *entry, gpointer data)
+{
+	struct tree_stores *stores = (struct tree_stores *)data;
+	gtk_tree_model_filter_refilter(stores->filter);
+}
+
+/**
  * @brief Setup a GtkTreeView with the necessary columns
  * @param view Tree view to set up
- * @return TreeStore for storing data inside the GtkTreeView
+ * @param search_entry Entry field for search
+ * @return Tree stores for storing data inside the GtkTreeView
  */
-GtkTreeStore *setup_cell_selector(GtkTreeView* view)
+struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry)
 {
-	GtkTreeStore *cell_store;
-
+	static struct tree_stores stores;
 	GtkCellRenderer *render_dates;
 	GtkCellRenderer *render_cell;
 	GtkCellRenderer *render_lib;
 	GtkTreeViewColumn *column;
-	GdkRGBA cell_text_color;
-	GValue val = G_VALUE_INIT;
 
-	cell_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_STRING, G_TYPE_STRING);
-	gtk_tree_view_set_model(view, GTK_TREE_MODEL(cell_store));
+	stores.base_tree_view = view;
+	stores.search_entry = search_entry;
+
+	stores.base_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_RGBA, G_TYPE_STRING, G_TYPE_STRING);
+
+	/* Searching */
+	if (search_entry) {
+		stores.filter = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(stores.base_store), NULL));
+		gtk_tree_model_filter_set_visible_func (stores.filter,
+								(GtkTreeModelFilterVisibleFunc)cell_store_filter_visible_func,
+								 &stores, NULL);
+		g_signal_connect(GTK_SEARCH_ENTRY(search_entry), "search-changed", G_CALLBACK(change_filter), &stores);
+	}
+
+	gtk_tree_view_set_model(view, GTK_TREE_MODEL(stores.filter));
 
 	render_dates = gtk_cell_renderer_text_new();
 	render_cell = lib_cell_renderer_new();
 	render_lib = lib_cell_renderer_new();
 
-	/* Set foreground color for cell column */
-	cell_text_color.alpha = 1;
-	cell_text_color.red = (double)61.0/(double)255.0;
-	cell_text_color.green = (double)152.0/(double)255.0;
-	cell_text_color.blue = 0.0;
-
-	g_value_init(&val, G_TYPE_BOOLEAN);
-	g_value_set_boolean(&val, TRUE);
-	g_object_set_property(G_OBJECT(render_cell), "foreground-set", &val);
-	g_value_unset(&val);
-
-	g_value_init(&val, GDK_TYPE_RGBA);
-	g_value_set_boxed(&val, &cell_text_color);
-	g_object_set_property(G_OBJECT(render_cell), "foreground-rgba", &val);
-	g_value_unset(&val);
-
-
-
-
 	column = gtk_tree_view_column_new_with_attributes("Library", render_lib, "gds-lib", CELL_SEL_LIBRARY, NULL);
 	gtk_tree_view_append_column(view, column);
 
 	/* Cell color: #3D9801 */
-	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "gds-cell", CELL_SEL_CELL, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "gds-cell", CELL_SEL_CELL, "foreground-rgba", CELL_SEL_CELL_COLOR, NULL);
 	gtk_tree_view_append_column(view, column);
 
 	column = gtk_tree_view_column_new_with_attributes("Mod. Date", render_dates, "text", CELL_SEL_MODDATE, NULL);
@@ -119,6 +161,6 @@ GtkTreeStore *setup_cell_selector(GtkTreeView* view)
 	 * This prevents selecting a library */
 	gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(view), tree_sel_func, NULL, NULL);
 
-	return cell_store;
+	return &stores;
 }
 /** @} */
