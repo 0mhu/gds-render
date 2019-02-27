@@ -24,6 +24,7 @@
  */
 
 #include "cell-trigonometrics.h"
+#include <math.h>
 
 /**
  * @addtogroup trigonometric
@@ -61,7 +62,9 @@ static void update_box_with_gfx(union bounding_box *box, struct gds_graphics *gf
 		 * Please be aware if paths are the outmost elements of your cell.
 		 * You might end up with a completely wrong calculated cell size.
 		 */
-		/* Okay.. You're right. It is not implemented at all. ;P */
+		bounding_box_calculate_path_box(gfx->vertices, gfx->width_absolute,
+							(conv_generic_to_vector_2d_t)&convert_gds_point_to_2d_vector,
+							&current_box);
 		break;
 	default:
 		/* Unknown graphics object. */
@@ -97,8 +100,17 @@ void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell)
 		/* Recursion Woohoo!!  This dies if your GDS is faulty and contains a reference loop */
 		calculate_cell_bounding_box(&temp_box, sub_cell->cell_ref);
 
-		/* TODO: Apply transformations! */
+		/* Apply transformations */
+		bounding_box_apply_transform(ABS(sub_cell->magnification), sub_cell->angle, sub_cell->flipped, &temp_box);
 
+		/* Move bounding box to origin */
+		temp_box.vectors.lower_left.x += sub_cell->origin.x;
+		temp_box.vectors.lower_left.x += sub_cell->origin.x;
+		temp_box.vectors.upper_right.y += sub_cell->origin.y;
+		temp_box.vectors.upper_right.y += sub_cell->origin.y;
+
+		/* update the parent's box */
+		bounding_box_update_box(box, &temp_box);
 	}
 }
 

@@ -104,6 +104,7 @@ struct gds_cell {
 	struct gds_time_field access_time;
 	GList *child_cells; /**< @brief List of #gds_cell_instance elements */
 	GList *graphic_objs; /**< @brief List of #gds_graphics */
+	struct gds_library *parent_library; /**< @brief Pointer to parent library */
 };
 
 /**

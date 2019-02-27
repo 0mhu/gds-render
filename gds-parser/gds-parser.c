@@ -58,7 +58,7 @@
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS warning */
 
 #if GDS_PRINT_DEBUG_INFOS
-	#define GDS_INF(fmt, ...) printf(fmt, ##__VA_ARGS__) /**< @brief standard printf. But cna be disabled in code */
+	#define GDS_INF(fmt, ...) printf(fmt, ##__VA_ARGS__) /**< @brief standard printf. But can be disabled in code */
 #else
 	#define GDS_INF(fmt, ...)
 #endif
@@ -303,6 +303,7 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 		cell->child_cells = NULL;
 		cell->graphic_objs = NULL;
 		cell->name[0] = 0;
+		cell->parent_library = NULL;
 	} else
 		return NULL;
 	/* return cell */
@@ -614,12 +615,20 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			GDS_INF("Leaving Library\n");
 			break;
 		case BGNSTR:
+			if (current_lib == NULL) {
+				GDS_ERROR("Defining Cell outside of library!\n");
+				run = -4;
+				break;
+			}
 			current_lib->cells = append_cell(current_lib->cells, &current_cell);
 			if (current_lib->cells == NULL) {
 				GDS_ERROR("Allocating memory failed");
 				run = -3;
 				break;
 			}
+
+			current_cell->parent_library = current_lib;
+
 			GDS_INF("Entering Cell\n");
 			break;
 		case ENDSTR:
@@ -726,7 +735,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 
 		/* No Data -> No Processing, go back to top */
-		if (!rec_data_length) continue;
+		if (!rec_data_length || run != 1) continue;
 
 		read = fread(workbuff, sizeof(char), rec_data_length, gds_file);
 

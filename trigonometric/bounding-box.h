@@ -32,6 +32,7 @@
 #define _BOUNDING_BOX_H_
 #include <glib.h>
 #include "vector-operations.h"
+#include <stdbool.h>
 
 union bounding_box {
 	/** Coordinate System is (y up | x right) */
@@ -48,7 +49,8 @@ void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t
 void bounding_box_update_box(union bounding_box *destination, union bounding_box *update);
 void bounding_box_prepare_empty(union bounding_box *box);
 void bounding_box_update_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt);
-void bounding_box_apply_transform(double scale, double rotation, union bounding_box *box);
+void bounding_box_apply_transform(double scale, double rotation_deg, bool flip_at_x, union bounding_box *box);
+void bounding_box_calculate_path_box(GList *vertices, double thickness, conv_generic_to_vector_2d_t conv_func, union bounding_box *box);
 
 #endif /* _BOUNDING_BOX_H_ */
 

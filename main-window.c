@@ -230,7 +230,8 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	GtkFileFilter *filter;
 	gint res;
 	char *file_name;
-	union bounding_box *cell_box;
+	union bounding_box cell_box;
+	double height, width;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
@@ -246,10 +247,19 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	layer_list = export_rendered_layer_info();
 
 	/* Calculate cell size in DB units */
+	bounding_box_prepare_empty(&cell_box);
+	calculate_cell_bounding_box(&cell_box, cell_to_render);
+
+	/* Calculate size in meters */
+	height = (cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y) * cell_to_render->parent_library->unit_in_meters;
+	width = (cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x) * cell_to_render->parent_library->unit_in_meters;
 
 	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
 	renderer_settings_dialog_set_settings(settings, &sett);
+	renderer_settings_dialog_set_cell_height(settings, height);
+	renderer_settings_dialog_set_cell_width(settings, width);
+
 	res = gtk_dialog_run(GTK_DIALOG(settings));
 	if (res == GTK_RESPONSE_OK) {
 		renderer_settings_dialog_get_settings(settings, &sett);

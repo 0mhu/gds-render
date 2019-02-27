@@ -133,9 +133,32 @@ static void calculate_path_miter_points(struct vector_2d *a, struct vector_2d *b
 	vector_2d_subtract(m2, m2, &v_vec);
 }
 
-void bounding_box_calculate_path_box(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
+void bounding_box_calculate_path_box(GList *vertices, double thickness,
+					conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
 {
-	printf("Error! Function bounding_box_calculate_path_box not yet implemented!\n");
+	GList *vertex_iterator;
+	struct vector_2d pt;
+
+	printf("Warning! Function bounding_box_calculate_path_box not yet implemented correctly!\n");
+
+	if (!vertices || !box)
+		return;
+
+	for (vertex_iterator = vertices; vertex_iterator != NULL; vertex_iterator = g_list_next(vertex_iterator)) {
+
+		if (conv_func != NULL)
+			conv_func(vertex_iterator->data, &pt);
+		else
+			(void)vector_2d_copy(&pt, (struct vector_2d *)vertex_iterator->data);
+
+		/* These are approximations.
+		 * Used as long as miter point calculation is not fully implemented
+		 */
+		box->vectors.lower_left.x = MIN(box->vectors.lower_left.x, pt.x - thickness/2);
+		box->vectors.lower_left.y = MIN(box->vectors.lower_left.y, pt.y - thickness/2);
+		box->vectors.upper_right.x = MAX(box->vectors.upper_right.x, pt.x + thickness/2);
+		box->vectors.upper_right.y = MAX(box->vectors.upper_right.y, pt.y + thickness/2);
+	}
 }
 
 void bounding_box_update_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt)
@@ -157,9 +180,24 @@ void bounding_box_update_point(union bounding_box *destination, conv_generic_to_
 	destination->vectors.upper_right.y = MAX(destination->vectors.upper_right.y, point.y);
 }
 
-void bounding_box_apply_transform(double scale, double rotation, union bounding_box *box)
+/**
+ * @brief bounding_box_apply_transform
+ * @param scale scaling factor
+ * @param rotation roation of bounding box around the origin in degrees (counterclockwise)
+ * @param box bounding box the operations should be applied to
+ */
+void bounding_box_apply_transform(double scale, double rotation_deg, bool flip_at_x, union bounding_box *box)
 {
+	int i;
 
+	/* Due to linearity, the order of the operations does not matter.
+	 * flip must be applied before rotation as defined by the GDS format
+	 */
+	for (i = 0; i < 2; i++) {
+		box->vector_array[i].y *= (flip_at_x ? -1 : 1);
+		vector_2d_rotate(&box->vector_array[i], rotation_deg * M_PI / 180);
+		vector_2d_scale(&box->vector_array[i], scale);
+	}
 }
 
 /** @} */
