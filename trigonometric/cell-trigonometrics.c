@@ -49,6 +49,7 @@ static void update_box_with_gfx(union bounding_box *box, struct gds_graphics *gf
 
 	switch (gfx->gfx_type) {
 	case GRAPHIC_BOX:
+		/* Expected fallthrough */
 	case GRAPHIC_POLYGON:
 		bounding_box_calculate_polygon(gfx->vertices,
 							(conv_generic_to_vector_2d_t)&convert_gds_point_to_2d_vector,
@@ -57,7 +58,7 @@ static void update_box_with_gfx(union bounding_box *box, struct gds_graphics *gf
 	case GRAPHIC_PATH:
 		/*
 		 * This is not implemented correctly.
-		 * Please be aware if paths are the oputpost elements of your cell.
+		 * Please be aware if paths are the outmost elements of your cell.
 		 * You might end up with a completely wrong calculated cell size.
 		 */
 		/* Okay.. You're right. It is not implemented at all. ;P */

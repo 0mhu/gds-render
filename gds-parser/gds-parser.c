@@ -464,6 +464,7 @@ static void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
 static void scan_library_references(gpointer library_list_item, gpointer user)
 {
 	struct gds_library *lib = (struct gds_library *)library_list_item;
+	(void)user;
 
 	GDS_INF("Scanning Library: %s\n", lib->name);
 	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
