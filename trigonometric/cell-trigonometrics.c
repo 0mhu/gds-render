@@ -105,8 +105,8 @@ void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell)
 
 		/* Move bounding box to origin */
 		temp_box.vectors.lower_left.x += sub_cell->origin.x;
-		temp_box.vectors.lower_left.x += sub_cell->origin.x;
-		temp_box.vectors.upper_right.y += sub_cell->origin.y;
+		temp_box.vectors.upper_right.x += sub_cell->origin.x;
+		temp_box.vectors.lower_left.y += sub_cell->origin.y;
 		temp_box.vectors.upper_right.y += sub_cell->origin.y;
 
 		/* update the parent's box */
