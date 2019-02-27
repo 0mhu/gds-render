@@ -870,14 +870,10 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 	fclose(gds_file);
 
-
 	if (!run) {
 		/* Iterate and find references to cells */
 		g_list_foreach(lib_list, scan_library_references, NULL);
 	}
-
-
-
 
 	*library_list = lib_list;
 
