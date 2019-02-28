@@ -38,7 +38,7 @@
 
 void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
 {
-	double xmin = DBL_MAX, xmax = DBL_MIN, ymin = DBL_MAX, ymax = DBL_MIN;
+	double xmin = DBL_MAX, xmax = -DBL_MAX, ymin = DBL_MAX, ymax = -DBL_MAX;
 	struct vector_2d temp_vec;
 	GList *list_item;
 
@@ -86,8 +86,8 @@ void bounding_box_prepare_empty(union bounding_box *box)
 {
 	box->vectors.lower_left.x = DBL_MAX;
 	box->vectors.lower_left.y = DBL_MAX;
-	box->vectors.upper_right.x = DBL_MIN;
-	box->vectors.upper_right.y = DBL_MIN;
+	box->vectors.upper_right.x = -DBL_MAX;
+	box->vectors.upper_right.y = -DBL_MAX;
 }
 
 static void calculate_path_miter_points(struct vector_2d *a, struct vector_2d *b, struct vector_2d *c,
