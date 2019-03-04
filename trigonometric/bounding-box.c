@@ -169,7 +169,7 @@ void bounding_box_update_point(union bounding_box *destination, conv_generic_to_
 		return;
 	}
 
-	if (!conv_func)
+	if (conv_func)
 		conv_func(pt, &point);
 	else
 		(void)vector_2d_copy(&point, (struct vector_2d *)pt);
