@@ -75,6 +75,27 @@ void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struc
  */
 void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings);
 
+/**
+ * @brief renderer_settings_dialog_set_cell_width Set width for rendered cell
+ * @param dialog
+ * @param width Width in database units
+ */
+void renderer_settings_dialog_set_cell_width(RendererSettingsDialog *dialog, unsigned int width);
+
+/**
+ * @brief renderer_settings_dialog_set_cell_height Set height for rendered cell
+ * @param dialog
+ * @param height Height in database units
+ */
+void renderer_settings_dialog_set_cell_height(RendererSettingsDialog *dialog, unsigned int height);
+
+/**
+ * @brief renderer_settings_dialog_set_database_unit_scale Set database scale
+ * @param dialog dialog element
+ * @param unit_in_meters Database unit in meters
+ */
+void renderer_settings_dialog_set_database_unit_scale(RendererSettingsDialog *dialog, double unit_in_meters);
+
 #endif /* __CONV_SETTINGS_DIALOG_H__ */
 
 /** @} */

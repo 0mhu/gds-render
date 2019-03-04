@@ -76,18 +76,17 @@ struct vector_2d *vector_2d_copy(struct vector_2d *opt_res, struct vector_2d *ve
 
 	if (!vec)
 		return NULL;
-	if (opt_res) {
-		opt_res->x = vec->x;
-		opt_res->y = vec->y;
-		return opt_res;
-	} else {
+
+	if (opt_res)
+		res = opt_res;
+	else
 		res = vector_2d_alloc();
-		if (res) {
-			res->x = vec->x;
-			res->y = vec->y;
-		}
-		return res;
+
+	if (res) {
+		res->x = vec->x;
+		res->y = vec->y;
 	}
+		return res;
 }
 
 struct vector_2d *vector_2d_alloc(void)

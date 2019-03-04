@@ -104,6 +104,7 @@ struct gds_cell {
 	struct gds_time_field access_time;
 	GList *child_cells; /**< @brief List of #gds_cell_instance elements */
 	GList *graphic_objs; /**< @brief List of #gds_graphics */
+	struct gds_library *parent_library; /**< @brief Pointer to parent library */
 };
 
 /**
@@ -113,7 +114,7 @@ struct gds_library {
 	char name[CELL_NAME_MAX];
 	struct gds_time_field mod_time;
 	struct gds_time_field access_time;
-	double unit_to_meters;  /**< @warning not yet implemented */
+	double unit_in_meters;  /**< Length of a database unit in meters */
 	GList *cells; /**< List of #gds_cell that contains all cells in this library*/
 	GList *cell_names /**< List of strings that contains all cell names */;
 };

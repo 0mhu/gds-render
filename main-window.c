@@ -36,6 +36,7 @@
 #include "latex-output/latex-output.h"
 #include "widgets/conv-settings-dialog.h"
 #include "cairo-output/cairo-output.h"
+#include "trigonometric/cell-trigonometrics.h"
 
 /**
  * @brief User data supplied to callback function of the open button
@@ -214,8 +215,8 @@ end_destroy:
 static void on_convert_clicked(gpointer button, gpointer user)
 {
 	static struct render_settings sett = {
-		.scale = 1000.0f,
-				.renderer = RENDERER_LATEX_TIKZ,
+		.scale = 1000.0,
+		.renderer = RENDERER_LATEX_TIKZ,
 	};
 	struct convert_button_data *data = (struct convert_button_data *)user;
 	GtkTreeSelection *selection;
@@ -229,6 +230,8 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	GtkFileFilter *filter;
 	gint res;
 	char *file_name;
+	union bounding_box cell_box;
+	double height, width;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
@@ -243,8 +246,21 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	/* Get layers that are rendered */
 	layer_list = export_rendered_layer_info();
 
+	/* Calculate cell size in DB units */
+	bounding_box_prepare_empty(&cell_box);
+	calculate_cell_bounding_box(&cell_box, cell_to_render);
+
+	/* Calculate size in meters database units */
+	height = (cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y);
+	width = (cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
+
+	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
 	renderer_settings_dialog_set_settings(settings, &sett);
+	renderer_settings_dialog_set_database_unit_scale(settings, cell_to_render->parent_library->unit_in_meters);
+	renderer_settings_dialog_set_cell_height(settings, height);
+	renderer_settings_dialog_set_cell_width(settings, width);
+
 	res = gtk_dialog_run(GTK_DIALOG(settings));
 	if (res == GTK_RESPONSE_OK) {
 		renderer_settings_dialog_get_settings(settings, &sett);
@@ -253,8 +269,6 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		gtk_widget_destroy(GTK_WIDGET(settings));
 		goto ret_layer_destroy;
 	}
-
-
 
 	/* save file dialog */
 	dialog = gtk_file_chooser_dialog_new((sett.renderer == RENDERER_LATEX_TIKZ

@@ -56,8 +56,8 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 }
 
 const static GActionEntry app_actions[] = {
-	{ "quit", app_quit },
-	{ "about", app_about }
+	{"quit", app_quit},
+	{"about", app_about}
 };
 
 static void gapp_activate(GApplication *app, gpointer user_data)
@@ -99,7 +99,6 @@ static int start_gui(int argc, char **argv)
 	g_object_unref(m_quit);
 	g_object_unref(m_about);
 	g_object_unref(menu);
-
 
 	app_status = g_application_run(G_APPLICATION(gapp), argc, argv);
 	g_object_unref(gapp);
@@ -188,7 +187,6 @@ int main(int argc, char **argv)
 	} else {
 		app_status = start_gui(argc, argv);
 	}
-
 
 	return app_status;
 }
