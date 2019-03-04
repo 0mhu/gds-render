@@ -43,8 +43,12 @@ struct  _RendererSettingsDialog {
 		GtkLabel *x_label;
 		GtkLabel *y_label;
 
-		double cell_height;
-		double cell_width;
+		GtkLabel *x_output_label;
+		GtkLabel *y_output_label;
+
+		unsigned int cell_height;
+		unsigned int cell_width;
+		double unit_in_meters;
 };
 
 G_DEFINE_TYPE(RendererSettingsDialog, renderer_settings_dialog, GTK_TYPE_DIALOG)
@@ -110,13 +114,13 @@ static gboolean shape_drawer_drawing_callback(GtkWidget *widget, cairo_t *cr, gp
 	usable_width = (0.95*(double)width) - 15.0;
 	usable_height = (0.95*(double)height) - 15.0;
 
-	width_scale = usable_width/dialog->cell_width;
-	height_scale = usable_height/dialog->cell_height;
+	width_scale = usable_width/(double)dialog->cell_width;
+	height_scale = usable_height/(double)dialog->cell_height;
 
 	final_scale_value = (width_scale < height_scale ? width_scale : height_scale);
 
-	cairo_rectangle(cr, -dialog->cell_width*final_scale_value/2, -dialog->cell_height*final_scale_value/2,
-				dialog->cell_width*final_scale_value, dialog->cell_height*final_scale_value);
+	cairo_rectangle(cr, -(double)dialog->cell_width*final_scale_value/2.0, -(double)dialog->cell_height*final_scale_value/2.0,
+			(double)dialog->cell_width*final_scale_value, (double)dialog->cell_height*final_scale_value);
 	cairo_stroke(cr);
 	cairo_restore(cr);
 
@@ -126,11 +130,31 @@ static gboolean shape_drawer_drawing_callback(GtkWidget *widget, cairo_t *cr, gp
 static void renderer_settings_dialog_update_labels(RendererSettingsDialog *self)
 {
 	char default_buff[100];
+	double scale;
 
-	snprintf(default_buff, sizeof(default_buff), "Width: %E", self->cell_width);
+	if (!self)
+		return;
+
+	snprintf(default_buff, sizeof(default_buff), "Width: %E", self->cell_width * self->unit_in_meters);
 	gtk_label_set_text(self->x_label, default_buff);
-	snprintf(default_buff, sizeof(default_buff), "Height: %E", self->cell_height);
+	snprintf(default_buff, sizeof(default_buff), "Height: %E", self->cell_height * self->unit_in_meters);
 	gtk_label_set_text(self->y_label, default_buff);
+
+	scale = gtk_range_get_value(GTK_RANGE(self->scale));
+
+	snprintf(default_buff, sizeof(default_buff), "Output Width: %u px", (unsigned int)((double)self->cell_width / scale));
+	gtk_label_set_text(self->x_output_label, default_buff);
+	snprintf(default_buff, sizeof(default_buff), "Output Height: %u px", (unsigned int)((double)self->cell_height / scale));
+	gtk_label_set_text(self->y_output_label, default_buff);
+}
+
+static void scale_value_changed(GtkRange *range, gpointer user_data)
+{
+	(void)range;
+	RendererSettingsDialog *dialog;
+
+	dialog = RENDERER_SETTINGS_DIALOG(user_data);
+	renderer_settings_dialog_update_labels(dialog);
 }
 
 static void renderer_settings_dialog_init(RendererSettingsDialog *self)
@@ -152,6 +176,8 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 	self->shape_drawing = GTK_DRAWING_AREA(gtk_builder_get_object(builder, "shape-drawer"));
 	self->x_label = GTK_LABEL(gtk_builder_get_object(builder, "x-label"));
 	self->y_label = GTK_LABEL(gtk_builder_get_object(builder, "y-label"));
+	self->x_output_label = GTK_LABEL(gtk_builder_get_object(builder, "x-output-label"));
+	self->y_output_label = GTK_LABEL(gtk_builder_get_object(builder, "y-output-label"));
 
 	gtk_dialog_add_buttons(dialog, "Cancel", GTK_RESPONSE_CANCEL, "OK", GTK_RESPONSE_OK, NULL);
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(dialog)), box);
@@ -161,9 +187,12 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 	g_signal_connect(G_OBJECT(self->shape_drawing),
 				"draw", G_CALLBACK(shape_drawer_drawing_callback), (gpointer)self);
 
+	g_signal_connect(self->scale, "value-changed", G_CALLBACK(scale_value_changed), (gpointer)self);
+
 	/* Default values */
-	self->cell_width = 1E-6;
-	self->cell_height = 1E-6;
+	self->cell_width = 1;
+	self->cell_height = 1;
+	self->unit_in_meters = 1E-6;
 	renderer_settings_dialog_update_labels(self);
 
 	g_object_unref(builder);
@@ -228,33 +257,40 @@ void renderer_settings_dialog_set_settings(RendererSettingsDialog *dialog, struc
 	}
 }
 
-void renderer_settings_dialog_set_cell_width(RendererSettingsDialog *dialog, double width)
+void renderer_settings_dialog_set_cell_width(RendererSettingsDialog *dialog, unsigned int width)
 {
 	if (!dialog)
 		return;
 
-	if (width == 0.0)
-		width = 1E-6;
+	if (width == 0)
+		width = 1;
 
-	if (width < 0.0)
-		width = -width;
 
 	dialog->cell_width = width;
 	renderer_settings_dialog_update_labels(dialog);
 }
 
-void renderer_settings_dialog_set_cell_height(RendererSettingsDialog *dialog, double height)
+void renderer_settings_dialog_set_cell_height(RendererSettingsDialog *dialog, unsigned int height)
 {
 	if (!dialog)
 		return;
 
-	if (height == 0.0)
-		height = 1E-6;
-
-	if (height < 0.0)
-		height = -height;
+	if (height == 0)
+		height = 1;
 
 	dialog->cell_height = height;
+	renderer_settings_dialog_update_labels(dialog);
+}
+
+void renderer_settings_dialog_set_database_unit_scale(RendererSettingsDialog *dialog, double unit_in_meters)
+{
+	if (!dialog)
+		return;
+
+	if (unit_in_meters < 0)
+		unit_in_meters *= -1;
+
+	dialog->unit_in_meters = unit_in_meters;
 	renderer_settings_dialog_update_labels(dialog);
 }
 

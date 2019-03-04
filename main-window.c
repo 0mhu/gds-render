@@ -250,13 +250,14 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	bounding_box_prepare_empty(&cell_box);
 	calculate_cell_bounding_box(&cell_box, cell_to_render);
 
-	/* Calculate size in meters */
-	height = (cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y) * cell_to_render->parent_library->unit_in_meters;
-	width = (cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x) * cell_to_render->parent_library->unit_in_meters;
+	/* Calculate size in meters database units */
+	height = (cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y);
+	width = (cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
 
 	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
 	renderer_settings_dialog_set_settings(settings, &sett);
+	renderer_settings_dialog_set_database_unit_scale(settings, cell_to_render->parent_library->unit_in_meters);
 	renderer_settings_dialog_set_cell_height(settings, height);
 	renderer_settings_dialog_set_cell_width(settings, width);
 
