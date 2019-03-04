@@ -165,9 +165,8 @@ void bounding_box_update_point(union bounding_box *destination, conv_generic_to_
 {
 	struct vector_2d point;
 
-	if (!destination || !pt) {
+	if (!destination || !pt)
 		return;
-	}
 
 	if (conv_func)
 		conv_func(pt, &point);
