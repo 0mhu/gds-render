@@ -37,6 +37,7 @@
 #include "widgets/conv-settings-dialog.h"
 #include "cairo-output/cairo-output.h"
 #include "trigonometric/cell-trigonometrics.h"
+#include "tree-renderer/lib-cell-renderer.h"
 
 /**
  * @brief User data supplied to callback function of the open button
