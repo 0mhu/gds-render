@@ -49,15 +49,20 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
 {
 	GtkTreeIter iter;
 	struct gds_cell *cell;
+	unsigned int error_level;
+	gboolean ret = FALSE;
 
 	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, CELL_SEL_CELL, &cell, -1);
+	gtk_tree_model_get(model, &iter, CELL_SEL_CELL, &cell, CELL_SEL_CELL_ERROR_STATE, &error_level, -1);
 
-	/* Allow only rows with valid cell to be selected */
-	if (cell)
-		return TRUE;
-	else
-		return FALSE;
+	/* Allow only rows with _valid_ cell to be selected */
+	if (cell) {
+		/* Cell available. Check if it passed the critical checks */
+		if (!(error_level & LIB_CELL_RENDERER_ERROR_ERR))
+			ret = TRUE;
+	}
+
+	return ret;
 }
 
 /**
