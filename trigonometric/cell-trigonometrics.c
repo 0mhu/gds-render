@@ -94,14 +94,16 @@ void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell)
 	}
 
 	/* Update bounding box with boxes of subcells */
-	for (sub_cell_list = cell->child_cells; sub_cell_list != NULL; sub_cell_list = sub_cell_list->next) {
+	for (sub_cell_list = cell->child_cells; sub_cell_list != NULL;
+						sub_cell_list = sub_cell_list->next) {
 		sub_cell = (struct gds_cell_instance *)sub_cell_list->data;
 		bounding_box_prepare_empty(&temp_box);
 		/* Recursion Woohoo!!  This dies if your GDS is faulty and contains a reference loop */
 		calculate_cell_bounding_box(&temp_box, sub_cell->cell_ref);
 
 		/* Apply transformations */
-		bounding_box_apply_transform(ABS(sub_cell->magnification), sub_cell->angle, sub_cell->flipped, &temp_box);
+		bounding_box_apply_transform(ABS(sub_cell->magnification), sub_cell->angle,
+					     sub_cell->flipped, &temp_box);
 
 		/* Move bounding box to origin */
 		temp_box.vectors.lower_left.x += sub_cell->origin.x;

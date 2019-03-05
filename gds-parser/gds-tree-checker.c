@@ -1,6 +1,6 @@
 /*
  * GDSII-Converter
- * Copyright (C) 2018  Mario Hüttel <mario.huettel@gmx.net>
+ * Copyright (C) 2019  Mario Hüttel <mario.huettel@gmx.net>
  *
  * This file is part of GDSII-Converter.
  *
@@ -18,8 +18,13 @@
  */
 
 /**
- * @file gds-parser.h
- * @brief Header file for the GDS-Parser
+ * @file gds-tree-checker.c
+ * @brief Checking functions of a cell tree
+ *
+ * This file contains cehcking functions for the GDS cell tree.
+ * These functions include checks if all child references could be resolved,
+ * and if the cell tree contains loops.
+ *
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
@@ -28,22 +33,16 @@
  * @{
  */
 
-#ifndef __GDSPARSE_H__
-#define __GDSPARSE_H__
+#include "gds-tree-checker.h"
 
-#include <glib.h>
-#include "gds-types.h"
+int gds_tree_check_cell_references(struct gds_library *lib)
+{
+	return 0;
+}
 
-#define GDS_PRINT_DEBUG_INFOS (0) /**< @brief 1: Print infos, 0: Don't print */
-
-int parse_gds_from_file(const char *filename, GList **library_array);
-/**
- * @brief Deletes all libraries including cells, references etc.
- * @param library_list Pointer to a list of #gds_library. Is set to NULL after completion.
- * @return 0
- */
-int clear_lib_list(GList **library_list);
+int gds_tree_check_reference_loops(struct gds_library *lib)
+{
+	return 0;
+}
 
 /** @} */
-
-#endif /* __GDSPARSE_H__ */

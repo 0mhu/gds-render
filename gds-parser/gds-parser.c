@@ -17,11 +17,6 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
-
- */
-
-
 /**
  * @file gds-parser.c
  * @brief Implementation of the GDS-Parser
@@ -35,7 +30,7 @@
  */
 
 /**
- * @addtogroup GDS-Parser
+ * @addtogroup GDS-Utilities
  * @{
  */
 

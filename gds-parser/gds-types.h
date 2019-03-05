@@ -24,7 +24,7 @@
  */
 
 /**
-  * @addtogroup GDS-Parser
+  * @addtogroup GDS-Utilities
   * @{
   */
 
