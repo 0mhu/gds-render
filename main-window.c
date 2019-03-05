@@ -114,7 +114,6 @@ static void on_load_gds(gpointer button, gpointer user)
 	char *filename;
 	GString *mod_date;
 	GString *acc_date;
-	GdkRGBA cell_text_color;
 
 	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", ptr->main_window, GTK_FILE_CHOOSER_ACTION_OPEN,
 						  "Cancel", GTK_RESPONSE_CANCEL, "Open GDSII", GTK_RESPONSE_ACCEPT, NULL);
@@ -175,11 +174,6 @@ static void on_load_gds(gpointer button, gpointer user)
 				mod_date = generate_string_from_date(&gds_c->mod_time);
 				acc_date = generate_string_from_date(&gds_c->access_time);
 
-				cell_text_color.alpha = 1;
-				cell_text_color.red = (double)61.0/(double)255.0;
-				cell_text_color.green = (double)152.0/(double)255.0;
-				cell_text_color.blue = 0.0;
-
 				/* Add cell to tree store model
 				 * CELL_SEL_CELL_COLOR will always be green,
 				 * because no cell cehcker is implemented, yet.
@@ -188,7 +182,7 @@ static void on_load_gds(gpointer button, gpointer user)
 						    CELL_SEL_CELL, gds_c,
 						    CELL_SEL_MODDATE, mod_date->str,
 						    CELL_SEL_ACCESSDATE, acc_date->str,
-						    CELL_SEL_CELL_COLOR, &cell_text_color, // TODO: implement cell checker
+						    CELL_SEL_CELL_ERROR_STATE, 0, // TODO: implement cell checker
 						    -1);
 
 				/* Delete GStrings including string data. */

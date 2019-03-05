@@ -25,6 +25,7 @@ G_DEFINE_TYPE(LibCellRenderer, lib_cell_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
 enum {
 	PROP_LIB = 1,
 	PROP_CELL,
+	PROP_ERROR_LEVEL,
 	PROP_COUNT
 };
 
@@ -38,23 +39,55 @@ static void lib_cell_renderer_constructed(GObject *obj)
 	G_OBJECT_CLASS(lib_cell_renderer_parent_class)->constructed(obj);
 }
 
+static void convert_error_level_to_color(GdkRGBA *color, unsigned int error_level)
+{
+
+	/* Always use no transparency */
+	color->alpha = 1.0;
+
+	if (error_level & LIB_CELL_RENDERER_ERROR_ERR) {
+		/* Error set. Color cell red */
+		color->red = 1.0;
+		color->blue = 0.0;
+		color->green = 0.0;
+	} else if (error_level & LIB_CELL_RENDERER_ERROR_WARN) {
+		/* Only warning set; orange color */
+		color->red = 0.6;
+		color->blue = 0.0;
+		color->green = 0.4;
+	} else {
+		/* Everything okay; green color */
+		color->red = (double)61.0/(double)255.0;
+		color->green = (double)152.0/(double)255.0;
+		color->blue = 0.0;
+	}
+}
+
 static void lib_cell_renderer_set_property(GObject      *object,
 					   guint        param_id,
 					   const GValue *value,
 					   GParamSpec   *pspec)
 {
 	GValue val = G_VALUE_INIT;
-
-	g_value_init(&val, G_TYPE_STRING);
+	GdkRGBA color;
 
 	switch (param_id) {
 	case PROP_LIB:
+		g_value_init(&val, G_TYPE_STRING);
 		g_value_set_string(&val, ((struct gds_library *)g_value_get_pointer(value))->name);
 		g_object_set_property(object, "text", &val);
 		break;
 	case PROP_CELL:
+		g_value_init(&val, G_TYPE_STRING);
 		g_value_set_string(&val, ((struct gds_cell *)g_value_get_pointer(value))->name);
 		g_object_set_property(object, "text", &val);
+		break;
+	case PROP_ERROR_LEVEL:
+		/* Set cell color according to error level */
+		g_value_init(&val, GDK_TYPE_RGBA);
+		convert_error_level_to_color(&color, g_value_get_uint(value));
+		g_value_set_boxed(&val, &color);
+		g_object_set_property(object, "foreground-rgba", &val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, param_id, pspec);
@@ -89,6 +122,8 @@ void lib_cell_renderer_class_init(LibCellRendererClass *klass)
 	properties[PROP_CELL] = g_param_spec_pointer("gds-cell", "gds-cell",
 							 "Cell reference to be displayed",
 							 G_PARAM_WRITABLE);
+	properties[PROP_ERROR_LEVEL] = g_param_spec_uint("error-level", "error-level",
+							"Error level of this cell", 0, 255, 0, G_PARAM_WRITABLE);
 
 	g_object_class_install_properties(oclass, PROP_COUNT, properties);
 }

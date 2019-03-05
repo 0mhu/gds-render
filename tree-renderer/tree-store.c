@@ -127,7 +127,7 @@ struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entr
 	stores.base_tree_view = view;
 	stores.search_entry = search_entry;
 
-	stores.base_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, GDK_TYPE_RGBA, G_TYPE_STRING, G_TYPE_STRING);
+	stores.base_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 
 	/* Searching */
 	if (search_entry) {
@@ -147,8 +147,8 @@ struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entr
 	column = gtk_tree_view_column_new_with_attributes("Library", render_lib, "gds-lib", CELL_SEL_LIBRARY, NULL);
 	gtk_tree_view_append_column(view, column);
 
-	/* Cell color: #3D9801 */
-	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "gds-cell", CELL_SEL_CELL, "foreground-rgba", CELL_SEL_CELL_COLOR, NULL);
+	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "gds-cell", CELL_SEL_CELL,
+							  "error-level", CELL_SEL_CELL_ERROR_STATE, NULL);
 	gtk_tree_view_append_column(view, column);
 
 	column = gtk_tree_view_column_new_with_attributes("Mod. Date", render_dates, "text", CELL_SEL_MODDATE, NULL);

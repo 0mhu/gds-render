@@ -27,6 +27,9 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(LibCellRenderer, lib_cell_renderer, LIB_CELL, RENDERER, GtkCellRendererText)
 #define TYPE_LIB_CELL_RENDERER (lib_cell_renderer_get_type())
 
+#define LIB_CELL_RENDERER_ERROR_WARN (1U<<0)
+#define LIB_CELL_RENDERER_ERROR_ERR (1U<<1)
+
 typedef struct _LibCellRenderer {
         /* Inheritance */
         GtkCellRendererText super;
