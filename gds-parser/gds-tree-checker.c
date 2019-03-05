@@ -34,10 +34,53 @@
  */
 
 #include "gds-tree-checker.h"
+#include <stdio.h>
 
 int gds_tree_check_cell_references(struct gds_library *lib)
 {
-	return 0;
+	GList *cell_iter;
+	struct gds_cell *cell;
+	GList *instance_iter;
+	struct  gds_cell_instance *cell_inst;
+	int total_unresolved_count = 0;
+
+	if (!lib)
+		return -1;
+
+	/* Iterate over all cells in library */
+	for (cell_iter = lib->cells; cell_iter != NULL; cell_iter = g_list_next(cell_iter)) {
+		cell = (struct gds_cell *)cell_iter->data;
+
+		/* Check if this list element is broken. This should never happen */
+		if (!cell) {
+			fprintf(stderr, "Broken cell list item found. Will continue.\n");
+			continue;
+		}
+
+		/* Reset the unresolved cell reference counter to 0 */
+		cell->checks.unresolved_child_count = 0;
+
+		/* Iterate through all child cell references and check if the references are set */
+		for (instance_iter = cell->child_cells; instance_iter != NULL;
+					instance_iter = g_list_next(instance_iter)) {
+			cell_inst = (struct gds_cell_instance *)instance_iter->data;
+
+			/* Check if broken. This should also not happen */
+			if (!cell_inst) {
+				fprintf(stderr, "Broken cell list item found in cell %s. Will continue.\n",
+						cell->name);
+				continue;
+			}
+
+			/* Check if instance is valid; else increment "error" counter of cell */
+			if (!cell_inst->cell_ref) {
+				total_unresolved_count++;
+				cell->checks.unresolved_child_count++;
+			}
+		}
+	}
+
+	return total_unresolved_count;
 }
 
 int gds_tree_check_reference_loops(struct gds_library *lib)
