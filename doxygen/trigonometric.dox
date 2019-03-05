@@ -2,7 +2,7 @@
 
 /**
  * @defgroup trigonometric Trigonometric Helper Functions
- * @description The trigonometric helper function will be used in future releases to pcalculate bounding boxes
- * @note Currently not in use!
- * @warning Code is incomplete. DO NOT USE!
+ * 
+ * The trigonometric helper function are used to calculate bounding boxes
+ * @warning Code is incomplete. Please double check the functionality!
  */
