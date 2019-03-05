@@ -35,6 +35,12 @@
 
 /**
  * @brief gds_tree_check_cell_references checks if all child cell references can be resolved in the given library
+ *
+ * This function will only mark cells that
+ * directly contain unresolved references.
+ *
+ * If a cell contains a reference to a cell with unresolved references, it is not flagged.
+ *
  * @param lib The GDS library to check
  * @return less than 0 if an error occured during processing; 0 if all child cells could be resolved;
  *         greater than zero if the processing was successful but not all cell references could be resolved.
