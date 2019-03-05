@@ -299,6 +299,8 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 		cell->graphic_objs = NULL;
 		cell->name[0] = 0;
 		cell->parent_library = NULL;
+		cell->checks.unresolved_child_count = GDS_CELL_CHECK_NOT_RUN;
+		cell->checks.affected_by_reference_loop = GDS_CELL_CHECK_NOT_RUN;
 	} else
 		return NULL;
 	/* return cell */

@@ -40,6 +40,10 @@
 #define MIN(a,b) (((a) < (b)) ? (a) : (b)) /**< @brief Return smaller number */
 #define MAX(a,b) (((a) > (b)) ? (a) : (b)) /**< @brief Return bigger number */
 
+/** @brief Defintion of check counter default value
+ *  that indicates that the corresponding check has not yet been executed */
+enum {GDS_CELL_CHECK_NOT_RUN = -1};
+
 /** @brief Types of graphic objects */
 enum graphics_type
 {
@@ -65,8 +69,8 @@ struct gds_point {
  * @brief Stores the result of the cell checks.
  */
 struct gds_cell_checks {
-	int unresolved_child_count; /**< @brief Number of unresolved cell instances inside this cell */
-	int affected_by_reference_loop; /**< @brief 1 if the cell is affected by a reference loop and therefore not renderable */
+	int unresolved_child_count; /**< @brief Number of unresolved cell instances inside this cell. Default: GDS_CELL_CHECK_NOT_RUN */
+	int affected_by_reference_loop; /**< @brief 1 if the cell is affected by a reference loop and therefore not renderable. Default: GDS_CELL_CHECK_NOT_RUN*/
 	/**
 	 * @brief For the internal use of the checker.
 	 * @warning Do not use this structure and its contents!
