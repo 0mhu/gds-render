@@ -180,10 +180,11 @@ void bounding_box_update_point(union bounding_box *destination, conv_generic_to_
 }
 
 /**
- * @brief bounding_box_apply_transform
- * @param scale scaling factor
- * @param rotation roation of bounding box around the origin in degrees (counterclockwise)
- * @param box bounding box the operations should be applied to
+ * @brief Apply transformations onto bounding box.
+ * @param scale Scaling factor
+ * @param rotation_deg Roation of bounding box around the origin in degrees (counterclockwise)
+ * @param flip_at_x Flip the boundig box on the x axis before rotating.
+ * @param box Bounding box the operations should be applied to.
  */
 void bounding_box_apply_transform(double scale, double rotation_deg, bool flip_at_x, union bounding_box *box)
 {

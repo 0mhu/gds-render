@@ -4,5 +4,5 @@
  * @defgroup trigonometric Trigonometric Helper Functions
  * 
  * The trigonometric helper function are used to calculate bounding boxes
- * @warning Code is incomplete. Please double check the functionality!
+ * @warning Code is incomplete. Please double check for functionality!
  */
