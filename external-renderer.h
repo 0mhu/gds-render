@@ -36,7 +36,8 @@
 
 /**
  * @brief function name expected to be found in external library.
- * @detail The function has to be defined as follows:
+ * 
+ * The function has to be defined as follows:
  * @code
  * int function_name(gds_cell *toplevel, GList *layer_info_list, char *output_file_name)
  * @endcode

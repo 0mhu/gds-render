@@ -38,9 +38,9 @@ static void convert_gds_point_to_2d_vector(struct gds_point *pt, struct vector_2
 }
 
 /**
- * @brief update_box_with_gfx
- * @param box
- * @param gfx_list
+ * @brief Update the given bounding box with the bounding box of a graphics element.
+ * @param box box to update
+ * @param gfx Graphics element
  */
 static void update_box_with_gfx(union bounding_box *box, struct gds_graphics *gfx)
 {
