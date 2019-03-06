@@ -662,7 +662,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		case SREF:
 			if (current_cell == NULL) {
-				GDS_ERROR("Path outside of cell");
+				GDS_ERROR("Cell Reference outside of cell");
 				run = -3;
 				break;
 			}
@@ -810,7 +810,11 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 
 		case SNAME:
-			name_cell_ref(current_s_reference, read, workbuff);
+			if (current_s_reference) {
+				name_cell_ref(current_s_reference, (unsigned int)read, workbuff);
+			} else {
+				GDS_ERROR("reference name set outside of cell reference.\n");
+			}
 			break;
 		case WIDTH:
 			if (!current_graphics) {
@@ -863,7 +867,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			}
 			if (current_graphics->gfx_type == GRAPHIC_PATH) {
-				current_graphics->path_render_type = (int)gds_convert_signed_int16(workbuff);
+				current_graphics->path_render_type = (enum path_type)gds_convert_signed_int16(workbuff);
 				GDS_INF("\t\tPathtype: %d\n", current_graphics->path_render_type);
 			} else {
 				GDS_WARN("Path type defined inside non-path graphics object. Ignoring");
