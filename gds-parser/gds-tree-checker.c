@@ -65,7 +65,7 @@ int gds_tree_check_cell_references(struct gds_library *lib)
 					instance_iter = g_list_next(instance_iter)) {
 			cell_inst = (struct gds_cell_instance *)instance_iter->data;
 
-			/* Check if broken. This should also not happen */
+			/* Check if broken. This should not happen */
 			if (!cell_inst) {
 				fprintf(stderr, "Broken cell list item found in cell %s. Will continue.\n",
 						cell->name);
@@ -81,6 +81,29 @@ int gds_tree_check_cell_references(struct gds_library *lib)
 	}
 
 	return total_unresolved_count;
+}
+
+/**
+ * @brief This function sets the marker element in the check structure of each cell to zero.
+ * @param lib Library to work with
+ * @return 0 if successful; negative if a fault (null pointer, ...) occured.
+ */
+static int gds_tree_check_clear_cell_check_marker(struct gds_library *lib)
+{
+	GList *cell_iter;
+	struct gds_cell *cell;
+
+	if (!lib)
+		return -1;
+
+	for (cell_iter = lib->cells; cell_iter != NULL; cell_iter = g_list_next(cell_iter)) {
+		cell = (struct gds_cell *)cell_iter->data;
+
+		if (!cell)
+			return -2;
+
+		cell->checks._internal.marker = 0;
+	}
 }
 
 int gds_tree_check_reference_loops(struct gds_library *lib)
