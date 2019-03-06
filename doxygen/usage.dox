@@ -6,7 +6,7 @@ To use the application on the command line check 'gds-render --help'.
 Application Options:
 -  -t, --tikz                         Output TikZ code
 -  -p, --pdf                          Output PDF document
--  -s, --scale=<SCALE>                Divide output coordinates by <SCALE>
+-  -s, --scale=SCALE                Divide output coordinates by SCALE
 -  -o, --tex-output=PATH              Optional path for TeX file
 -  -O, --pdf-output=PATH              Optional path for PDF file
 -  -m, --mapping=PATH                 Path for Layer Mapping File
