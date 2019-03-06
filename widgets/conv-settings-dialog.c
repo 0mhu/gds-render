@@ -18,7 +18,7 @@
  */
 
 /**
- * @file conv-settings-dilaog.c
+ * @file conv-settings-dialog.c
  * @brief Implementation of the setting dialog
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
