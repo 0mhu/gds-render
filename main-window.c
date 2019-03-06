@@ -38,6 +38,7 @@
 #include "cairo-output/cairo-output.h"
 #include "trigonometric/cell-trigonometrics.h"
 #include "tree-renderer/lib-cell-renderer.h"
+#include "gds-parser/gds-tree-checker.h"
 
 /**
  * @brief User data supplied to callback function of the open button
@@ -115,6 +116,7 @@ static void on_load_gds(gpointer button, gpointer user)
 	char *filename;
 	GString *mod_date;
 	GString *acc_date;
+	unsigned int cell_error_level;
 
 	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", ptr->main_window, GTK_FILE_CHOOSER_ACTION_OPEN,
 						  "Cancel", GTK_RESPONSE_CANCEL, "Open GDSII", GTK_RESPONSE_ACCEPT, NULL);
@@ -162,6 +164,11 @@ static void on_load_gds(gpointer button, gpointer user)
 					    CELL_SEL_ACCESSDATE, acc_date->str,
 					    -1);
 
+			/* Check this library. This might take a while */
+
+			(void)gds_tree_check_cell_references(gds_lib);
+			(void)gds_tree_check_reference_loops(gds_lib);
+
 			/* Delete GStrings including string data. */
 			/* Cell store copies String type data items */
 			g_string_free(mod_date, TRUE);
@@ -175,16 +182,21 @@ static void on_load_gds(gpointer button, gpointer user)
 				mod_date = generate_string_from_date(&gds_c->mod_time);
 				acc_date = generate_string_from_date(&gds_c->access_time);
 
-				/* Add cell to tree store model
-				 * CELL_SEL_CELL_COLOR will always be green,
-				 * because no cell cehcker is implemented, yet.
-				 */
+				/* Get the checking results for this cell */
+				cell_error_level = 0;
+				if (gds_c->checks.unresolved_child_count)
+					cell_error_level |= LIB_CELL_RENDERER_ERROR_WARN;
+
+				/* Check if it is completely b0rken */
+				if (gds_c->checks.affected_by_reference_loop)
+					cell_error_level |= LIB_CELL_RENDERER_ERROR_ERR;
+
+				/* Add cell to tree store model */
 				gtk_tree_store_set (store, &celliter,
 						    CELL_SEL_CELL, gds_c,
 						    CELL_SEL_MODDATE, mod_date->str,
 						    CELL_SEL_ACCESSDATE, acc_date->str,
-						    CELL_SEL_CELL_ERROR_STATE, 0, // TODO: implement cell checker
-						    -1);
+						    CELL_SEL_CELL_ERROR_STATE, cell_error_level,						    -1);
 
 				/* Delete GStrings including string data. */
 				/* Cell store copies String type data items */
