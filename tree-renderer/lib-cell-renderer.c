@@ -52,9 +52,9 @@ static void convert_error_level_to_color(GdkRGBA *color, unsigned int error_leve
 		color->green = 0.0;
 	} else if (error_level & LIB_CELL_RENDERER_ERROR_WARN) {
 		/* Only warning set; orange color */
-		color->red = 0.6;
+		color->red = 1.0;
 		color->blue = 0.0;
-		color->green = 0.4;
+		color->green = 0.6;
 	} else {
 		/* Everything okay; green color */
 		color->red = (double)61.0/(double)255.0;
