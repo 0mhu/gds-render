@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	  {"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
 	  {"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
 	  {"external-lib-output", 'e', 0, G_OPTION_ARG_FILENAME, &custom_library_file_name, "Output path for external render library", "PATH"},
-	  { NULL }
+	  {NULL}
 	};
 
 	context = g_option_context_new(" FILE - Convert GDS file <FILE> to graphic");
