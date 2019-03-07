@@ -31,7 +31,7 @@ struct application_data {
 
 static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
-	struct application_data *appdata = (struct application_data *)user_data;
+	const struct application_data * const appdata = (const struct application_data *)user_data;
 	(void)action;
 	(void)parameter;
 
@@ -42,7 +42,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 {
 	GtkBuilder *builder;
 	GtkDialog *dialog;
-	struct application_data *appdata = (struct application_data *)user_data;
+	const struct application_data * const appdata = (const struct application_data *)user_data;
 	(void)action;
 	(void)parameter;
 
@@ -63,7 +63,7 @@ const static GActionEntry app_actions[] = {
 static void gapp_activate(GApplication *app, gpointer user_data)
 {
 	GtkWindow *main_window;
-	struct application_data *appdata = (struct application_data *)user_data;
+	struct application_data * const appdata = (struct application_data *)user_data;
 
 	main_window = create_main_window();
 	appdata->main_window = main_window;
