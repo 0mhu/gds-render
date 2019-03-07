@@ -1,0 +1,3 @@
+[submodule "c-style-checker"]
+	path = c-style-checker
+	url = https://git.shimatta.de/mhu/c-style-checker
