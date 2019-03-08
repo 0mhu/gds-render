@@ -168,7 +168,6 @@ static void on_load_gds(gpointer button, gpointer user)
 					   -1);
 
 			/* Check this library. This might take a while */
-
 			(void)gds_tree_check_cell_references(gds_lib);
 			(void)gds_tree_check_reference_loops(gds_lib);
 
@@ -242,7 +241,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	gint res;
 	char *file_name;
 	union bounding_box cell_box;
-	double height, width;
+	unsigned int height, width;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
@@ -261,9 +260,12 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	bounding_box_prepare_empty(&cell_box);
 	calculate_cell_bounding_box(&cell_box, cell_to_render);
 
-	/* Calculate size in meters database units */
-	height = (cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y);
-	width = (cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
+	/* Calculate size in database units
+	 * Note that the results are bound to be positive,
+	 * so casting them to unsigned int is asbsolutely valid
+	 */
+	height = (unsigned int)(cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y);
+	width = (unsigned int)(cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
 
 	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
