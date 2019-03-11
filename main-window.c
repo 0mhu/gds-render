@@ -225,6 +225,7 @@ end_destroy:
  */
 static void on_convert_clicked(gpointer button, gpointer user)
 {
+	(void)button;
 	static struct render_settings sett = {
 		.scale = 1000.0,
 		.renderer = RENDERER_LATEX_TIKZ,
@@ -243,6 +244,9 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	char *file_name;
 	union bounding_box cell_box;
 	unsigned int height, width;
+
+	if (!data)
+		return;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
@@ -343,6 +347,21 @@ ret_layer_destroy:
 	g_list_free_full(layer_list, (GDestroyNotify)delete_layer_info_struct);
 }
 
+/**
+ * @brief cell_tree_view_activated
+ * @param tree_view Not used
+ * @param user convert button data
+ */
+static void cell_tree_view_activated(gpointer tree_view, GtkTreePath *path,
+				     GtkTreeViewColumn *column, gpointer user)
+{
+	(void)tree_view;
+	(void)path;
+	(void)column;
+
+	on_convert_clicked(NULL, user);
+}
+
 
 /**
  * @brief Callback for cell-selection change event
@@ -415,6 +434,7 @@ GtkWindow *create_main_window()
 	/* Callback for selection change of cell selector */
 	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(cell_tree)), "changed",
 			 G_CALLBACK(cell_selection_changed), conv_button);
+	g_signal_connect(cell_tree, "row-activated", G_CALLBACK(cell_tree_view_activated), &conv_data);
 
 	/* Set version in main window subtitle */
 	header_bar = GTK_HEADER_BAR(gtk_builder_get_object(main_builder, "header-bar"));
