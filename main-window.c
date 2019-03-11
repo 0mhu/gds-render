@@ -37,6 +37,7 @@
 #include "widgets/conv-settings-dialog.h"
 #include "cairo-output/cairo-output.h"
 #include "trigonometric/cell-trigonometrics.h"
+#include "version/version.h"
 
 /**
  * @brief User data supplied to callback function of the open button
@@ -354,6 +355,7 @@ GtkWindow *create_main_window()
 	GtkWidget *listbox;
 	GtkWidget *conv_button;
 	GtkWidget *search_entry;
+	GtkHeaderBar *header_bar;
 	static GList *gds_libs;
 	static struct open_button_data open_data;
 	static struct convert_button_data conv_data;
@@ -396,6 +398,10 @@ GtkWindow *create_main_window()
 	/* Callback for selection change of cell selector */
 	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(cell_tree)), "changed",
 			 G_CALLBACK(cell_selection_changed), conv_button);
+
+	/* Set version in main window subtitle */
+	header_bar = GTK_HEADER_BAR(gtk_builder_get_object(main_builder, "header-bar"));
+	gtk_header_bar_set_subtitle(header_bar, _app_version_string);
 
 	g_object_unref(main_builder);
 

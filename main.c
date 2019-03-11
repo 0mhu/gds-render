@@ -23,6 +23,7 @@
 #include "main-window.h"
 #include "command-line.h"
 #include "external-renderer.h"
+#include "version/version.h"
 
 struct application_data {
 	GtkApplication *app;
@@ -106,6 +107,12 @@ static int start_gui(int argc, char **argv)
 	return app_status;
 }
 
+static void print_version()
+{
+	printf("This is gds-render, version: %s\n\nFor a list of supported commands execute with --help option.\n",
+		_app_version_string);
+}
+
 int main(int argc, char **argv)
 {
 	GError *error = NULL;
@@ -114,12 +121,14 @@ int main(int argc, char **argv)
 	gchar *basename;
 	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL, *cellname = NULL, *svgname = NULL;
 	gboolean tikz = FALSE, pdf = FALSE, pdf_layers = FALSE, pdf_standalone = FALSE, svg = FALSE;
+	gboolean version = FALSE;
 	gchar *custom_library_path = NULL;
 	gchar *custom_library_file_name = NULL;
 	int scale = 1000;
-	int app_status;
+	int app_status = 0;
 
 	GOptionEntry entries[] = {
+	  {"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
 	  {"tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
 	  {"pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
 	  //{"svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
@@ -143,6 +152,11 @@ int main(int argc, char **argv)
 	if (!g_option_context_parse(context, &argc, &argv, &error)) {
 		g_print("Option parsing failed: %s\n", error->message);
 		exit(1);
+	}
+
+	if (version) {
+		print_version();
+		goto ret_status;	
 	}
 
 	if (argc >= 2) {
@@ -188,5 +202,6 @@ int main(int argc, char **argv)
 		app_status = start_gui(argc, argv);
 	}
 
+ret_status:
 	return app_status;
 }
