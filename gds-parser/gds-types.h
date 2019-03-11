@@ -24,7 +24,7 @@
  */
 
 /**
-  * @addtogroup GDS-Parser
+  * @addtogroup GDS-Utilities
   * @{
   */
 
@@ -35,8 +35,14 @@
 #include <glib.h>
 
 #define CELL_NAME_MAX (100) /**< @brief Maximum length of a gds_cell::name or a gds_library::name */
+
+/* Maybe use the macros that ship with the compiler? */
 #define MIN(a,b) (((a) < (b)) ? (a) : (b)) /**< @brief Return smaller number */
 #define MAX(a,b) (((a) > (b)) ? (a) : (b)) /**< @brief Return bigger number */
+
+/** @brief Defintion of check counter default value
+ *  that indicates that the corresponding check has not yet been executed */
+enum {GDS_CELL_CHECK_NOT_RUN = -1};
 
 /** @brief Types of graphic objects */
 enum graphics_type
@@ -57,6 +63,21 @@ enum path_type {PATH_FLUSH = 0, PATH_ROUNDED = 1, PATH_SQUARED = 2}; /**< Path l
 struct gds_point {
 	int x;
 	int y;
+};
+
+/**
+ * @brief Stores the result of the cell checks.
+ */
+struct gds_cell_checks {
+	int unresolved_child_count; /**< @brief Number of unresolved cell instances inside this cell. Default: GDS_CELL_CHECK_NOT_RUN */
+	int affected_by_reference_loop; /**< @brief 1 if the cell is affected by a reference loop and therefore not renderable. Default: GDS_CELL_CHECK_NOT_RUN*/
+	/**
+	 * @brief For the internal use of the checker.
+	 * @warning Do not use this structure and its contents!
+	 */
+	struct _check_internals {
+		int marker;
+	} _internal;
 };
 
 /**
@@ -105,6 +126,7 @@ struct gds_cell {
 	GList *child_cells; /**< @brief List of #gds_cell_instance elements */
 	GList *graphic_objs; /**< @brief List of #gds_graphics */
 	struct gds_library *parent_library; /**< @brief Pointer to parent library */
+	struct gds_cell_checks checks; /**< @brief Checking results */
 };
 
 /**

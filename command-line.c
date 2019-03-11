@@ -35,6 +35,7 @@
 #include "cairo-output/cairo-output.h"
 #include "latex-output/latex-output.h"
 #include "external-renderer.h"
+#include "gds-parser/gds-tree-checker.h"
 
 /**
  * @brief Delete layer_info and free nem element.
@@ -69,7 +70,9 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	GList *layer_info_list = NULL;
 	GList *cell_list;
 	struct layer_info *linfo_temp;
+	struct gds_library *first_lib;
 	struct gds_cell *toplevel_cell = NULL, *temp_cell;
+
 
 	/* Check if parameters are valid */
 	if (!gds_name || (!pdf_name && pdf)  || (!tex_name && tex) || !layer_file || !cell_name) {
@@ -81,14 +84,14 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	clear_lib_list(&libs);
 	res = parse_gds_from_file(gds_name, &libs);
 	if (res)
-		return;
+		goto ret_destroy_library_list;
 
 	file = g_file_new_for_path(layer_file);
 	stream = g_file_read(file, NULL, NULL);
 
 	if (!stream) {
 		printf("Layer mapping not readable!\n");
-		goto destroy_file;
+		goto ret_destroy_file;
 	}
 	dstream = g_data_input_stream_new(G_INPUT_STREAM(stream));
 	i = 0;
@@ -100,7 +103,7 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 			linfo_temp = (struct layer_info *)malloc(sizeof(struct layer_info));
 			if (!linfo_temp) {
 				printf("Out of memory\n");
-				goto ret_clear_list;
+				goto ret_clear_layer_list;
 			}
 			linfo_temp->color.alpha = layer_color.alpha;
 			linfo_temp->color.red = layer_color.red;
@@ -116,9 +119,15 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 
 	/* find_cell in first library. */
 	if (!libs)
-		goto ret_clear_list;
+		goto ret_clear_layer_list;
 
-	for (cell_list = ((struct gds_library *)libs->data)->cells; cell_list != NULL; cell_list = g_list_next(cell_list)) {
+	first_lib = (struct gds_library *)libs->data;
+	if (!first_lib) {
+		fprintf(stderr, "No library in library list. This should not happen.\n");
+		goto ret_clear_layer_list;
+	}
+
+	for (cell_list = first_lib->cells; cell_list != NULL; cell_list = g_list_next(cell_list)) {
 		temp_cell = (struct gds_cell *)cell_list->data;
 		if (!strcmp(temp_cell->name, cell_name)) {
 			toplevel_cell = temp_cell;
@@ -128,8 +137,30 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 
 	if (!toplevel_cell) {
 		printf("Couldn't find cell in first library!\n");
-		goto ret_clear_list;
+		goto ret_clear_layer_list;
 	}
+
+	/* Check if cell passes vital checks */
+	res = gds_tree_check_reference_loops(toplevel_cell->parent_library);
+	if (res < 0) {
+		fprintf(stderr, "Checking library %s failed.\n", first_lib->name);
+		goto ret_clear_layer_list;
+	} else if (res > 0) {
+		fprintf(stderr, "%d reference loops found.\n", res);
+
+		/* do further checking if the specified cell and/or its subcells are affected */
+		if (toplevel_cell->checks.affected_by_reference_loop == 1) {
+			fprintf(stderr, "Cell is affected by reference loop. Abort!\n");
+			goto ret_clear_layer_list;
+		}
+	}
+
+	if (toplevel_cell->checks.affected_by_reference_loop == GDS_CELL_CHECK_NOT_RUN)
+		fprintf(stderr, "Cell was not checked. This should not happen. Please report this issue. Will continue either way.\n");
+
+	/* Note: unresolved references are not an abort condition.
+	 * Deal with it.
+	 */
 
 	/* Render outputs */
 	if (pdf == TRUE || svg == TRUE) {
@@ -140,14 +171,14 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	if (tex == TRUE) {
 		tex_file = fopen(tex_name, "w");
 		if (!tex_file)
-			goto ret_clear_list;
+			goto ret_clear_layer_list;
 		latex_render_cell_to_code(toplevel_cell, layer_info_list, tex_file, scale, pdf_layers, pdf_standalone);
 		fclose(tex_file);
 	}
 
 	if (so_name && so_out_file) {
 		if (strlen(so_name) == 0 || strlen(so_out_file) == 0)
-			goto ret_clear_list;
+			goto ret_clear_layer_list;
 
 		/* Render output using external renderer */
 		printf("Invoking external renderer!\n");
@@ -155,15 +186,16 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 		printf("External renderer finished!\n");
 	}
 
-ret_clear_list:
+ret_clear_layer_list:
 	g_list_free_full(layer_info_list, (GDestroyNotify)delete_layer_info_with_name);
 
 	g_object_unref(dstream);
 	g_object_unref(stream);
-destroy_file:
+ret_destroy_file:
 	g_object_unref(file);
-
-
+	/* Delete all allocated libraries */
+ret_destroy_library_list:
+	clear_lib_list(&libs);
 }
 
 /** @} */

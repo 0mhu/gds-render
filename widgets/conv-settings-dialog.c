@@ -18,7 +18,7 @@
  */
 
 /**
- * @file conv-settings-dilaog.c
+ * @file conv-settings-dialog.c
  * @brief Implementation of the setting dialog
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
@@ -127,24 +127,73 @@ static gboolean shape_drawer_drawing_callback(GtkWidget *widget, cairo_t *cr, gp
 	return FALSE;
 }
 
+static double convert_number_to_engineering(double input, const char **out_prefix)
+{
+	const char *selected_prefix = NULL;
+	double return_val = 0.0;
+	int idx;
+	const static char * prefixes[] = {"y", "z", "a", "f", "p", "n", "u", "m", "c", "d", /* < 1 */
+				 "", /* 1 */
+				 "h", "k", "M", "G", "T", "P", "E", "Z", "Y"}; /* > 1 */
+	const static double scale[] = {1E-24, 1E-21, 1E-18, 1E-15, 1E-12, 1E-9, 1E-6, 1E-3, 1E-2, 1E-1,
+					1,
+					1E2, 1E3, 1E6, 1E9, 1E12, 1E15, 1E18, 1E21, 1E24};
+	const int prefix_count = (int)(sizeof(prefixes)/sizeof(char *));
+
+	for (idx = 1; idx < prefix_count; idx++) {
+		if (input < scale[idx]) {
+			/* This prefix is bigger than the number. Take the previous one */
+			selected_prefix = prefixes[idx-1];
+			return_val = input / scale[idx-1];
+			break;
+		}
+	}
+
+	/* Check if prefix was set by loop. Else take the largest in the list */
+	if (selected_prefix == NULL) {
+		selected_prefix = prefixes[prefix_count-1];
+		return_val = input / scale[prefix_count-1];
+	}
+
+	if (out_prefix)
+		*out_prefix = selected_prefix;
+
+	return return_val;
+}
+
 static void renderer_settings_dialog_update_labels(RendererSettingsDialog *self)
 {
 	char default_buff[100];
 	double scale;
+	double width_meters;
+	double height_meters;
+	double width_engineering;
+	const char *width_prefix;
+	double height_engineering;
+	const char *height_prefix;
 
 	if (!self)
 		return;
 
-	snprintf(default_buff, sizeof(default_buff), "Width: %E", self->cell_width * self->unit_in_meters);
+	width_meters = (double)self->cell_width * self->unit_in_meters;
+	height_meters = (double)self->cell_height * self->unit_in_meters;
+
+	width_engineering = convert_number_to_engineering(width_meters, &width_prefix);
+	height_engineering = convert_number_to_engineering(height_meters, &height_prefix);
+
+	snprintf(default_buff, sizeof(default_buff), "Width: %.3lf %sm", width_engineering, width_prefix);
 	gtk_label_set_text(self->x_label, default_buff);
-	snprintf(default_buff, sizeof(default_buff), "Height: %E", self->cell_height * self->unit_in_meters);
+	snprintf(default_buff, sizeof(default_buff), "Height: %.3lf %sm", height_engineering, height_prefix);
 	gtk_label_set_text(self->y_label, default_buff);
 
 	scale = gtk_range_get_value(GTK_RANGE(self->scale));
 
-	snprintf(default_buff, sizeof(default_buff), "Output Width: %u px", (unsigned int)((double)self->cell_width / scale));
+	/* Set the pixel sizes */
+	snprintf(default_buff, sizeof(default_buff), "Output Width: %u px",
+		 (unsigned int)((double)self->cell_width / scale));
 	gtk_label_set_text(self->x_output_label, default_buff);
-	snprintf(default_buff, sizeof(default_buff), "Output Height: %u px", (unsigned int)((double)self->cell_height / scale));
+	snprintf(default_buff, sizeof(default_buff), "Output Height: %u px",
+		 (unsigned int)((double)self->cell_height / scale));
 	gtk_label_set_text(self->y_output_label, default_buff);
 }
 
@@ -264,7 +313,6 @@ void renderer_settings_dialog_set_cell_width(RendererSettingsDialog *dialog, uns
 
 	if (width == 0)
 		width = 1;
-
 
 	dialog->cell_width = width;
 	renderer_settings_dialog_update_labels(dialog);

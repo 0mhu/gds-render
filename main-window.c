@@ -38,6 +38,8 @@
 #include "cairo-output/cairo-output.h"
 #include "trigonometric/cell-trigonometrics.h"
 #include "version/version.h"
+#include "tree-renderer/lib-cell-renderer.h"
+#include "gds-parser/gds-tree-checker.h"
 
 /**
  * @brief User data supplied to callback function of the open button
@@ -115,10 +117,13 @@ static void on_load_gds(gpointer button, gpointer user)
 	char *filename;
 	GString *mod_date;
 	GString *acc_date;
-	GdkRGBA cell_text_color;
+	unsigned int cell_error_level;
 
-	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", ptr->main_window, GTK_FILE_CHOOSER_ACTION_OPEN,
-						  "Cancel", GTK_RESPONSE_CANCEL, "Open GDSII", GTK_RESPONSE_ACCEPT, NULL);
+	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", ptr->main_window,
+						  GTK_FILE_CHOOSER_ACTION_OPEN,
+						  "Cancel", GTK_RESPONSE_CANCEL,
+						  "Open GDSII", GTK_RESPONSE_ACCEPT,
+						  NULL);
 	file_chooser = GTK_FILE_CHOOSER(open_dialog);
 	/* Add GDS II Filter */
 	filter = gtk_file_filter_new();
@@ -151,17 +156,21 @@ static void on_load_gds(gpointer button, gpointer user)
 		for (lib = *(ptr->list_ptr); lib != NULL; lib = lib->next) {
 			gds_lib = (struct gds_library *)lib->data;
 			/* Create top level iter */
-			gtk_tree_store_append (store, &libiter, NULL);
+			gtk_tree_store_append(store, &libiter, NULL);
 
 			/* Convert dates to String */
 			mod_date = generate_string_from_date(&gds_lib->mod_time);
 			acc_date = generate_string_from_date(&gds_lib->access_time);
 
-			gtk_tree_store_set (store, &libiter,
-					    CELL_SEL_LIBRARY, gds_lib,
-					    CELL_SEL_MODDATE, mod_date->str,
-					    CELL_SEL_ACCESSDATE, acc_date->str,
-					    -1);
+			gtk_tree_store_set(store, &libiter,
+					   CELL_SEL_LIBRARY, gds_lib,
+					   CELL_SEL_MODDATE, mod_date->str,
+					   CELL_SEL_ACCESSDATE, acc_date->str,
+					   -1);
+
+			/* Check this library. This might take a while */
+			(void)gds_tree_check_cell_references(gds_lib);
+			(void)gds_tree_check_reference_loops(gds_lib);
 
 			/* Delete GStrings including string data. */
 			/* Cell store copies String type data items */
@@ -170,27 +179,28 @@ static void on_load_gds(gpointer button, gpointer user)
 
 			for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
 				gds_c = (struct gds_cell *)cell->data;
-				gtk_tree_store_append (store, &celliter, &libiter);
+				gtk_tree_store_append(store, &celliter, &libiter);
 
 				/* Convert dates to String */
 				mod_date = generate_string_from_date(&gds_c->mod_time);
 				acc_date = generate_string_from_date(&gds_c->access_time);
 
-				cell_text_color.alpha = 1;
-				cell_text_color.red = (double)61.0/(double)255.0;
-				cell_text_color.green = (double)152.0/(double)255.0;
-				cell_text_color.blue = 0.0;
+				/* Get the checking results for this cell */
+				cell_error_level = 0;
+				if (gds_c->checks.unresolved_child_count)
+					cell_error_level |= LIB_CELL_RENDERER_ERROR_WARN;
 
-				/* Add cell to tree store model
-				 * CELL_SEL_CELL_COLOR will always be green,
-				 * because no cell cehcker is implemented, yet.
-				 */
-				gtk_tree_store_set (store, &celliter,
-						    CELL_SEL_CELL, gds_c,
-						    CELL_SEL_MODDATE, mod_date->str,
-						    CELL_SEL_ACCESSDATE, acc_date->str,
-						    CELL_SEL_CELL_COLOR, &cell_text_color, // TODO: implement cell checker
-						    -1);
+				/* Check if it is completely b0rken */
+				if (gds_c->checks.affected_by_reference_loop)
+					cell_error_level |= LIB_CELL_RENDERER_ERROR_ERR;
+
+				/* Add cell to tree store model */
+				gtk_tree_store_set(store, &celliter,
+						   CELL_SEL_CELL, gds_c,
+						   CELL_SEL_MODDATE, mod_date->str,
+						   CELL_SEL_ACCESSDATE, acc_date->str,
+						   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
+						   -1);
 
 				/* Delete GStrings including string data. */
 				/* Cell store copies String type data items */
@@ -232,7 +242,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	gint res;
 	char *file_name;
 	union bounding_box cell_box;
-	double height, width;
+	unsigned int height, width;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(data->tree_view);
@@ -251,9 +261,12 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	bounding_box_prepare_empty(&cell_box);
 	calculate_cell_bounding_box(&cell_box, cell_to_render);
 
-	/* Calculate size in meters database units */
-	height = (cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y);
-	width = (cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
+	/* Calculate size in database units
+	 * Note that the results are bound to be positive,
+	 * so casting them to unsigned int is asbsolutely valid
+	 */
+	height = (unsigned int)(cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y);
+	width = (unsigned int)(cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
 
 	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
@@ -312,8 +325,12 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		case RENDERER_CAIROGRAPHICS_SVG:
 		case RENDERER_CAIROGRAPHICS_PDF:
 			cairo_render_cell_to_vector_file(cell_to_render, layer_list,
-							 (sett.renderer == RENDERER_CAIROGRAPHICS_PDF ? file_name : NULL),
-							 (sett.renderer == RENDERER_CAIROGRAPHICS_SVG ? file_name : NULL),
+							 (sett.renderer == RENDERER_CAIROGRAPHICS_PDF
+								? file_name
+								: NULL),
+							 (sett.renderer == RENDERER_CAIROGRAPHICS_SVG
+								? file_name
+								: NULL),
 							 sett.scale);
 			break;
 		}
@@ -405,7 +422,7 @@ GtkWindow *create_main_window()
 
 	g_object_unref(main_builder);
 
-	return (conv_data.main_window);
+	return conv_data.main_window;
 }
 
 /** @} */

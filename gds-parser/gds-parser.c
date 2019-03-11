@@ -17,11 +17,6 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*
-
- */
-
-
 /**
  * @file gds-parser.c
  * @brief Implementation of the GDS-Parser
@@ -35,7 +30,7 @@
  */
 
 /**
- * @addtogroup GDS-Parser
+ * @addtogroup GDS-Utilities
  * @{
  */
 
@@ -304,6 +299,8 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 		cell->graphic_objs = NULL;
 		cell->name[0] = 0;
 		cell->parent_library = NULL;
+		cell->checks.unresolved_child_count = GDS_CELL_CHECK_NOT_RUN;
+		cell->checks.affected_by_reference_loop = GDS_CELL_CHECK_NOT_RUN;
 	} else
 		return NULL;
 	/* return cell */
@@ -665,7 +662,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		case SREF:
 			if (current_cell == NULL) {
-				GDS_ERROR("Path outside of cell");
+				GDS_ERROR("Cell Reference outside of cell");
 				run = -3;
 				break;
 			}
@@ -813,7 +810,11 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 
 		case SNAME:
-			name_cell_ref(current_s_reference, read, workbuff);
+			if (current_s_reference) {
+				name_cell_ref(current_s_reference, (unsigned int)read, workbuff);
+			} else {
+				GDS_ERROR("reference name set outside of cell reference.\n");
+			}
 			break;
 		case WIDTH:
 			if (!current_graphics) {
@@ -866,7 +867,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				break;
 			}
 			if (current_graphics->gfx_type == GRAPHIC_PATH) {
-				current_graphics->path_render_type = (int)gds_convert_signed_int16(workbuff);
+				current_graphics->path_render_type = (enum path_type)gds_convert_signed_int16(workbuff);
 				GDS_INF("\t\tPathtype: %d\n", current_graphics->path_render_type);
 			} else {
 				GDS_WARN("Path type defined inside non-path graphics object. Ignoring");
@@ -897,7 +898,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
  */
 static void delete_cell_inst_element(struct gds_cell_instance *cell_inst)
 {
-	free(cell_inst);
+	if (cell_inst)
+		free(cell_inst);
 }
 
 /**
@@ -906,7 +908,8 @@ static void delete_cell_inst_element(struct gds_cell_instance *cell_inst)
  */
 static void delete_vertex(struct gds_point *vertex)
 {
-	free(vertex);
+	if (vertex)
+		free(vertex);
 }
 
 /**
@@ -915,6 +918,9 @@ static void delete_vertex(struct gds_point *vertex)
  */
 static void delete_graphics_obj(struct gds_graphics *gfx)
 {
+	if (!gfx)
+		return;
+
 	g_list_free_full(gfx->vertices, (GDestroyNotify)delete_vertex);
 	free(gfx);
 }
@@ -925,6 +931,9 @@ static void delete_graphics_obj(struct gds_graphics *gfx)
  */
 static void delete_cell_element(struct gds_cell *cell)
 {
+	if (!cell)
+		return;
+
 	g_list_free_full(cell->child_cells, (GDestroyNotify)delete_cell_inst_element);
 	g_list_free_full(cell->graphic_objs, (GDestroyNotify)delete_graphics_obj);
 	free(cell);
@@ -936,6 +945,9 @@ static void delete_cell_element(struct gds_cell *cell)
  */
 static void delete_library_element(struct gds_library *lib)
 {
+	if (!lib)
+		return;
+
 	g_list_free(lib->cell_names);
 	g_list_free_full(lib->cells, (GDestroyNotify)delete_cell_element);
 	free(lib);
@@ -943,8 +955,12 @@ static void delete_library_element(struct gds_library *lib)
 
 int clear_lib_list(GList **library_list)
 {
+	if (!library_list)
+		return 0;
+
 	if (*library_list == NULL)
 		return 0;
+
 	g_list_free_full(*library_list, (GDestroyNotify)delete_library_element);
 	*library_list = NULL;
 	return 0;

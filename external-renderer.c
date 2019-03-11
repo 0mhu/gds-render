@@ -32,7 +32,8 @@
 #include <dlfcn.h>
 #include <stdio.h>
 
-int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_info_list, char *output_file, char *so_path)
+int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_info_list,
+				  char *output_file, char *so_path)
 {
 	int (*so_render_func)(struct gds_cell *, GList *, char *) = NULL;
 	void *so_handle = NULL;
@@ -40,9 +41,8 @@ int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_i
 	int ret = 0;
 
 	/* Check parameter sanity */
-	if (!output_file || !so_path || !toplevel_cell || !layer_info_list) {
+	if (!output_file || !so_path || !toplevel_cell || !layer_info_list)
 		return -3000;
-	}
 
 	/* Load shared object */
 	so_handle = dlopen(so_path, RTLD_LAZY);
@@ -53,7 +53,8 @@ int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_i
 
 	/* Load symbol from library */
 	so_render_func = (int (*)(struct gds_cell *, GList *, char *))dlsym(so_handle, EXTERNAL_LIBRARY_FUNCTION);
-	if ((error_msg = dlerror()) != NULL) {
+	error_msg = dlerror();
+	if (error_msg != NULL) {
 		printf("Rendering function not found in library:\n%s\n", error_msg);
 		goto ret_close_so_handle;
 	}
