@@ -42,6 +42,7 @@
  *
  * Like delete_layer_info_struct() but also frees layer_info::name
  * @param info
+ * @warning This function must not be used if the layer_info::name field references the internal storage strings if e.g. an entry field
  */
 static void delete_layer_info_with_name(struct layer_info *info)
 {
