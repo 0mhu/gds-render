@@ -31,6 +31,11 @@
 #include "mapping-parser.h"
 
 /**
+ * @brief Defines how to sort the layer selector list box.
+ */
+enum layer_selector_sort_algo {LAYER_SELECTOR_SORT_DOWN = 0, LAYER_SELECTOR_SORT_UP};
+
+/**
  * @brief Generate layer widgets in \p listbox
  * @note This clears all previously inserted elements
  * @param listbox

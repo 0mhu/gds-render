@@ -155,18 +155,28 @@ static void analyze_cell_layers(GtkListBox *listbox, struct gds_cell *cell)
  * @param row1
  * @param row2
  * @param unused
- * @note Do not use this function
- * @return
+ * @note Do not use this function. This is an internal callback
+ * @return See sort function documentation of GTK+
  */
 static gint sort_func(GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer unused)
 {
 	LayerElement *le1, *le2;
 	gint ret;
+	enum layer_selector_sort_algo default_sort = LAYER_SELECTOR_SORT_DOWN;
+	enum layer_selector_sort_algo *algo = (enum layer_selector_sort_algo *)unused;
+
+	/* Assume downward sorting */
+	if (!algo)
+		algo = &default_sort;
 
 	le1 = LAYER_ELEMENT(row1);
 	le2 = LAYER_ELEMENT(row2);
 
+	/* Determine sort fow downward sort */
 	ret = layer_element_get_layer(le1) - layer_element_get_layer(le2);
+
+	/* Change order if upward sort is requested */
+	ret *= (*algo == LAYER_SELECTOR_SORT_DOWN ? 1 : -1);
 
 	return ret;
 }
