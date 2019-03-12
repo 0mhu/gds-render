@@ -384,6 +384,22 @@ static void cell_selection_changed(GtkTreeSelection *sel, GtkWidget *convert_but
 	}
 }
 
+static void sort_up_callback(GtkWidget *widget, gpointer user)
+{
+	(void)widget;
+	(void)user;
+
+	layer_selector_force_sort(LAYER_SELECTOR_SORT_UP);
+}
+
+static void sort_down_callback(GtkWidget *widget, gpointer user)
+{
+	(void)widget;
+	(void)user;
+
+	layer_selector_force_sort(LAYER_SELECTOR_SORT_DOWN);
+}
+
 GtkWindow *create_main_window()
 {
 	GtkBuilder *main_builder;
@@ -396,6 +412,8 @@ GtkWindow *create_main_window()
 	static struct open_button_data open_data;
 	static struct convert_button_data conv_data;
 	struct tree_stores *cell_selector_stores;
+	GtkWidget *sort_up_button;
+	GtkWidget *sort_down_button;
 
 	main_builder = gtk_builder_new_from_resource("/main.glade");
 	gtk_builder_connect_signals(main_builder, NULL);
@@ -439,6 +457,13 @@ GtkWindow *create_main_window()
 	/* Set version in main window subtitle */
 	header_bar = GTK_HEADER_BAR(gtk_builder_get_object(main_builder, "header-bar"));
 	gtk_header_bar_set_subtitle(header_bar, _app_version_string);
+
+	/* Get layer sorting buttons and set callbacks */
+	sort_up_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-up-sort"));
+	sort_down_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-down-sort"));
+
+	g_signal_connect(sort_up_button, "clicked", G_CALLBACK(sort_up_callback), NULL);
+	g_signal_connect(sort_down_button, "clicked", G_CALLBACK(sort_down_callback), NULL);
 
 	g_object_unref(main_builder);
 
