@@ -190,7 +190,6 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
 	global_list_box = listbox;
 
 	clear_list_box_widgets(listbox);
-	gtk_list_box_set_sort_func(listbox, sort_func, NULL, NULL);
 
 	for (; libs != NULL; libs = libs->next) {
 		lib = (struct gds_library *)libs->data;
@@ -199,11 +198,8 @@ void generate_layer_widgets(GtkListBox *listbox, GList *libs)
 		} /* For Cell List */
 	} /* For libs */
 
-	/* Force sort */
-	gtk_list_box_invalidate_sort(listbox);
-
-	/* Disable sort, so user can sort layers */
-	gtk_list_box_set_sort_func(listbox, NULL, NULL, NULL);
+	/* Sort the layers */
+	layer_selector_force_sort(LAYER_SELECTOR_SORT_DOWN);
 
 	/* Activate Buttons */
 	gtk_widget_set_sensitive(global_load_button, TRUE);
@@ -444,6 +440,17 @@ void setup_save_mapping_callback(GtkWidget *button,  GtkWindow *main_window)
 	g_object_ref(G_OBJECT(button));
 	global_save_button = button;
 	g_signal_connect(button, "clicked", G_CALLBACK(save_mapping_clicked), main_window);
+}
+
+void layer_selector_force_sort(enum layer_selector_sort_algo sort_function)
+{
+	if (!global_list_box)
+		return;
+
+	/* Set dorting function, sort, and disable sorting function */
+	gtk_list_box_set_sort_func(global_list_box, sort_func, (gpointer)&sort_function, NULL);
+	gtk_list_box_invalidate_sort(global_list_box);
+	gtk_list_box_set_sort_func(global_list_box, NULL, NULL, NULL);
 }
 
 /** @} */

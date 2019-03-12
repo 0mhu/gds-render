@@ -69,4 +69,14 @@ GList *export_rendered_layer_info();
  * @note The layer_info::name Element has to be freed manually
  */
 void delete_layer_info_struct(struct layer_info *info);
+
+/**
+ * @brief Force sorting of the layer selector in a specified way
+ *
+ * If the layer selector is not yet set up, this function has no effect.
+ *
+ * @param sort_function Sorting direction
+ */
+void layer_selector_force_sort(enum layer_selector_sort_algo sort_function);
+
 #endif /* __LAYER_SELECTOR_H__ */
