@@ -162,10 +162,11 @@ static gint sort_func(GtkListBoxRow *row1, GtkListBoxRow *row2, gpointer unused)
 {
 	LayerElement *le1, *le2;
 	gint ret;
-	enum layer_selector_sort_algo default_sort = LAYER_SELECTOR_SORT_DOWN;
-	enum layer_selector_sort_algo *algo = (enum layer_selector_sort_algo *)unused;
+	static const enum layer_selector_sort_algo default_sort = LAYER_SELECTOR_SORT_DOWN;
+	const enum layer_selector_sort_algo *algo = (const enum layer_selector_sort_algo *)unused;
 
 	/* Assume downward sorting */
+	/* TODO: This is nasty. Find a better way */
 	if (!algo)
 		algo = &default_sort;
 
