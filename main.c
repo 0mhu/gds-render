@@ -26,8 +26,8 @@
 #include "version/version.h"
 
 struct application_data {
-	GtkApplication *app;
-	GtkWindow *main_window;
+		GtkApplication *app;
+		GtkWindow *main_window;
 };
 
 static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_data)
@@ -64,12 +64,18 @@ const static GActionEntry app_actions[] = {
 static void gapp_activate(GApplication *app, gpointer user_data)
 {
 	GtkWindow *main_window;
+	static int activated = 0;
 	struct application_data * const appdata = (struct application_data *)user_data;
 
-	main_window = create_main_window();
-	appdata->main_window = main_window;
-	gtk_application_add_window(GTK_APPLICATION(app), main_window);
-	gtk_widget_show(GTK_WIDGET(main_window));
+	if (!activated) {
+		activated = 1;
+		main_window = create_main_window();
+		appdata->main_window = main_window;
+		gtk_application_add_window(GTK_APPLICATION(app), main_window);
+		gtk_widget_show(GTK_WIDGET(main_window));
+	} else {
+		fprintf(stderr, "Only one instance of the GUI can be started at the same time, for now.\nThis will probably be fixed in later releases.");
+	}
 }
 
 static int start_gui(int argc, char **argv)
@@ -110,7 +116,7 @@ static int start_gui(int argc, char **argv)
 static void print_version()
 {
 	printf("This is gds-render, version: %s\n\nFor a list of supported commands execute with --help option.\n",
-		_app_version_string);
+	       _app_version_string);
 }
 
 int main(int argc, char **argv)
@@ -128,21 +134,21 @@ int main(int argc, char **argv)
 	int app_status = 0;
 
 	GOptionEntry entries[] = {
-	  {"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
-	  {"tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
-	  {"pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
-	  //{"svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
-	  {"scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
-	  {"tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
-	  {"pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
-	  //{"svg-output", 0, 0, G_OPTION_ARG_FILENAME, &svgname, "Optional path for PDF file", "PATH"},
-	  {"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
-	  {"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
-	  {"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
-	  {"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
-	  {"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
-	  {"external-lib-output", 'e', 0, G_OPTION_ARG_FILENAME, &custom_library_file_name, "Output path for external render library", "PATH"},
-	  {NULL}
+		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
+		{"tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
+		{"pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
+		//{"svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
+		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
+		{"tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
+		{"pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
+		//{"svg-output", 0, 0, G_OPTION_ARG_FILENAME, &svgname, "Optional path for PDF file", "PATH"},
+		{"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
+		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
+		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
+		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
+		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
+		{"external-lib-output", 'e', 0, G_OPTION_ARG_FILENAME, &custom_library_file_name, "Output path for external render library", "PATH"},
+		{NULL}
 	};
 
 	context = g_option_context_new(" FILE - Convert GDS file <FILE> to graphic");
@@ -156,7 +162,7 @@ int main(int argc, char **argv)
 
 	if (version) {
 		print_version();
-		goto ret_status;	
+		goto ret_status;
 	}
 
 	if (argc >= 2) {
@@ -185,9 +191,9 @@ int main(int argc, char **argv)
 			pdfname = g_strdup_printf("./%s.svg", basename);
 
 		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz,
-					mappingname, cellname, (double)scale,
-					pdf_layers, pdf_standalone, svg, svgname,
-					custom_library_path, custom_library_file_name);
+					 mappingname, cellname, (double)scale,
+					 pdf_layers, pdf_standalone, svg, svgname,
+					 custom_library_path, custom_library_file_name);
 		/* Clean up */
 		g_free(pdfname);
 		g_free(texname);
