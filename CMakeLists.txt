@@ -20,7 +20,8 @@ aux_source_directory("gds-parser" PARSER_SOURCES)
 aux_source_directory("latex-output" LATEX_SOURCES)
 aux_source_directory("cairo-output" CAIRO_SOURCES)
 aux_source_directory("trigonometric" TRIG_SOURCES)
-set(SOURCE "main.c" "layer-selector.c" "layer-selector-dnd.c" "mapping-parser.c" "command-line.c" "main-window.c" "external-renderer.c")
+aux_source_directory("layer-selector" LAYER_SELECTOR_SOURCES)
+set(SOURCE "main.c" "mapping-parser.c" "command-line.c" "main-window.c" "external-renderer.c")
 
 set(SOURCE
   ${SOURCE}
@@ -30,6 +31,7 @@ set(SOURCE
   ${LATEX_SOURCES}
   ${CAIRO_SOURCES}
   ${TRIG_SOURCES}
+  ${LAYER_SELECTOR_SOURCES}
 )
 
 add_compile_options(-Wall)

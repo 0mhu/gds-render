@@ -28,7 +28,7 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
-#include "mapping-parser.h"
+#include "../mapping-parser.h"
 
 /**
  * @brief Defines how to sort the layer selector list box.

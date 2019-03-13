@@ -223,7 +223,7 @@ void layer_selector_list_box_setup_dnd(GtkListBox *box)
 	gtk_css_provider_load_from_data (provider, dnd_additional_css, -1, NULL);
 	gtk_style_context_add_provider_for_screen (gdk_screen_get_default (), GTK_STYLE_PROVIDER (provider), 800);
 
-	gtk_drag_dest_set(box, GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP, entries, 1, GDK_ACTION_MOVE);
+	gtk_drag_dest_set(GTK_WIDGET(box), GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP, entries, 1, GDK_ACTION_MOVE);
 	g_signal_connect(box, "drag-data-received", G_CALLBACK(layer_selector_drag_data_received), NULL);
 	g_signal_connect(box, "drag-motion", G_CALLBACK(layer_selector_drag_motion), NULL);
 	g_signal_connect(box, "drag-leave", G_CALLBACK(layer_selector_drag_leave), NULL);

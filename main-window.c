@@ -31,7 +31,8 @@
 #include <stdio.h>
 #include "gds-parser/gds-parser.h"
 #include <gtk/gtk.h>
-#include "layer-selector.h"
+#include "layer-selector/layer-selector.h"
+#include "layer-selector/layer-selector-dnd.h"
 #include "tree-renderer/tree-store.h"
 #include "latex-output/latex-output.h"
 #include "widgets/conv-settings-dialog.h"
@@ -40,8 +41,6 @@
 #include "version/version.h"
 #include "tree-renderer/lib-cell-renderer.h"
 #include "gds-parser/gds-tree-checker.h"
-#include "layer-selector-dnd.h"
-
 /**
  * @brief User data supplied to callback function of the open button
  */
