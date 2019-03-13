@@ -17,9 +17,16 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * The drag and drop implementation is adapted from
+ * https://gitlab.gnome.org/GNOME/gtk/blob/gtk-3-22/tests/testlist3.c
+ *
+ * Thanks to the GTK3 people for creating these examples.
+ */
+
 /**
  * @file layer-element.c
- * @brief Omplementation of the layer element used for configuring layer colors etc.
+ * @brief Implementation of the layer element used for configuring layer colors etc.
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
@@ -65,14 +72,14 @@ static void layer_element_drag_begin(GtkWidget *widget,
 	int x, y;
 	(void)data;
 
-	row = gtk_widget_get_ancestor (widget, GTK_TYPE_LIST_BOX_ROW);
-	gtk_widget_get_allocation (row, &alloc);
-	surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
-	cr = cairo_create (surface);
+	row = gtk_widget_get_ancestor(widget, GTK_TYPE_LIST_BOX_ROW);
+	gtk_widget_get_allocation(row, &alloc);
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
+	cr = cairo_create(surface);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context (row), "drag-icon");
+	gtk_style_context_add_class (gtk_widget_get_style_context(row), "drag-icon");
 	gtk_widget_draw (row, cr);
-	gtk_style_context_remove_class (gtk_widget_get_style_context (row), "drag-icon");
+	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-icon");
 
 	gtk_widget_translate_coordinates (widget, row, 0, 0, &x, &y);
 	cairo_surface_set_device_offset (surface, -x, -y);
@@ -80,6 +87,21 @@ static void layer_element_drag_begin(GtkWidget *widget,
 
 	cairo_destroy (cr);
 	cairo_surface_destroy (surface);
+
+	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", row);
+	gtk_style_context_add_class(gtk_widget_get_style_context(row), "drag-row");
+}
+
+static void layer_element_drag_end(GtkWidget *widget, GdkDragContext *context, gpointer data)
+{
+	GtkWidget *row;
+	(void)context;
+	(void)data;
+
+	row = gtk_widget_get_ancestor(widget, GTK_TYPE_LIST_BOX_ROW);
+	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", NULL);
+	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-row");
+	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-hover");
 }
 
 static void layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
@@ -92,36 +114,6 @@ static void layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *conte
 
 	gtk_selection_data_set(selection_data, gdk_atom_intern_static_string("GTK_LIST_BOX_ROW"),
 			       32, (const guchar *)&widget, sizeof(gpointer));
-}
-
-static void layer_element_drag_data_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
-					     GtkSelectionData *selection_data, guint info, guint32 time,
-					     gpointer data)
-{
-	GtkWidget *target;
-	GtkWidget *row;
-	GtkWidget *source;
-	int pos;
-	(void)context;
-	(void)x;
-	(void)y;
-	(void)info;
-	(void)time;
-	(void)data;
-
-	target = widget;
-
-	pos = gtk_list_box_row_get_index (GTK_LIST_BOX_ROW (target));
-	row = (gpointer)(*(gpointer *)gtk_selection_data_get_data(selection_data));
-	source = gtk_widget_get_ancestor (row, GTK_TYPE_LIST_BOX_ROW);
-
-	if (source == target)
-		return;
-
-	g_object_ref (source);
-	gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (source)), source);
-	gtk_list_box_insert (GTK_LIST_BOX (gtk_widget_get_parent (target)), source, pos);
-	g_object_unref (source);
 }
 
 static void layer_element_init(LayerElement *self)
@@ -140,11 +132,11 @@ static void layer_element_init(LayerElement *self)
 	self->priv.event_handle = GTK_EVENT_BOX(gtk_builder_get_object(builder, "event-box"));
 
 	/* Setup drag and drop */
+	gtk_style_context_add_class (gtk_widget_get_style_context(GTK_WIDGET(self)), "row");
 	gtk_drag_source_set(GTK_WIDGET(self->priv.event_handle), GDK_BUTTON1_MASK, entries, 1, GDK_ACTION_MOVE);
 	g_signal_connect(self->priv.event_handle, "drag-begin", G_CALLBACK(layer_element_drag_begin), NULL);
 	g_signal_connect(self->priv.event_handle, "drag-data-get", G_CALLBACK(layer_element_drag_data_get), NULL);
-	gtk_drag_dest_set(GTK_WIDGET(self), GTK_DEST_DEFAULT_ALL, entries, 1, GDK_ACTION_MOVE);
-	g_signal_connect(GTK_WIDGET(self), "drag-data-received", G_CALLBACK(layer_element_drag_data_received), NULL);
+	g_signal_connect(self->priv.event_handle, "drag-end", G_CALLBACK(layer_element_drag_end), NULL);
 
 	g_object_unref(builder);
 }

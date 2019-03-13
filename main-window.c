@@ -40,6 +40,7 @@
 #include "version/version.h"
 #include "tree-renderer/lib-cell-renderer.h"
 #include "gds-parser/gds-tree-checker.h"
+#include "layer-selector-dnd.h"
 
 /**
  * @brief User data supplied to callback function of the open button
@@ -441,6 +442,9 @@ GtkWindow *create_main_window()
 	g_signal_connect(conv_button, "clicked", G_CALLBACK(on_convert_clicked), &conv_data);
 
 	listbox = GTK_WIDGET(gtk_builder_get_object(main_builder, "layer-list"));
+	/* Set up the list box sided callbacks for drag and drop */
+	layer_selector_list_box_setup_dnd(GTK_LIST_BOX(listbox));
+
 	open_data.layer_box = GTK_LIST_BOX(listbox);
 
 	/* Set buttons fpr layer mapping GUI */
