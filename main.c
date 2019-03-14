@@ -57,8 +57,8 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 }
 
 const static GActionEntry app_actions[] = {
-	{"quit", app_quit},
-	{"about", app_about}
+	{"quit", app_quit, NULL, NULL, NULL, {0}},
+	{"about", app_about, NULL, NULL, NULL, {0}}
 };
 
 static void gapp_activate(GApplication *app, gpointer user_data)
