@@ -43,3 +43,4 @@ SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/glade/resources.c PROPER
 target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
 install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 
+add_custom_target(documentation DEPENDS doxygen)
