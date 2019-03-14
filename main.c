@@ -64,18 +64,12 @@ const static GActionEntry app_actions[] = {
 static void gapp_activate(GApplication *app, gpointer user_data)
 {
 	GtkWindow *main_window;
-	static int activated = 0;
 	struct application_data * const appdata = (struct application_data *)user_data;
 
-	if (!activated) {
-		activated = 1;
-		main_window = create_main_window();
-		appdata->main_window = main_window;
-		gtk_application_add_window(GTK_APPLICATION(app), main_window);
-		gtk_widget_show(GTK_WIDGET(main_window));
-	} else {
-		fprintf(stderr, "Only one instance of the GUI can be started at the same time, for now.\nThis will probably be fixed in later releases.");
-	}
+	main_window = create_main_window();
+	appdata->main_window = main_window;
+	gtk_application_add_window(GTK_APPLICATION(app), main_window);
+	gtk_widget_show(GTK_WIDGET(main_window));
 }
 
 static int start_gui(int argc, char **argv)
@@ -88,7 +82,7 @@ static int start_gui(int argc, char **argv)
 	GMenu *m_quit;
 	GMenu *m_about;
 
-	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_FLAGS_NONE);
+	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_NON_UNIQUE);
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
 	g_signal_connect(gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
 
