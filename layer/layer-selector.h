@@ -61,14 +61,7 @@ void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
  * @brief get the layer information present in the listbox of the selector
  * @return List with layer_info elements
  */
-GList *export_rendered_layer_info();
-
-/**
- * @brief Delete a layer_info struct
- * @param info Struct to be deleted.
- * @note The layer_info::name Element has to be freed manually
- */
-void delete_layer_info_struct(struct layer_info *info);
+GList *export_rendered_layer_info(void);
 
 /**
  * @brief Force sorting of the layer selector in a specified way

@@ -32,19 +32,7 @@
  */
 
 #include <gtk/gtk.h>
-
-/**
- * @brief Layer information.
- *
- * This structs contains information on how to render a layer
- */
-struct layer_info
-{
-	int layer; /**< @brief Layer number */
-	char *name; /**< @brief Layer name */
-	int stacked_position; ///< @brief Position of layer in output @warning This parameter is not used by any renderer so far @note Lower is bottom, higher is top
-	GdkRGBA color; /**< @brief RGBA color used to render this layer */
-};
+#include "widgets/layer-element.h"
 
 /**
  * @brief Load a line from \p stream and parse try to parse it as layer information
@@ -56,6 +44,14 @@ struct layer_info
  * @return 1 if malformatted line, 0 if parsing was successful and parameters are valid, -1 if file end
  */
 int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color);
+
+/**
+ * @brief Create Line for LayerMapping file with supplied information
+ * @param layer_element information
+ * @param line_buffer buffer to write to
+ * @param max_len Maximum length that cna be used in \p line_buffer
+ */
+void create_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len);
 
 /** @} */
 

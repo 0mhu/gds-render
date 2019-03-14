@@ -24,7 +24,7 @@
 #ifndef __CAIRO_OUTPUT_H__
 #define __CAIRO_OUTPUT_H__
 
-#include "../layer-selector/layer-selector.h"
+#include "../layer/layer-info.h"
 #include "../gds-parser/gds-types.h"
 
 /** @addtogroup Cairo-Renderer

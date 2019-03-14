@@ -32,6 +32,7 @@
 #include "command-line.h"
 #include "gds-parser/gds-parser.h"
 #include "mapping-parser.h"
+#include "layer/layer-info.h"
 #include "cairo-output/cairo-output.h"
 #include "latex-output/latex-output.h"
 #include "external-renderer.h"

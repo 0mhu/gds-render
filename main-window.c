@@ -31,8 +31,8 @@
 #include <stdio.h>
 #include "gds-parser/gds-parser.h"
 #include <gtk/gtk.h>
-#include "layer-selector/layer-selector.h"
-#include "layer-selector/layer-selector-dnd.h"
+#include "layer/layer-selector.h"
+#include "layer/layer-selector-dnd.h"
 #include "tree-renderer/tree-store.h"
 #include "latex-output/latex-output.h"
 #include "widgets/conv-settings-dialog.h"
