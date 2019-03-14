@@ -50,6 +50,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	builder = gtk_builder_new_from_resource("/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), appdata->main_window);
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), _app_version_string);
 	gtk_dialog_run(dialog);
 
 	gtk_widget_destroy(GTK_WIDGET(dialog));
