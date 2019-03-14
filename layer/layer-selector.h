@@ -28,7 +28,6 @@
 
 #include <gtk/gtk.h>
 #include <glib.h>
-#include "../mapping-parser.h"
 
 /**
  * @brief Defines how to sort the layer selector list box.
@@ -39,29 +38,29 @@ enum layer_selector_sort_algo {LAYER_SELECTOR_SORT_DOWN = 0, LAYER_SELECTOR_SORT
  * @brief Generate layer widgets in \p listbox
  * @note This clears all previously inserted elements
  * @param listbox
- * @param libs The library to add
+ * @param libs The libraries to add
  */
-void generate_layer_widgets(GtkListBox *listbox, GList *libs);
+void layer_selector_generate_layer_widgets(GtkListBox *listbox, GList *libs);
 
 /**
  * @brief Supply button for loading the layer mapping
  * @param button
  * @param main_window Parent window for dialogs
  */
-void setup_load_mapping_callback(GtkWidget *button, GtkWindow *main_window);
+void layer_selector_set_load_mapping_button(GtkWidget *button, GtkWindow *main_window);
 
 /**
  * @brief Supply button for saving the layer mapping
  * @param button
- * @param main_window
+ * @param main_window Parent window for dialogs
  */
-void setup_save_mapping_callback(GtkWidget *button, GtkWindow *main_window);
+void layer_selector_set_save_mapping_button(GtkWidget *button, GtkWindow *main_window);
 
 /**
  * @brief get the layer information present in the listbox of the selector
  * @return List with layer_info elements
  */
-GList *export_rendered_layer_info(void);
+GList *layer_selector_export_rendered_layer_info(void);
 
 /**
  * @brief Force sorting of the layer selector in a specified way
