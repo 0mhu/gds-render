@@ -48,8 +48,8 @@ struct open_button_data {
 	GtkWindow *main_window;
 	GList **list_ptr;
 	GtkTreeStore *cell_store;
-	GtkListBox *layer_box;
 	GtkSearchEntry *search_entry;
+	LayerSelector *layer_selector;
 };
 
 /**
@@ -58,6 +58,7 @@ struct open_button_data {
 struct convert_button_data {
 	GtkTreeView *tree_view;
 	GtkWindow *main_window;
+	LayerSelector *layer_selector;
 };
 
 /**
@@ -68,8 +69,12 @@ struct convert_button_data {
  * @param user not used
  * @return TRUE. This indicates that the event has been fully handled
  */
-static gboolean on_window_close(gpointer window, gpointer user)
+static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 {
+	/* Destroy all objects helb by this module, that are not part of the GUI itself */
+	g_object_unref(LAYER_SELECTOR(user));
+
+	/* Close Window. Leads to termination of the program */
 	gtk_widget_destroy(GTK_WIDGET(window));
 	return TRUE;
 }
@@ -210,7 +215,7 @@ static void on_load_gds(gpointer button, gpointer user)
 		}
 
 		/* Create Layers in Layer Box */
-		generate_layer_widgets(ptr->layer_box, *(ptr->list_ptr));
+		layer_selector_generate_layer_widgets(ptr->layer_selector, *(ptr->list_ptr));
 	}
 
 end_destroy:
@@ -259,7 +264,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		return;
 
 	/* Get layers that are rendered */
-	layer_list = export_rendered_layer_info();
+	layer_list = layer_selector_export_rendered_layer_info(data->layer_selector);
 
 	/* Calculate cell size in DB units */
 	bounding_box_prepare_empty(&cell_box);
@@ -267,7 +272,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 
 	/* Calculate size in database units
 	 * Note that the results are bound to be positive,
-	 * so casting them to unsigned int is asbsolutely valid
+	 * so casting them to unsigned int is absolutely valid
 	 */
 	height = (unsigned int)(cell_box.vectors.upper_right.y - cell_box.vectors.lower_left.y);
 	width = (unsigned int)(cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
@@ -387,17 +392,23 @@ static void cell_selection_changed(GtkTreeSelection *sel, GtkWidget *convert_but
 static void sort_up_callback(GtkWidget *widget, gpointer user)
 {
 	(void)widget;
-	(void)user;
+	LayerSelector *sel;
 
-	layer_selector_force_sort(LAYER_SELECTOR_SORT_UP);
+	sel = LAYER_SELECTOR(user);
+	if (!sel)
+		return;
+	layer_selector_force_sort(sel, LAYER_SELECTOR_SORT_UP);
 }
 
 static void sort_down_callback(GtkWidget *widget, gpointer user)
 {
 	(void)widget;
-	(void)user;
+	LayerSelector *sel;
 
-	layer_selector_force_sort(LAYER_SELECTOR_SORT_DOWN);
+	sel = LAYER_SELECTOR(user);
+	if (!sel)
+		return;
+	layer_selector_force_sort(sel, LAYER_SELECTOR_SORT_DOWN);
 }
 
 GtkWindow *create_main_window()
@@ -408,6 +419,7 @@ GtkWindow *create_main_window()
 	GtkWidget *conv_button;
 	GtkWidget *search_entry;
 	GtkHeaderBar *header_bar;
+	LayerSelector *layer_selector;
 	static GList *gds_libs;
 	static struct open_button_data open_data;
 	static struct convert_button_data conv_data;
@@ -429,10 +441,6 @@ GtkWindow *create_main_window()
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),
 			 "clicked", G_CALLBACK(on_load_gds), (gpointer)&open_data);
 
-	/* Connect delete-event */
-	g_signal_connect(GTK_WIDGET(open_data.main_window), "delete-event",
-			 G_CALLBACK(on_window_close), NULL);
-
 	/* Connect Convert button */
 	conv_data.tree_view = cell_tree;
 	conv_data.main_window = open_data.main_window;
@@ -441,16 +449,10 @@ GtkWindow *create_main_window()
 	g_signal_connect(conv_button, "clicked", G_CALLBACK(on_convert_clicked), &conv_data);
 
 	listbox = GTK_WIDGET(gtk_builder_get_object(main_builder, "layer-list"));
-	/* Set up the list box sided callbacks for drag and drop */
-	layer_selector_list_box_setup_dnd(GTK_LIST_BOX(listbox));
-
-	open_data.layer_box = GTK_LIST_BOX(listbox);
-
-	/* Set buttons fpr layer mapping GUI */
-	setup_load_mapping_callback(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
-				    open_data.main_window);
-	setup_save_mapping_callback(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
-				    open_data.main_window);
+	/* Create layer selector */
+	layer_selector = layer_selector_new(GTK_LIST_BOX(listbox));
+	conv_data.layer_selector = layer_selector;
+	open_data.layer_selector = layer_selector;
 
 	/* Callback for selection change of cell selector */
 	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(cell_tree)), "changed",
@@ -465,8 +467,21 @@ GtkWindow *create_main_window()
 	sort_up_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-up-sort"));
 	sort_down_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-down-sort"));
 
-	g_signal_connect(sort_up_button, "clicked", G_CALLBACK(sort_up_callback), NULL);
-	g_signal_connect(sort_down_button, "clicked", G_CALLBACK(sort_down_callback), NULL);
+	g_signal_connect(sort_up_button, "clicked", G_CALLBACK(sort_up_callback), layer_selector);
+	g_signal_connect(sort_down_button, "clicked", G_CALLBACK(sort_down_callback), layer_selector);
+
+
+	/* Set buttons for loading and saving */
+	layer_selector_set_load_mapping_button(layer_selector,
+						GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
+						conv_data.main_window);
+	layer_selector_set_save_mapping_button(layer_selector, GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
+						conv_data.main_window);
+
+
+	/* Connect delete-event */
+	g_signal_connect(GTK_WIDGET(open_data.main_window), "delete-event",
+			 G_CALLBACK(on_window_close), layer_selector);
 
 	g_object_unref(main_builder);
 

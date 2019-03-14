@@ -28,6 +28,4 @@
 
 #include <gtk/gtk.h>
 
-void layer_selector_list_box_setup_dnd(GtkListBox *box);
-
 #endif /* _LAYER_SELECTOR_DND_H_ */
