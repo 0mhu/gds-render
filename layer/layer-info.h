@@ -21,6 +21,6 @@ struct layer_info
  * @param info Struct to be deleted.
  * @note The layer_info::name Element has to be freed manually
  */
-void delete_layer_info_struct(struct layer_info *info);
+void layer_info_delete_struct(struct layer_info *info);
 
-#endif // _LAYERINFO_H_
+#endif // _LAYER_INFO_H_

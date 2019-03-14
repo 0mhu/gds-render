@@ -344,7 +344,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		gtk_widget_destroy(dialog);
 	}
 ret_layer_destroy:
-	g_list_free_full(layer_list, (GDestroyNotify)delete_layer_info_struct);
+	g_list_free_full(layer_list, (GDestroyNotify)layer_info_delete_struct);
 }
 
 /**
