@@ -48,6 +48,8 @@ struct _LayerSelector {
 	GtkWindow *save_parent_window;
 	GtkListBox *list_box;
 
+	GtkTargetEntry dnd_target;
+
 	gpointer dummy[4];
 };
 
@@ -55,13 +57,8 @@ G_DEFINE_TYPE(LayerSelector, layer_selector, G_TYPE_OBJECT)
 
 
 /* Drag and drop code */
-static GtkTargetEntry entries[] = {
-	{ "GTK_LIST_BOX_ROW", GTK_TARGET_SAME_APP, 0 }
-};
 
-static void sel_layer_element_drag_begin(GtkWidget *widget,
-				     GdkDragContext *context,
-				     gpointer data)
+static void sel_layer_element_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer data)
 {
 	GtkWidget *row;
 	GtkAllocation alloc;
@@ -109,8 +106,11 @@ static void sel_layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *c
 	(void)info;
 	(void)time;
 	(void)data;
+	GdkAtom atom;
 
-	gtk_selection_data_set(selection_data, gdk_atom_intern_static_string("GTK_LIST_BOX_ROW"),
+	atom = gdk_atom_intern_static_string("GTK_LIST_BOX_ROW");
+
+	gtk_selection_data_set(selection_data, atom,
 			       32, (const guchar *)&widget, sizeof(gpointer));
 }
 
@@ -304,6 +304,11 @@ static void layer_selector_dispose(GObject *self)
 	g_clear_object(&sel->associated_load_button);
 	g_clear_object(&sel->associated_save_button);
 
+	if (sel->dnd_target.target) {
+		g_free(sel->dnd_target.target);
+		sel->dnd_target.target = NULL;
+	}
+
 	/* Chain up to parent's dispose function */
 	G_OBJECT_CLASS(layer_selector_parent_class)->dispose(self);
 }
@@ -324,23 +329,26 @@ static void layer_selector_class_init(LayerSelectorClass *klass)
 	g_object_unref(provider);
 }
 
-static void layer_selector_setup_dnd(GtkListBox *box)
+static void layer_selector_setup_dnd(LayerSelector *self)
 {
-	gtk_drag_dest_set(GTK_WIDGET(box), GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP, entries, 1, GDK_ACTION_MOVE);
-	g_signal_connect(box, "drag-data-received", G_CALLBACK(layer_selector_drag_data_received), NULL);
-	g_signal_connect(box, "drag-motion", G_CALLBACK(layer_selector_drag_motion), NULL);
-	g_signal_connect(box, "drag-leave", G_CALLBACK(layer_selector_drag_leave), NULL);
+	gtk_drag_dest_set(GTK_WIDGET(self->list_box), GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP, &self->dnd_target, 1, GDK_ACTION_MOVE);
+	g_signal_connect(self->list_box, "drag-data-received", G_CALLBACK(layer_selector_drag_data_received), NULL);
+	g_signal_connect(self->list_box, "drag-motion", G_CALLBACK(layer_selector_drag_motion), NULL);
+	g_signal_connect(self->list_box, "drag-leave", G_CALLBACK(layer_selector_drag_leave), NULL);
 }
 
 /* Drag and drop end */
 
 static void layer_selector_init(LayerSelector *self)
 {
-	/* Setup drag and drop for associated list box */
 	self->load_parent_window = NULL;
 	self->save_parent_window = NULL;
 	self->associated_load_button = NULL;
 	self->associated_save_button = NULL;
+
+	self->dnd_target.target = g_strdup_printf("LAYER_SELECTOR_DND_%p", self);
+	self->dnd_target.info = 0;
+	self->dnd_target.flags = GTK_TARGET_SAME_APP;
 }
 
 LayerSelector *layer_selector_new(GtkListBox *list_box)
@@ -352,7 +360,7 @@ LayerSelector *layer_selector_new(GtkListBox *list_box)
 
 	selector = LAYER_SELECTOR(g_object_new(TYPE_LAYER_SELECTOR, NULL));
 	selector->list_box = list_box;
-	layer_selector_setup_dnd(list_box);
+	layer_selector_setup_dnd(selector);
 	g_object_ref(G_OBJECT(list_box));
 
 	return selector;
@@ -439,9 +447,9 @@ static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self,
 	return ret;
 }
 
-static void sel_layer_element_setup_dnd_callbacks(LayerElement *element)
+static void sel_layer_element_setup_dnd_callbacks(LayerSelector *self, LayerElement *element)
 {
-	layer_element_set_dnd_callbacks(element, entries, 1,
+	layer_element_set_dnd_callbacks(element, &self->dnd_target, 1,
 					sel_layer_element_drag_begin,
 					sel_layer_element_drag_data_get,
 					sel_layer_element_drag_end);
@@ -464,7 +472,7 @@ static void layer_selector_analyze_cell_layers(LayerSelector *self, struct gds_c
 		layer = (int)gfx->layer;
 		if (layer_selector_check_if_layer_widget_exists(self, layer) == FALSE) {
 			le = layer_element_new();
-			sel_layer_element_setup_dnd_callbacks(LAYER_ELEMENT(le));
+			sel_layer_element_setup_dnd_callbacks(self, LAYER_ELEMENT(le));
 			layer_element_set_layer(LAYER_ELEMENT(le), layer);
 			gtk_list_box_insert(self->list_box, le, -1);
 			gtk_widget_show(le);
