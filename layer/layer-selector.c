@@ -59,6 +59,61 @@ static GtkTargetEntry entries[] = {
 	{ "GTK_LIST_BOX_ROW", GTK_TARGET_SAME_APP, 0 }
 };
 
+static void sel_layer_element_drag_begin(GtkWidget *widget,
+				     GdkDragContext *context,
+				     gpointer data)
+{
+	GtkWidget *row;
+	GtkAllocation alloc;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+	int x, y;
+	(void)data;
+
+	row = gtk_widget_get_ancestor(widget, GTK_TYPE_LIST_BOX_ROW);
+	gtk_widget_get_allocation(row, &alloc);
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
+	cr = cairo_create(surface);
+
+	gtk_style_context_add_class (gtk_widget_get_style_context(row), "drag-icon");
+	gtk_widget_draw (row, cr);
+	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-icon");
+
+	gtk_widget_translate_coordinates (widget, row, 0, 0, &x, &y);
+	cairo_surface_set_device_offset (surface, -x, -y);
+	gtk_drag_set_icon_surface (context, surface);
+
+	cairo_destroy (cr);
+	cairo_surface_destroy (surface);
+
+	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", row);
+	gtk_style_context_add_class(gtk_widget_get_style_context(row), "drag-row");
+}
+
+static void sel_layer_element_drag_end(GtkWidget *widget, GdkDragContext *context, gpointer data)
+{
+	GtkWidget *row;
+	(void)context;
+	(void)data;
+
+	row = gtk_widget_get_ancestor(widget, GTK_TYPE_LIST_BOX_ROW);
+	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", NULL);
+	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-row");
+	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-hover");
+}
+
+static void sel_layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
+					guint info, guint time, gpointer data)
+{
+	(void)context;
+	(void)info;
+	(void)time;
+	(void)data;
+
+	gtk_selection_data_set(selection_data, gdk_atom_intern_static_string("GTK_LIST_BOX_ROW"),
+			       32, (const guchar *)&widget, sizeof(gpointer));
+}
+
 static GtkListBoxRow *layer_selector_get_last_row (GtkListBox *list)
 {
 	int i;
@@ -384,6 +439,14 @@ static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self,
 	return ret;
 }
 
+static void sel_layer_element_setup_dnd_callbacks(LayerElement *element)
+{
+	layer_element_set_dnd_callbacks(element, entries, 1,
+					sel_layer_element_drag_begin,
+					sel_layer_element_drag_data_get,
+					sel_layer_element_drag_end);
+}
+
 /**
  * @brief Analyze \p cell and append used layers to list box
  * @param listbox listbox to add layer
@@ -401,6 +464,7 @@ static void layer_selector_analyze_cell_layers(LayerSelector *self, struct gds_c
 		layer = (int)gfx->layer;
 		if (layer_selector_check_if_layer_widget_exists(self, layer) == FALSE) {
 			le = layer_element_new();
+			sel_layer_element_setup_dnd_callbacks(LAYER_ELEMENT(le));
 			layer_element_set_layer(LAYER_ELEMENT(le), layer);
 			gtk_list_box_insert(self->list_box, le, -1);
 			gtk_widget_show(le);
@@ -677,7 +741,7 @@ void layer_selector_force_sort(LayerSelector *selector, enum layer_selector_sort
 	if (!box)
 		return;
 
-	/* Set dorting function, sort, and disable sorting function */
+	/* Set sorting function, sort, and disable sorting function */
 	gtk_list_box_set_sort_func(box, layer_selector_sort_func, (gpointer)&sort_function, NULL);
 	gtk_list_box_invalidate_sort(box);
 	gtk_list_box_set_sort_func(box, NULL, NULL, NULL);

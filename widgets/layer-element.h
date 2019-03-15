@@ -118,6 +118,18 @@ void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba);
  */
 void layer_element_set_color(LayerElement *elem, GdkRGBA *rgba);
 
+/**
+ * @brief layer_element_set_dnd_callbacks
+ * @param elem
+ * @param entries
+ * @param entry_count
+ */
+void layer_element_set_dnd_callbacks(LayerElement *elem, GtkTargetEntry *entries, int entry_count,
+				     void (*drag_begin)(GtkWidget *, GdkDragContext *, gpointer),
+				     void (*drag_data_get)(GtkWidget *, GdkDragContext *,
+							   GtkSelectionData *, guint , guint, gpointer),
+				     void (*drag_end)(GtkWidget *, GdkDragContext *, gpointer));
+
 G_END_DECLS
 
 #endif /* __LAYER_ELEMENT_H__ */

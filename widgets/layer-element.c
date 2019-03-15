@@ -57,65 +57,6 @@ static void layer_element_class_init(LayerElementClass *klass)
 	oclass->constructed = layer_element_constructed;
 }
 
-static GtkTargetEntry entries[] = {
-	{ "GTK_LIST_BOX_ROW", GTK_TARGET_SAME_APP, 0 }
-};
-
-static void layer_element_drag_begin(GtkWidget *widget,
-				     GdkDragContext *context,
-				     gpointer data)
-{
-	GtkWidget *row;
-	GtkAllocation alloc;
-	cairo_surface_t *surface;
-	cairo_t *cr;
-	int x, y;
-	(void)data;
-
-	row = gtk_widget_get_ancestor(widget, GTK_TYPE_LIST_BOX_ROW);
-	gtk_widget_get_allocation(row, &alloc);
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
-	cr = cairo_create(surface);
-
-	gtk_style_context_add_class (gtk_widget_get_style_context(row), "drag-icon");
-	gtk_widget_draw (row, cr);
-	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-icon");
-
-	gtk_widget_translate_coordinates (widget, row, 0, 0, &x, &y);
-	cairo_surface_set_device_offset (surface, -x, -y);
-	gtk_drag_set_icon_surface (context, surface);
-
-	cairo_destroy (cr);
-	cairo_surface_destroy (surface);
-
-	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", row);
-	gtk_style_context_add_class(gtk_widget_get_style_context(row), "drag-row");
-}
-
-static void layer_element_drag_end(GtkWidget *widget, GdkDragContext *context, gpointer data)
-{
-	GtkWidget *row;
-	(void)context;
-	(void)data;
-
-	row = gtk_widget_get_ancestor(widget, GTK_TYPE_LIST_BOX_ROW);
-	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", NULL);
-	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-row");
-	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-hover");
-}
-
-static void layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
-					guint info, guint time, gpointer data)
-{
-	(void)context;
-	(void)info;
-	(void)time;
-	(void)data;
-
-	gtk_selection_data_set(selection_data, gdk_atom_intern_static_string("GTK_LIST_BOX_ROW"),
-			       32, (const guchar *)&widget, sizeof(gpointer));
-}
-
 static void layer_element_init(LayerElement *self)
 {
 	GtkBuilder *builder;
@@ -130,13 +71,6 @@ static void layer_element_init(LayerElement *self)
 	self->priv.layer = GTK_LABEL(gtk_builder_get_object(builder, "layer"));
 	self->priv.name = GTK_ENTRY(gtk_builder_get_object(builder, "entry"));
 	self->priv.event_handle = GTK_EVENT_BOX(gtk_builder_get_object(builder, "event-box"));
-
-	/* Setup drag and drop */
-	gtk_style_context_add_class (gtk_widget_get_style_context(GTK_WIDGET(self)), "row");
-	gtk_drag_source_set(GTK_WIDGET(self->priv.event_handle), GDK_BUTTON1_MASK, entries, 1, GDK_ACTION_MOVE);
-	g_signal_connect(self->priv.event_handle, "drag-begin", G_CALLBACK(layer_element_drag_begin), NULL);
-	g_signal_connect(self->priv.event_handle, "drag-data-get", G_CALLBACK(layer_element_drag_data_get), NULL);
-	g_signal_connect(self->priv.event_handle, "drag-end", G_CALLBACK(layer_element_drag_end), NULL);
 
 	g_object_unref(builder);
 }
@@ -192,6 +126,21 @@ void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba)
 void layer_element_set_color(LayerElement *elem, GdkRGBA *rgba)
 {
 	gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(elem->priv.color), rgba);
+}
+
+void layer_element_set_dnd_callbacks(LayerElement *elem, GtkTargetEntry *entries, int entry_count,
+				     void (*drag_begin)(GtkWidget *, GdkDragContext *, gpointer),
+				     void (*drag_data_get)(GtkWidget *, GdkDragContext *,
+							   GtkSelectionData *, guint , guint, gpointer),
+				     void (*drag_end)(GtkWidget *, GdkDragContext *, gpointer))
+{
+	/* Setup drag and drop */
+	gtk_style_context_add_class (gtk_widget_get_style_context(GTK_WIDGET(elem)), "row");
+	gtk_drag_source_set(GTK_WIDGET(elem->priv.event_handle), GDK_BUTTON1_MASK, entries, entry_count, GDK_ACTION_MOVE);
+	g_signal_connect(elem->priv.event_handle, "drag-begin", G_CALLBACK(drag_begin), NULL);
+	g_signal_connect(elem->priv.event_handle, "drag-data-get", G_CALLBACK(drag_data_get), NULL);
+	g_signal_connect(elem->priv.event_handle, "drag-end", G_CALLBACK(drag_end), NULL);
+
 }
 
 /** @} */
