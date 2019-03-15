@@ -32,7 +32,7 @@ struct application_data {
 
 static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
-	const struct application_data * const appdata = (const struct application_data *)user_data;
+	struct application_data * const appdata = (struct application_data *)user_data;
 	(void)action;
 	(void)parameter;
 	GList *list_iter;
@@ -45,6 +45,7 @@ static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_d
 	}
 
 	g_list_free(appdata->gui_list);
+	appdata->gui_list = NULL;
 }
 
 static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_data)
@@ -101,6 +102,12 @@ static int start_gui(int argc, char **argv)
 	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_FLAGS_NONE);
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
 	g_signal_connect(gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
+
+	if (g_application_get_is_remote(G_APPLICATION(gapp)) == TRUE) {
+		g_application_activate(G_APPLICATION(gapp));
+		printf("There is already an open instance. Will open second window in said instance.\n");
+		return 0;
+	}
 
 	menu = g_menu_new();
 	m_quit = g_menu_new();

@@ -74,15 +74,10 @@ static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 	if (!self)
 		return TRUE;
 
-	g_clear_object(&self->main_window);
-	g_clear_object(&self->cell_tree_view);
-	g_clear_object(&self->convert_button);
-	g_clear_object(&self->layer_selector);
-	g_clear_object(&self->cell_tree_store);
-	g_clear_object(&self->cell_search_entry);
-
 	/* Close Window. Leads to termination of the program/the current instance */
+	g_clear_object(&self->main_window);
 	gtk_widget_destroy(GTK_WIDGET(window));
+
 	return TRUE;
 }
 
@@ -429,16 +424,18 @@ static void gds_render_gui_dispose(GObject *gobject)
 
 	self = RENDERER_GUI(gobject);
 
-	if (self->main_window) {
-		gtk_window_close(self->main_window);
-	}
-
-	g_clear_object(&self->main_window);
 	g_clear_object(&self->cell_tree_view);
 	g_clear_object(&self->convert_button);
 	g_clear_object(&self->layer_selector);
 	g_clear_object(&self->cell_tree_store);
 	g_clear_object(&self->cell_search_entry);
+
+
+	if (self->main_window) {
+		g_signal_handlers_destroy(self->main_window);
+		gtk_widget_destroy(GTK_WIDGET(self->main_window));
+		self->main_window = NULL;
+	}
 
 	/* Chain up */
 	G_OBJECT_CLASS(gds_render_gui_parent_class)->dispose(gobject);
