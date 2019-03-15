@@ -20,14 +20,14 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
-#include "main-window.h"
+#include "gds-render-gui.h"
 #include "command-line.h"
 #include "external-renderer.h"
 #include "version/version.h"
 
 struct application_data {
 		GtkApplication *app;
-		GtkWindow *main_window;
+		GList *gui_list;
 };
 
 static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_data)
@@ -35,8 +35,16 @@ static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_d
 	const struct application_data * const appdata = (const struct application_data *)user_data;
 	(void)action;
 	(void)parameter;
+	GList *list_iter;
+	GdsRenderGui *gui;
 
-	gtk_widget_destroy(GTK_WIDGET(appdata->main_window));
+	/* Dispose all Guis */
+	for (list_iter = appdata->gui_list; list_iter != NULL; list_iter = g_list_next(list_iter)) {
+		gui = RENDERER_GUI(list_iter->data);
+		g_object_unref(gui);
+	}
+
+	g_list_free(appdata->gui_list);
 }
 
 static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_data)
@@ -49,7 +57,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 
 	builder = gtk_builder_new_from_resource("/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
-	gtk_window_set_transient_for(GTK_WINDOW(dialog), appdata->main_window);
+	gtk_window_set_transient_for(GTK_WINDOW(dialog), NULL);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), _app_version_string);
 	gtk_dialog_run(dialog);
 
@@ -65,10 +73,15 @@ const static GActionEntry app_actions[] = {
 static void gapp_activate(GApplication *app, gpointer user_data)
 {
 	GtkWindow *main_window;
+	GdsRenderGui *gui;
+
 	struct application_data * const appdata = (struct application_data *)user_data;
 
-	main_window = create_main_window();
-	appdata->main_window = main_window;
+	gui = gds_render_gui_new();
+	appdata->gui_list = g_list_append(appdata->gui_list, gui);
+
+	main_window = gds_render_gui_get_main_window(gui);
+
 	gtk_application_add_window(GTK_APPLICATION(app), main_window);
 	gtk_widget_show(GTK_WIDGET(main_window));
 }
@@ -78,12 +91,14 @@ static int start_gui(int argc, char **argv)
 
 	GtkApplication *gapp;
 	int app_status;
-	static struct application_data appdata;
+	static struct application_data appdata = {.gui_list = NULL};
 	GMenu *menu;
 	GMenu *m_quit;
 	GMenu *m_about;
+	GList *list_iter;
+	GdsRenderGui *gui;
 
-	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_NON_UNIQUE);
+	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_FLAGS_NONE);
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
 	g_signal_connect(gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
 
@@ -104,6 +119,14 @@ static int start_gui(int argc, char **argv)
 
 	app_status = g_application_run(G_APPLICATION(gapp), argc, argv);
 	g_object_unref(gapp);
+
+	/* Destroy gui_list */
+	for (list_iter = appdata.gui_list; list_iter != NULL; list_iter = g_list_next(list_iter)) {
+		gui = RENDERER_GUI(list_iter->data);
+		g_object_unref(gui);
+	}
+
+	g_list_free(appdata.gui_list);
 
 	return app_status;
 }

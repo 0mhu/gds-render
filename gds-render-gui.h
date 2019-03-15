@@ -18,13 +18,13 @@
  */
 
 /**
- * @file main-window.h
- * @brief Header for main-window
+ * @file gds-render-gui.h
+ * @brief Header for GdsRenderGui Object
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-#ifndef _MAIN_WINDOW_H_
-#define _MAIN_WINDOW_H_
+#ifndef _GDS_RENDER_GUI_
+#define _GDS_RENDER_GUI_
 
 /**
  * @addtogroup MainApplication
@@ -33,14 +33,29 @@
 
 #include <gtk/gtk.h>
 
+G_BEGIN_DECLS
+
+G_DECLARE_FINAL_TYPE(GdsRenderGui, gds_render_gui, RENDERER, GUI, GObject);
+
+#define RENDERER_TYPE_GUI (gds_render_gui_get_type())
+
 /**
- * @brief Create main window
- *
- * This function creates the main window and sets the necessary callback routines.
+ * @brief Create new GdsRenderGui Object
  * @return
  */
-GtkWindow *create_main_window();
+GdsRenderGui *gds_render_gui_new();
+
+/**
+ * @brief Get main window
+ *
+ * This function returns the main window of the GUI, which can later be displayed.
+ * All handling of hte GUI is taken care of inside the GdsRenderGui Object
+ * @return
+ */
+GtkWindow *gds_render_gui_get_main_window(GdsRenderGui *gui);
+
+G_END_DECLS
 
 /** @} */
 
-#endif /* _MAIN_WINDOW_H_ */
+#endif /* _GDS_RENDER_GUI_ */

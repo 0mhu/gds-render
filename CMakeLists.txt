@@ -21,7 +21,7 @@ aux_source_directory("latex-output" LATEX_SOURCES)
 aux_source_directory("cairo-output" CAIRO_SOURCES)
 aux_source_directory("trigonometric" TRIG_SOURCES)
 aux_source_directory("layer" LAYER_SELECTOR_SOURCES)
-set(SOURCE "main.c" "mapping-parser.c" "command-line.c" "main-window.c" "external-renderer.c")
+set(SOURCE "main.c" "mapping-parser.c" "command-line.c" "gds-render-gui.c" "external-renderer.c")
 
 set(SOURCE
   ${SOURCE}

@@ -18,7 +18,7 @@
  */
 
 /**
- * @file main-window.c
+ * @file gds-render-gui.c
  * @brief Handling of GUI
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
@@ -27,7 +27,7 @@
  * @{
  */
 
-#include "main-window.h"
+#include "gds-render-gui.h"
 #include <stdio.h>
 #include "gds-parser/gds-parser.h"
 #include <gtk/gtk.h>
@@ -40,25 +40,22 @@
 #include "version/version.h"
 #include "tree-renderer/lib-cell-renderer.h"
 #include "gds-parser/gds-tree-checker.h"
-/**
- * @brief User data supplied to callback function of the open button
- */
-struct open_button_data {
+
+struct _GdsRenderGui {
+	/* Parent GObject */
+	GObject parent;
+
+	/* Custom fields */
 	GtkWindow *main_window;
-	GList **list_ptr;
-	GtkTreeStore *cell_store;
-	GtkSearchEntry *search_entry;
+	GtkWidget *convert_button;
+	GtkTreeStore *cell_tree_store;
+	GtkWidget *cell_search_entry;
 	LayerSelector *layer_selector;
+	GtkTreeView *cell_tree_view;
+	GList *gds_libraries;
 };
 
-/**
- * @brief User data supplied to callback function of the convert button
- */
-struct convert_button_data {
-	GtkTreeView *tree_view;
-	GtkWindow *main_window;
-	LayerSelector *layer_selector;
-};
+G_DEFINE_TYPE(GdsRenderGui, gds_render_gui, G_TYPE_OBJECT)
 
 /**
  * @brief Window close event of main window
@@ -70,10 +67,21 @@ struct convert_button_data {
  */
 static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 {
-	/* Destroy all objects helb by this module, that are not part of the GUI itself */
-	g_object_unref(LAYER_SELECTOR(user));
+	GdsRenderGui *self;
 
-	/* Close Window. Leads to termination of the program */
+	self = RENDERER_GUI(user);
+	/* Don't close window in case of error */
+	if (!self)
+		return TRUE;
+
+	g_clear_object(&self->main_window);
+	g_clear_object(&self->cell_tree_view);
+	g_clear_object(&self->convert_button);
+	g_clear_object(&self->layer_selector);
+	g_clear_object(&self->cell_tree_store);
+	g_clear_object(&self->cell_search_entry);
+
+	/* Close Window. Leads to termination of the program/the current instance */
 	gtk_widget_destroy(GTK_WIDGET(window));
 	return TRUE;
 }
@@ -110,8 +118,7 @@ static void on_load_gds(gpointer button, gpointer user)
 	GList *lib;
 	struct gds_library *gds_lib;
 	struct gds_cell *gds_c;
-	struct open_button_data *ptr = (struct open_button_data *)user;
-	GtkTreeStore *store = ptr->cell_store;
+	GdsRenderGui *self;
 	GtkWidget *open_dialog;
 	GtkFileChooser *file_chooser;
 	GtkFileFilter *filter;
@@ -123,7 +130,11 @@ static void on_load_gds(gpointer button, gpointer user)
 	GString *acc_date;
 	unsigned int cell_error_level;
 
-	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", ptr->main_window,
+	self = RENDERER_GUI(user);
+	if (!self)
+		return;
+
+	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", self->main_window,
 						  GTK_FILE_CHOOSER_ACTION_OPEN,
 						  "Cancel", GTK_RESPONSE_CANCEL,
 						  "Open GDSII", GTK_RESPONSE_ACCEPT,
@@ -142,11 +153,11 @@ static void on_load_gds(gpointer button, gpointer user)
 		/* Get File name */
 		filename = gtk_file_chooser_get_filename(file_chooser);
 
-		gtk_tree_store_clear(store);
-		clear_lib_list(ptr->list_ptr);
+		gtk_tree_store_clear(self->cell_tree_store);
+		clear_lib_list(&self->gds_libraries);
 
 		/* Parse new GDSII file */
-		gds_result = parse_gds_from_file(filename, ptr->list_ptr);
+		gds_result = parse_gds_from_file(filename, &self->gds_libraries);
 
 		/* Delete file name afterwards */
 		g_free(filename);
@@ -157,16 +168,16 @@ static void on_load_gds(gpointer button, gpointer user)
 		button_style = gtk_widget_get_style_context(GTK_WIDGET(button));
 		gtk_style_context_remove_class(button_style, "suggested-action");
 
-		for (lib = *(ptr->list_ptr); lib != NULL; lib = lib->next) {
+		for (lib = self->gds_libraries; lib != NULL; lib = lib->next) {
 			gds_lib = (struct gds_library *)lib->data;
 			/* Create top level iter */
-			gtk_tree_store_append(store, &libiter, NULL);
+			gtk_tree_store_append(self->cell_tree_store, &libiter, NULL);
 
 			/* Convert dates to String */
 			mod_date = generate_string_from_date(&gds_lib->mod_time);
 			acc_date = generate_string_from_date(&gds_lib->access_time);
 
-			gtk_tree_store_set(store, &libiter,
+			gtk_tree_store_set(self->cell_tree_store, &libiter,
 					   CELL_SEL_LIBRARY, gds_lib,
 					   CELL_SEL_MODDATE, mod_date->str,
 					   CELL_SEL_ACCESSDATE, acc_date->str,
@@ -183,7 +194,7 @@ static void on_load_gds(gpointer button, gpointer user)
 
 			for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
 				gds_c = (struct gds_cell *)cell->data;
-				gtk_tree_store_append(store, &celliter, &libiter);
+				gtk_tree_store_append(self->cell_tree_store, &celliter, &libiter);
 
 				/* Convert dates to String */
 				mod_date = generate_string_from_date(&gds_c->mod_time);
@@ -199,7 +210,7 @@ static void on_load_gds(gpointer button, gpointer user)
 					cell_error_level |= LIB_CELL_RENDERER_ERROR_ERR;
 
 				/* Add cell to tree store model */
-				gtk_tree_store_set(store, &celliter,
+				gtk_tree_store_set(self->cell_tree_store, &celliter,
 						   CELL_SEL_CELL, gds_c,
 						   CELL_SEL_MODDATE, mod_date->str,
 						   CELL_SEL_ACCESSDATE, acc_date->str,
@@ -214,7 +225,7 @@ static void on_load_gds(gpointer button, gpointer user)
 		}
 
 		/* Create Layers in Layer Box */
-		layer_selector_generate_layer_widgets(ptr->layer_selector, *(ptr->list_ptr));
+		layer_selector_generate_layer_widgets(self->layer_selector, self->gds_libraries);
 	}
 
 end_destroy:
@@ -234,7 +245,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		.scale = 1000.0,
 		.renderer = RENDERER_LATEX_TIKZ,
 	};
-	struct convert_button_data *data = (struct convert_button_data *)user;
+	GdsRenderGui *self;
 	GtkTreeSelection *selection;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
@@ -249,11 +260,13 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	union bounding_box cell_box;
 	unsigned int height, width;
 
-	if (!data)
+	self = RENDERER_GUI(user);
+
+	if (!self)
 		return;
 
 	/* Get selected cell */
-	selection = gtk_tree_view_get_selection(data->tree_view);
+	selection = gtk_tree_view_get_selection(self->cell_tree_view);
 	if (gtk_tree_selection_get_selected(selection, &model, &iter) == FALSE)
 		return;
 
@@ -263,7 +276,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		return;
 
 	/* Get layers that are rendered */
-	layer_list = layer_selector_export_rendered_layer_info(data->layer_selector);
+	layer_list = layer_selector_export_rendered_layer_info(self->layer_selector);
 
 	/* Calculate cell size in DB units */
 	bounding_box_prepare_empty(&cell_box);
@@ -277,7 +290,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	width = (unsigned int)(cell_box.vectors.upper_right.x - cell_box.vectors.lower_left.x);
 
 	/* Show settings dialog */
-	settings = renderer_settings_dialog_new(GTK_WINDOW(data->main_window));
+	settings = renderer_settings_dialog_new(GTK_WINDOW(self->main_window));
 	renderer_settings_dialog_set_settings(settings, &sett);
 	renderer_settings_dialog_set_database_unit_scale(settings, cell_to_render->parent_library->unit_in_meters);
 	renderer_settings_dialog_set_cell_height(settings, height);
@@ -295,7 +308,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	/* save file dialog */
 	dialog = gtk_file_chooser_dialog_new((sett.renderer == RENDERER_LATEX_TIKZ
 					      ? "Save LaTeX File" : "Save PDF"),
-					     GTK_WINDOW(data->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
+					     GTK_WINDOW(self->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
 	/* Set file filter according to settings */
 	filter = gtk_file_filter_new();
@@ -373,55 +386,81 @@ static void cell_tree_view_activated(gpointer tree_view, GtkTreePath *path,
  * This function activates/deactivates the convert button depending on whether
  * a cell is selected for conversion or not
  * @param sel
- * @param convert_button
+ * @param self
  */
-static void cell_selection_changed(GtkTreeSelection *sel, GtkWidget *convert_button)
+static void cell_selection_changed(GtkTreeSelection *sel, GdsRenderGui *self)
 {
 	GtkTreeModel *model = NULL;
 	GtkTreeIter iter;
 
 	if (gtk_tree_selection_get_selected(sel, &model, &iter)) {
 		/* Node selected. Show button */
-		gtk_widget_set_sensitive(convert_button, TRUE);
+		gtk_widget_set_sensitive(self->convert_button, TRUE);
 	} else {
-		gtk_widget_set_sensitive(convert_button, FALSE);
+		gtk_widget_set_sensitive(self->convert_button, FALSE);
 	}
 }
 
 static void sort_up_callback(GtkWidget *widget, gpointer user)
 {
 	(void)widget;
-	LayerSelector *sel;
+	GdsRenderGui *self;
 
-	sel = LAYER_SELECTOR(user);
-	if (!sel)
+	self = RENDERER_GUI(user);
+	if (!self)
 		return;
-	layer_selector_force_sort(sel, LAYER_SELECTOR_SORT_UP);
+	layer_selector_force_sort(self->layer_selector, LAYER_SELECTOR_SORT_UP);
 }
 
 static void sort_down_callback(GtkWidget *widget, gpointer user)
 {
 	(void)widget;
-	LayerSelector *sel;
+	GdsRenderGui *self;
 
-	sel = LAYER_SELECTOR(user);
-	if (!sel)
+	self = RENDERER_GUI(user);
+	if (!self)
 		return;
-	layer_selector_force_sort(sel, LAYER_SELECTOR_SORT_DOWN);
+	layer_selector_force_sort(self->layer_selector, LAYER_SELECTOR_SORT_DOWN);
 }
 
-GtkWindow *create_main_window()
+static void gds_render_gui_dispose(GObject *gobject)
+{
+	GdsRenderGui *self;
+
+	self = RENDERER_GUI(gobject);
+
+	if (self->main_window) {
+		gtk_window_close(self->main_window);
+	}
+
+	g_clear_object(&self->main_window);
+	g_clear_object(&self->cell_tree_view);
+	g_clear_object(&self->convert_button);
+	g_clear_object(&self->layer_selector);
+	g_clear_object(&self->cell_tree_store);
+	g_clear_object(&self->cell_search_entry);
+
+	/* Chain up */
+	G_OBJECT_CLASS(gds_render_gui_parent_class)->dispose(gobject);
+}
+
+static void gds_render_gui_class_init(GdsRenderGuiClass *klass)
+{
+	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+	gobject_class->dispose = gds_render_gui_dispose;
+}
+
+GtkWindow *gds_render_gui_get_main_window(GdsRenderGui *gui)
+{
+	return gui->main_window;
+}
+
+static void gds_render_gui_init(GdsRenderGui *self)
 {
 	GtkBuilder *main_builder;
-	GtkTreeView *cell_tree;
 	GtkWidget *listbox;
-	GtkWidget *conv_button;
-	GtkWidget *search_entry;
 	GtkHeaderBar *header_bar;
-	LayerSelector *layer_selector;
-	static GList *gds_libs;
-	static struct open_button_data open_data;
-	static struct convert_button_data conv_data;
 	struct tree_stores *cell_selector_stores;
 	GtkWidget *sort_up_button;
 	GtkWidget *sort_down_button;
@@ -429,34 +468,29 @@ GtkWindow *create_main_window()
 	main_builder = gtk_builder_new_from_resource("/main.glade");
 	gtk_builder_connect_signals(main_builder, NULL);
 
-	cell_tree = GTK_TREE_VIEW(gtk_builder_get_object(main_builder, "cell-tree"));
-	search_entry = GTK_WIDGET(gtk_builder_get_object(main_builder, "cell-search"));
-	open_data.search_entry = GTK_SEARCH_ENTRY(search_entry);
-	cell_selector_stores = setup_cell_selector(cell_tree, GTK_ENTRY(search_entry));
+	self->cell_tree_view = GTK_TREE_VIEW(gtk_builder_get_object(main_builder, "cell-tree"));
+	self->cell_search_entry = GTK_WIDGET(gtk_builder_get_object(main_builder, "cell-search"));
 
-	open_data.cell_store = cell_selector_stores->base_store;
-	open_data.list_ptr = &gds_libs;
-	open_data.main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
+	cell_selector_stores = setup_cell_selector(self->cell_tree_view, GTK_ENTRY(self->cell_search_entry));
+
+	self->cell_tree_store = cell_selector_stores->base_store;
+
+	self->main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
 	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),
-			 "clicked", G_CALLBACK(on_load_gds), (gpointer)&open_data);
+			 "clicked", G_CALLBACK(on_load_gds), (gpointer)self);
 
-	/* Connect Convert button */
-	conv_data.tree_view = cell_tree;
-	conv_data.main_window = open_data.main_window;
-
-	conv_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
-	g_signal_connect(conv_button, "clicked", G_CALLBACK(on_convert_clicked), &conv_data);
+	self->convert_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
+	g_signal_connect(self->convert_button, "clicked", G_CALLBACK(on_convert_clicked), (gpointer)self);
 
 	listbox = GTK_WIDGET(gtk_builder_get_object(main_builder, "layer-list"));
 	/* Create layer selector */
-	layer_selector = layer_selector_new(GTK_LIST_BOX(listbox));
-	conv_data.layer_selector = layer_selector;
-	open_data.layer_selector = layer_selector;
+	self->layer_selector = layer_selector_new(GTK_LIST_BOX(listbox));
+
 
 	/* Callback for selection change of cell selector */
-	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(cell_tree)), "changed",
-			 G_CALLBACK(cell_selection_changed), conv_button);
-	g_signal_connect(cell_tree, "row-activated", G_CALLBACK(cell_tree_view_activated), &conv_data);
+	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(self->cell_tree_view)), "changed",
+			 G_CALLBACK(cell_selection_changed), self);
+	g_signal_connect(self->cell_tree_view, "row-activated", G_CALLBACK(cell_tree_view_activated), self);
 
 	/* Set version in main window subtitle */
 	header_bar = GTK_HEADER_BAR(gtk_builder_get_object(main_builder, "header-bar"));
@@ -466,25 +500,34 @@ GtkWindow *create_main_window()
 	sort_up_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-up-sort"));
 	sort_down_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-down-sort"));
 
-	g_signal_connect(sort_up_button, "clicked", G_CALLBACK(sort_up_callback), layer_selector);
-	g_signal_connect(sort_down_button, "clicked", G_CALLBACK(sort_down_callback), layer_selector);
-
+	g_signal_connect(sort_up_button, "clicked", G_CALLBACK(sort_up_callback), self);
+	g_signal_connect(sort_down_button, "clicked", G_CALLBACK(sort_down_callback), self);
 
 	/* Set buttons for loading and saving */
-	layer_selector_set_load_mapping_button(layer_selector,
+	layer_selector_set_load_mapping_button(self->layer_selector,
 						GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
-						conv_data.main_window);
-	layer_selector_set_save_mapping_button(layer_selector, GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
-						conv_data.main_window);
-
+						self->main_window);
+	layer_selector_set_save_mapping_button(self->layer_selector, GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
+						self->main_window);
 
 	/* Connect delete-event */
-	g_signal_connect(GTK_WIDGET(open_data.main_window), "delete-event",
-			 G_CALLBACK(on_window_close), layer_selector);
+	g_signal_connect(GTK_WIDGET(self->main_window), "delete-event",
+			 G_CALLBACK(on_window_close), self);
 
 	g_object_unref(main_builder);
 
-	return conv_data.main_window;
+	/* Reference all objects referenced by this object */
+	g_object_ref(self->main_window);
+	g_object_ref(self->cell_tree_view);
+	g_object_ref(self->convert_button);
+	g_object_ref(self->layer_selector);
+	g_object_ref(self->cell_tree_store);
+	g_object_ref(self->cell_search_entry);
+}
+
+GdsRenderGui *gds_render_gui_new()
+{
+	return RENDERER_GUI(g_object_new(RENDERER_TYPE_GUI, NULL));
 }
 
 /** @} */
