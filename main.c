@@ -116,6 +116,7 @@ static void print_version()
 
 int main(int argc, char **argv)
 {
+	int i;
 	GError *error = NULL;
 	GOptionContext *context;
 	gchar *gds_name;
@@ -172,6 +173,11 @@ int main(int argc, char **argv)
 
 		/* Get gds name */
 		gds_name = argv[1];
+
+		/* Print out additional arguments as ignored */
+		for (i = 2; i < argc; i++) {
+			printf("Ignored argument: %s", argv[i]);
+		}
 
 		/* Check if PDF/TeX names are supplied. if not generate */
 		basename = g_path_get_basename(gds_name);
