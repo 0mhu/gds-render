@@ -38,7 +38,7 @@ static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_d
 	GList *list_iter;
 	GdsRenderGui *gui;
 
-	/* Dispose all Guis */
+	/* Dispose all GUIs */
 	for (list_iter = appdata->gui_list; list_iter != NULL; list_iter = g_list_next(list_iter)) {
 		gui = RENDERER_GUI(list_iter->data);
 		g_object_unref(gui);
