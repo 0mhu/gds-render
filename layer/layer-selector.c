@@ -29,7 +29,6 @@
  */
 
 #include "layer-selector.h"
-#include "layer-selector-dnd.h"
 #include "layer-info.h"
 #include "../gds-parser/gds-parser.h"
 #include "../widgets/layer-element.h"
