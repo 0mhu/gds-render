@@ -182,8 +182,8 @@ int main(int argc, char **argv)
 		if (!pdfname)
 			pdfname = g_strdup_printf("./%s.pdf", basename);
 
-		if (!pdfname)
-			pdfname = g_strdup_printf("./%s.svg", basename);
+		if (!svgname)
+			svgname = g_strdup_printf("./%s.svg", basename);
 
 		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz,
 					 mappingname, cellname, (double)scale,
