@@ -52,7 +52,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 {
 	GtkBuilder *builder;
 	GtkDialog *dialog;
-	const struct application_data * const appdata = (const struct application_data *)user_data;
+	(void)user_data;
 	(void)action;
 	(void)parameter;
 
@@ -107,8 +107,6 @@ static int start_gui(int argc, char **argv)
 	GMenu *menu;
 	GMenu *m_quit;
 	GMenu *m_about;
-	GList *list_iter;
-	GdsRenderGui *gui;
 
 	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_FLAGS_NONE);
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
