@@ -41,6 +41,10 @@
 #include "tree-renderer/lib-cell-renderer.h"
 #include "gds-parser/gds-tree-checker.h"
 
+enum gds_render_gui_signal_sig_ids {SIGNAL_WINDOW_CLOSED = 0, SIGNAL_COUNT};
+
+static guint gds_render_gui_signals[SIGNAL_COUNT];
+
 struct _GdsRenderGui {
 	/* Parent GObject */
 	GObject parent;
@@ -77,6 +81,11 @@ static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 	/* Close Window. Leads to termination of the program/the current instance */
 	g_clear_object(&self->main_window);
 	gtk_widget_destroy(GTK_WIDGET(window));
+
+	/* Delete loaded library data */
+	clear_lib_list(&self->gds_libraries);
+
+	g_signal_emit(self, gds_render_gui_signals[SIGNAL_WINDOW_CLOSED], 0);
 
 	return TRUE;
 }
@@ -424,12 +433,13 @@ static void gds_render_gui_dispose(GObject *gobject)
 
 	self = RENDERER_GUI(gobject);
 
+	clear_lib_list(&self->gds_libraries);
+
 	g_clear_object(&self->cell_tree_view);
 	g_clear_object(&self->convert_button);
 	g_clear_object(&self->layer_selector);
 	g_clear_object(&self->cell_tree_store);
 	g_clear_object(&self->cell_search_entry);
-
 
 	if (self->main_window) {
 		g_signal_handlers_destroy(self->main_window);
@@ -444,6 +454,17 @@ static void gds_render_gui_dispose(GObject *gobject)
 static void gds_render_gui_class_init(GdsRenderGuiClass *klass)
 {
 	GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+	gds_render_gui_signals[SIGNAL_WINDOW_CLOSED] =
+			g_signal_newv("window-closed", RENDERER_TYPE_GUI,
+				      G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
+				      NULL,
+				      NULL,
+				      NULL,
+				      NULL,
+				      G_TYPE_NONE,
+				      0,
+				      NULL);
 
 	gobject_class->dispose = gds_render_gui_dispose;
 }

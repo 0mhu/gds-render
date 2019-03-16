@@ -71,6 +71,15 @@ const static GActionEntry app_actions[] = {
 	{"about", app_about, NULL, NULL, NULL, {0}}
 };
 
+static void gui_window_closed_callback(GdsRenderGui *gui, gpointer user_data)
+{
+	GList **gui_list = (GList **)user_data;
+
+	/* Dispose of Gui element */
+	*gui_list = g_list_remove(*gui_list, gui);
+	g_object_unref(gui);
+}
+
 static void gapp_activate(GApplication *app, gpointer user_data)
 {
 	GtkWindow *main_window;
@@ -80,6 +89,8 @@ static void gapp_activate(GApplication *app, gpointer user_data)
 
 	gui = gds_render_gui_new();
 	appdata->gui_list = g_list_append(appdata->gui_list, gui);
+
+	g_signal_connect(gui, "window-closed", G_CALLBACK(gui_window_closed_callback), &appdata->gui_list);
 
 	main_window = gds_render_gui_get_main_window(gui);
 
@@ -126,12 +137,6 @@ static int start_gui(int argc, char **argv)
 
 	app_status = g_application_run(G_APPLICATION(gapp), argc, argv);
 	g_object_unref(gapp);
-
-	/* Destroy gui_list */
-	for (list_iter = appdata.gui_list; list_iter != NULL; list_iter = g_list_next(list_iter)) {
-		gui = RENDERER_GUI(list_iter->data);
-		g_object_unref(gui);
-	}
 
 	g_list_free(appdata.gui_list);
 
