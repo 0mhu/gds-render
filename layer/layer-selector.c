@@ -56,7 +56,9 @@ struct _LayerSelector {
 G_DEFINE_TYPE(LayerSelector, layer_selector, G_TYPE_OBJECT)
 
 
-/* Drag and drop code */
+/* Drag and drop code 
+ * Original code from https://blog.gtk.org/2017/06/01/drag-and-drop-in-lists-revisited/
+ */
 
 static void sel_layer_element_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer data)
 {
