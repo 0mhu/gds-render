@@ -51,6 +51,9 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
 	struct gds_cell *cell;
 	unsigned int error_level;
 	gboolean ret = FALSE;
+	(void)selection;
+	(void)path_currently_selected;
+	(void)data;
 
 	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, CELL_SEL_CELL, &cell, CELL_SEL_CELL_ERROR_STATE, &error_level, -1);
@@ -112,6 +115,8 @@ exit_filter:
 static void change_filter(GtkWidget *entry, gpointer data)
 {
 	struct tree_stores *stores = (struct tree_stores *)data;
+	(void)entry;
+
 	gtk_tree_model_filter_refilter(stores->filter);
 }
 
