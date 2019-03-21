@@ -29,7 +29,7 @@
 
 #include "gds-render-gui.h"
 #include <stdio.h>
-#include "gds-parser/gds-parser.h"
+#include "gds-utils/gds-parser.h"
 #include <gtk/gtk.h>
 #include "layer/layer-selector.h"
 #include "tree-renderer/tree-store.h"
@@ -39,7 +39,7 @@
 #include "trigonometric/cell-trigonometrics.h"
 #include "version/version.h"
 #include "tree-renderer/lib-cell-renderer.h"
-#include "gds-parser/gds-tree-checker.h"
+#include "gds-utils/gds-tree-checker.h"
 
 enum gds_render_gui_signal_sig_ids {SIGNAL_WINDOW_CLOSED = 0, SIGNAL_COUNT};
 

@@ -31,7 +31,7 @@
  * @{
  */
 
-#include "../gds-parser/gds-types.h"
+#include "../gds-utils/gds-types.h"
 #include <glib.h>
 #include <stdio.h>
 #include "../layer/layer-info.h"

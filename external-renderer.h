@@ -31,7 +31,7 @@
 #ifndef _EXTERNAL_RENDERER_H_
 #define _EXTERNAL_RENDERER_H_
 
-#include "gds-parser/gds-types.h"
+#include "gds-utils/gds-types.h"
 #include <glib.h>
 
 /**

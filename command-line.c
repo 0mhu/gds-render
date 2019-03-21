@@ -30,13 +30,13 @@
 
 #include <stdio.h>
 #include "command-line.h"
-#include "gds-parser/gds-parser.h"
+#include "gds-utils/gds-parser.h"
 #include "mapping-parser.h"
 #include "layer/layer-info.h"
 #include "cairo-output/cairo-output.h"
 #include "latex-output/latex-output.h"
 #include "external-renderer.h"
-#include "gds-parser/gds-tree-checker.h"
+#include "gds-utils/gds-tree-checker.h"
 
 /**
  * @brief Delete layer_info and free nem element.

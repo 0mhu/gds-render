@@ -16,7 +16,7 @@ add_definitions(${GLIB2_CFLAGS_OTHER})
 
 aux_source_directory("widgets" LAYER_SOURCES)
 aux_source_directory("tree-renderer" RENDERER_SOURCES)
-aux_source_directory("gds-parser" PARSER_SOURCES)
+aux_source_directory("gds-utils" GDS_SOURCES)
 aux_source_directory("latex-output" LATEX_SOURCES)
 aux_source_directory("cairo-output" CAIRO_SOURCES)
 aux_source_directory("trigonometric" TRIG_SOURCES)
@@ -27,7 +27,7 @@ set(SOURCE
   ${SOURCE}
   ${LAYER_SOURCES}
   ${RENDERER_SOURCES}
-  ${PARSER_SOURCES}
+  ${GDS_SOURCES}
   ${LATEX_SOURCES}
   ${CAIRO_SOURCES}
   ${TRIG_SOURCES}

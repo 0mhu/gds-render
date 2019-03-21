@@ -30,7 +30,7 @@
 
 #include "tree-store.h"
 #include "lib-cell-renderer.h"
-#include "../gds-parser/gds-types.h"
+#include "../gds-utils/gds-types.h"
 
 /**
  * @brief this function olny allows cells to be selected

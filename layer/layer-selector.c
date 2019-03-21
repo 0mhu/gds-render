@@ -30,7 +30,7 @@
 
 #include "layer-selector.h"
 #include "layer-info.h"
-#include "../gds-parser/gds-parser.h"
+#include "../gds-utils/gds-parser.h"
 #include "../widgets/layer-element.h"
 #include "../mapping-parser.h"
 #include <glib.h>
