@@ -1,6 +1,7 @@
 add_custom_target(glib-resources DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/resources.c)
 add_custom_command(DEPENDS
                          ${CMAKE_CURRENT_SOURCE_DIR}/*.glade
+                         ${CMAKE_CURRENT_SOURCE_DIR}/resources.xml
 		   OUTPUT
 			${CMAKE_CURRENT_BINARY_DIR}/resources.c
 		   COMMAND 
