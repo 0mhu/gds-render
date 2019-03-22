@@ -57,6 +57,7 @@ struct _GdsRenderGui {
 	LayerSelector *layer_selector;
 	GtkTreeView *cell_tree_view;
 	GList *gds_libraries;
+	struct render_settings render_dialog_settings;
 };
 
 G_DEFINE_TYPE(GdsRenderGui, gds_render_gui, G_TYPE_OBJECT)
@@ -245,10 +246,6 @@ end_destroy:
 static void on_convert_clicked(gpointer button, gpointer user)
 {
 	(void)button;
-	static struct render_settings sett = {
-		.scale = 1000.0,
-		.renderer = RENDERER_LATEX_TIKZ,
-	};
 	GdsRenderGui *self;
 	GtkTreeSelection *selection;
 	GtkTreeIter iter;
@@ -263,11 +260,14 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	char *file_name;
 	union bounding_box cell_box;
 	unsigned int height, width;
+	struct render_settings *sett;
 
 	self = RENDERER_GUI(user);
 
 	if (!self)
 		return;
+
+	sett = &self->render_dialog_settings;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(self->cell_tree_view);
@@ -295,14 +295,14 @@ static void on_convert_clicked(gpointer button, gpointer user)
 
 	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(self->main_window));
-	renderer_settings_dialog_set_settings(settings, &sett);
+	renderer_settings_dialog_set_settings(settings, sett);
 	renderer_settings_dialog_set_database_unit_scale(settings, cell_to_render->parent_library->unit_in_meters);
 	renderer_settings_dialog_set_cell_height(settings, height);
 	renderer_settings_dialog_set_cell_width(settings, width);
 
 	res = gtk_dialog_run(GTK_DIALOG(settings));
 	if (res == GTK_RESPONSE_OK) {
-		renderer_settings_dialog_get_settings(settings, &sett);
+		renderer_settings_dialog_get_settings(settings, sett);
 		gtk_widget_destroy(GTK_WIDGET(settings));
 	} else {
 		gtk_widget_destroy(GTK_WIDGET(settings));
@@ -310,13 +310,13 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	}
 
 	/* save file dialog */
-	dialog = gtk_file_chooser_dialog_new((sett.renderer == RENDERER_LATEX_TIKZ
+	dialog = gtk_file_chooser_dialog_new((sett->renderer == RENDERER_LATEX_TIKZ
 					      ? "Save LaTeX File" : "Save PDF"),
 					     GTK_WINDOW(self->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
 	/* Set file filter according to settings */
 	filter = gtk_file_filter_new();
-	switch (sett.renderer) {
+	switch (sett->renderer) {
 	case RENDERER_LATEX_TIKZ:
 		gtk_file_filter_add_pattern(filter, "*.tex");
 		gtk_file_filter_set_name(filter, "LaTeX-Files");
@@ -340,23 +340,23 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 		gtk_widget_destroy(dialog);
 
-		switch (sett.renderer) {
+		switch (sett->renderer) {
 		case RENDERER_LATEX_TIKZ:
 			output_file = fopen(file_name, "w");
-			latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett.scale,
-						  sett.tex_pdf_layers, sett.tex_standalone);
+			latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett->scale,
+						  sett->tex_pdf_layers, sett->tex_standalone);
 			fclose(output_file);
 			break;
 		case RENDERER_CAIROGRAPHICS_SVG:
 		case RENDERER_CAIROGRAPHICS_PDF:
 			cairo_render_cell_to_vector_file(cell_to_render, layer_list,
-							 (sett.renderer == RENDERER_CAIROGRAPHICS_PDF
+							 (sett->renderer == RENDERER_CAIROGRAPHICS_PDF
 								? file_name
 								: NULL),
-							 (sett.renderer == RENDERER_CAIROGRAPHICS_SVG
+							 (sett->renderer == RENDERER_CAIROGRAPHICS_SVG
 								? file_name
 								: NULL),
-							 sett.scale);
+							 sett->scale);
 			break;
 		}
 		g_free(file_name);
@@ -533,6 +533,13 @@ static void gds_render_gui_init(GdsRenderGui *self)
 			 G_CALLBACK(on_window_close), self);
 
 	g_object_unref(main_builder);
+
+	/* Set default conversion/rendering settings */
+	self->render_dialog_settings.scale = 1000;
+	self->render_dialog_settings.renderer = RENDERER_LATEX_TIKZ;
+	self->render_dialog_settings.tex_pdf_layers = FALSE;
+	self->render_dialog_settings.tex_standalone = FALSE;
+
 
 	/* Reference all objects referenced by this object */
 	g_object_ref(self->main_window);
