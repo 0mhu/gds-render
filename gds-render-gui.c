@@ -482,7 +482,6 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	GtkWidget *sort_down_button;
 
 	main_builder = gtk_builder_new_from_resource("/main.glade");
-	gtk_builder_connect_signals(main_builder, NULL);
 
 	self->cell_tree_view = GTK_TREE_VIEW(gtk_builder_get_object(main_builder, "cell-tree"));
 	self->cell_search_entry = GTK_WIDGET(gtk_builder_get_object(main_builder, "cell-search"));
