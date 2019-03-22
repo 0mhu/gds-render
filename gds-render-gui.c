@@ -153,85 +153,83 @@ static void on_load_gds(gpointer button, gpointer user)
 
 	dialog_result = gtk_dialog_run(GTK_DIALOG(open_dialog));
 
-	if (dialog_result == GTK_RESPONSE_ACCEPT) {
+	if (dialog_result != GTK_RESPONSE_ACCEPT)
+		goto end_destroy;
 
-		/* Get File name */
-		filename = gtk_file_chooser_get_filename(file_chooser);
+	/* Get File name */
+	filename = gtk_file_chooser_get_filename(file_chooser);
 
-		gtk_tree_store_clear(self->cell_tree_store);
-		clear_lib_list(&self->gds_libraries);
+	gtk_tree_store_clear(self->cell_tree_store);
+	clear_lib_list(&self->gds_libraries);
 
-		/* Parse new GDSII file */
-		gds_result = parse_gds_from_file(filename, &self->gds_libraries);
+	/* Parse new GDSII file */
+	gds_result = parse_gds_from_file(filename, &self->gds_libraries);
 
-		/* Delete file name afterwards */
-		g_free(filename);
-		if (gds_result)
-			goto end_destroy;
+	/* Delete file name afterwards */
+	g_free(filename);
+	if (gds_result)
+		goto end_destroy;
 
-		/* remove suggested action from Open button */
-		button_style = gtk_widget_get_style_context(GTK_WIDGET(button));
-		gtk_style_context_remove_class(button_style, "suggested-action");
+	/* remove suggested action from Open button */
+	button_style = gtk_widget_get_style_context(GTK_WIDGET(button));
+	gtk_style_context_remove_class(button_style, "suggested-action");
 
-		for (lib = self->gds_libraries; lib != NULL; lib = lib->next) {
-			gds_lib = (struct gds_library *)lib->data;
-			/* Create top level iter */
-			gtk_tree_store_append(self->cell_tree_store, &libiter, NULL);
+	for (lib = self->gds_libraries; lib != NULL; lib = lib->next) {
+		gds_lib = (struct gds_library *)lib->data;
+		/* Create top level iter */
+		gtk_tree_store_append(self->cell_tree_store, &libiter, NULL);
 
+		/* Convert dates to String */
+		mod_date = generate_string_from_date(&gds_lib->mod_time);
+		acc_date = generate_string_from_date(&gds_lib->access_time);
+
+		gtk_tree_store_set(self->cell_tree_store, &libiter,
+				   CELL_SEL_LIBRARY, gds_lib,
+				   CELL_SEL_MODDATE, mod_date->str,
+				   CELL_SEL_ACCESSDATE, acc_date->str,
+				   -1);
+
+		/* Check this library. This might take a while */
+		(void)gds_tree_check_cell_references(gds_lib);
+		(void)gds_tree_check_reference_loops(gds_lib);
+		/* Delete GStrings including string data. */
+		/* Cell store copies String type data items */
+		g_string_free(mod_date, TRUE);
+		g_string_free(acc_date, TRUE);
+
+		for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
+			gds_c = (struct gds_cell *)cell->data;
+			gtk_tree_store_append(self->cell_tree_store, &celliter, &libiter);
 			/* Convert dates to String */
-			mod_date = generate_string_from_date(&gds_lib->mod_time);
-			acc_date = generate_string_from_date(&gds_lib->access_time);
+			mod_date = generate_string_from_date(&gds_c->mod_time);
+			acc_date = generate_string_from_date(&gds_c->access_time);
 
-			gtk_tree_store_set(self->cell_tree_store, &libiter,
-					   CELL_SEL_LIBRARY, gds_lib,
+			/* Get the checking results for this cell */
+			cell_error_level = 0;
+			if (gds_c->checks.unresolved_child_count)
+				cell_error_level |= LIB_CELL_RENDERER_ERROR_WARN;
+
+			/* Check if it is completely b0rken */
+			if (gds_c->checks.affected_by_reference_loop)
+				cell_error_level |= LIB_CELL_RENDERER_ERROR_ERR;
+
+			/* Add cell to tree store model */
+			gtk_tree_store_set(self->cell_tree_store, &celliter,
+					   CELL_SEL_CELL, gds_c,
 					   CELL_SEL_MODDATE, mod_date->str,
 					   CELL_SEL_ACCESSDATE, acc_date->str,
+					   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
 					   -1);
-
-			/* Check this library. This might take a while */
-			(void)gds_tree_check_cell_references(gds_lib);
-			(void)gds_tree_check_reference_loops(gds_lib);
 
 			/* Delete GStrings including string data. */
 			/* Cell store copies String type data items */
 			g_string_free(mod_date, TRUE);
 			g_string_free(acc_date, TRUE);
+		} /* for cells */
+	} /* for libraries */
 
-			for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
-				gds_c = (struct gds_cell *)cell->data;
-				gtk_tree_store_append(self->cell_tree_store, &celliter, &libiter);
-
-				/* Convert dates to String */
-				mod_date = generate_string_from_date(&gds_c->mod_time);
-				acc_date = generate_string_from_date(&gds_c->access_time);
-
-				/* Get the checking results for this cell */
-				cell_error_level = 0;
-				if (gds_c->checks.unresolved_child_count)
-					cell_error_level |= LIB_CELL_RENDERER_ERROR_WARN;
-
-				/* Check if it is completely b0rken */
-				if (gds_c->checks.affected_by_reference_loop)
-					cell_error_level |= LIB_CELL_RENDERER_ERROR_ERR;
-
-				/* Add cell to tree store model */
-				gtk_tree_store_set(self->cell_tree_store, &celliter,
-						   CELL_SEL_CELL, gds_c,
-						   CELL_SEL_MODDATE, mod_date->str,
-						   CELL_SEL_ACCESSDATE, acc_date->str,
-						   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
-						   -1);
-
-				/* Delete GStrings including string data. */
-				/* Cell store copies String type data items */
-				g_string_free(mod_date, TRUE);
-				g_string_free(acc_date, TRUE);
-			}
-		}
-
-		/* Create Layers in Layer Box */
-		layer_selector_generate_layer_widgets(self->layer_selector, self->gds_libraries);
-	}
+	/* Create Layers in Layer Box */
+	layer_selector_generate_layer_widgets(self->layer_selector, self->gds_libraries);
 
 end_destroy:
 	/* Destroy dialog and filter */
@@ -351,11 +349,11 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		case RENDERER_CAIROGRAPHICS_PDF:
 			cairo_render_cell_to_vector_file(cell_to_render, layer_list,
 							 (sett->renderer == RENDERER_CAIROGRAPHICS_PDF
-								? file_name
-								: NULL),
+							  ? file_name
+							  : NULL),
 							 (sett->renderer == RENDERER_CAIROGRAPHICS_SVG
-								? file_name
-								: NULL),
+							  ? file_name
+							  : NULL),
 							 sett->scale);
 			break;
 		}
@@ -523,10 +521,10 @@ static void gds_render_gui_init(GdsRenderGui *self)
 
 	/* Set buttons for loading and saving */
 	layer_selector_set_load_mapping_button(self->layer_selector,
-						GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
-						self->main_window);
+					       GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
+					       self->main_window);
 	layer_selector_set_save_mapping_button(self->layer_selector, GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
-						self->main_window);
+					       self->main_window);
 
 	/* Connect delete-event */
 	g_signal_connect(GTK_WIDGET(self->main_window), "delete-event",
