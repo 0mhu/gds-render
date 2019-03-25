@@ -592,7 +592,7 @@ static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, gch
 		gtk_container_remove(GTK_CONTAINER(self->list_box), GTK_WIDGET(le));
 	}
 
-	while((result = load_csv_line(dstream, &export, &name, &layer, &color)) >= 0) {
+	while((result = mapping_parser_load_line(dstream, &export, &name, &layer, &color)) >= 0) {
 		/* skip broken line */
 		if (result == 1)
 			continue;
@@ -678,7 +678,7 @@ static void layer_selector_save_layer_mapping_data(LayerSelector *self, const gc
 	for (temp = le_list; temp != NULL; temp = temp->next) {
 		/* To be sure it is a valid string */
 		workbuff[0] = 0;
-		create_csv_line(LAYER_ELEMENT(temp->data), workbuff, sizeof(workbuff));
+		mapping_parser_gen_csv_line(LAYER_ELEMENT(temp->data), workbuff, sizeof(workbuff));
 		fwrite(workbuff, sizeof(char), strlen(workbuff), file);
 	}
 

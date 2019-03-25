@@ -43,7 +43,7 @@
  * @param color RGBA color.
  * @return 1 if malformatted line, 0 if parsing was successful and parameters are valid, -1 if file end
  */
-int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color);
+int mapping_parser_load_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color);
 
 /**
  * @brief Create Line for LayerMapping file with supplied information
@@ -51,7 +51,7 @@ int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *
  * @param line_buffer buffer to write to
  * @param max_len Maximum length that cna be used in \p line_buffer
  */
-void create_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len);
+void mapping_parser_gen_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len);
 
 /** @} */
 
