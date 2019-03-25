@@ -16,7 +16,6 @@
     <child>
       <object class="GtkRadioButton" id="latex-radio">
         <property name="label" translatable="yes">Generate LaTeX/TikZ output</property>
-        <property name="use_action_appearance">True</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="receives_default">False</property>
@@ -32,11 +31,9 @@
     <child>
       <object class="GtkRadioButton" id="cairo-pdf-radio">
         <property name="label" translatable="yes">Render PDF using Cairographics</property>
-        <property name="use_action_appearance">True</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="receives_default">False</property>
-        <property name="active">True</property>
         <property name="draw_indicator">True</property>
         <property name="group">latex-radio</property>
       </object>
@@ -49,11 +46,10 @@
     <child>
       <object class="GtkRadioButton" id="cairo-svg-radio">
         <property name="label" translatable="yes">Render SVG using Cairographics (too buggy at the moment)</property>
-        <property name="use_action_appearance">True</property>
         <property name="visible">True</property>
+        <property name="sensitive">False</property>
         <property name="can_focus">True</property>
         <property name="receives_default">False</property>
-        <property name="active">True</property>
         <property name="draw_indicator">True</property>
         <property name="group">latex-radio</property>
       </object>
