@@ -5,6 +5,7 @@
     <file compressed="true">about.glade</file>
     <file>layer-widget.glade</file>
     <file>dialog.glade</file>
+    <file compressed="true" alias="logo.svg">../icon/gds-render.svg</file>
   </gresource>
 </gresources>
 

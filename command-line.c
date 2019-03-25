@@ -30,13 +30,13 @@
 
 #include <stdio.h>
 #include "command-line.h"
-#include "gds-parser/gds-parser.h"
+#include "gds-utils/gds-parser.h"
 #include "mapping-parser.h"
 #include "layer/layer-info.h"
 #include "cairo-output/cairo-output.h"
 #include "latex-output/latex-output.h"
 #include "external-renderer.h"
-#include "gds-parser/gds-tree-checker.h"
+#include "gds-utils/gds-tree-checker.h"
 
 /**
  * @brief Delete layer_info and free nem element.
@@ -98,7 +98,7 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	dstream = g_data_input_stream_new(G_INPUT_STREAM(stream));
 	i = 0;
 	do {
-		res = load_csv_line(dstream, &layer_export, &layer_name, &layer, &layer_color);
+		res = mapping_parser_load_line(dstream, &layer_export, &layer_name, &layer, &layer_color);
 		if (res == 0) {
 			if (!layer_export)
 				continue;

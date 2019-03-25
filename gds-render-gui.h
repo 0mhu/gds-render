@@ -41,7 +41,7 @@ G_DECLARE_FINAL_TYPE(GdsRenderGui, gds_render_gui, RENDERER, GUI, GObject);
 
 /**
  * @brief Create new GdsRenderGui Object
- * @return
+ * @return New object
  */
 GdsRenderGui *gds_render_gui_new();
 
@@ -50,7 +50,7 @@ GdsRenderGui *gds_render_gui_new();
  *
  * This function returns the main window of the GUI, which can later be displayed.
  * All handling of hte GUI is taken care of inside the GdsRenderGui Object
- * @return
+ * @return The generated main window
  */
 GtkWindow *gds_render_gui_get_main_window(GdsRenderGui *gui);
 

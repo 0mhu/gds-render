@@ -48,39 +48,40 @@ enum layer_selector_sort_algo {LAYER_SELECTOR_SORT_DOWN = 0, LAYER_SELECTOR_SORT
 LayerSelector *layer_selector_new(GtkListBox *list_box);
 
 /**
- * @brief Generate layer widgets in \p listbox
+ * @brief Generate layer widgets in in the LayerSelector instance
  * @note This clears all previously inserted elements
- * @param listbox
+ * @param selector LayerSelector instance
  * @param libs The libraries to add
  */
 void layer_selector_generate_layer_widgets(LayerSelector *selector, GList *libs);
 
 /**
  * @brief Supply button for loading the layer mapping
- * @param button
- * @param main_window Parent window for dialogs
+ * @param selector LayerSelector instance
+ * @param button Load button. Will be referenced
+ * @param main_window Parent window for dialogs. Will be referenced
  */
 void layer_selector_set_load_mapping_button(LayerSelector *selector, GtkWidget *button, GtkWindow *main_window);
 
 /**
  * @brief Supply button for saving the layer mapping
- * @param button
- * @param main_window Parent window for dialogs
+ * @param selector LayerSelector instance
+ * @param button Save button. Will be refeneced
+ * @param main_window Parent window for dialogs. Will be referenced
  */
 void layer_selector_set_save_mapping_button(LayerSelector *selector, GtkWidget *button, GtkWindow *main_window);
 
 /**
- * @brief get the layer information present in the listbox of the selector
- * @return List with layer_info elements
+ * @brief Get a list of all layers that shall be exported when rendering the cells
+ * @param selector Layer selector instance
+ * @return List of layer_info structures containing the layer information
  */
 GList *layer_selector_export_rendered_layer_info(LayerSelector *selector);
 
 /**
- * @brief Force sorting of the layer selector in a specified way
- *
- * If the layer selector is not yet set up, this function has no effect.
- *
- * @param sort_function Sorting direction
+ * @brief Force the layer selector list to be sorted according to \p sort_function
+ * @param selector LayerSelector instance
+ * @param sort_function The sorting method (up or down sorting)
  */
 void layer_selector_force_sort(LayerSelector *selector, enum layer_selector_sort_algo sort_function);
 

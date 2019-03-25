@@ -235,8 +235,12 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 		/* Print size */
 		cairo_recording_surface_ink_extents(layers[linfo->layer].rec, &rec_x0, &rec_y0,
 				&rec_width, &rec_height);
-		printf("Size of layer %d: %lf -- %lf\n", linfo->layer,
-		       rec_width, rec_height);
+		printf("Size of layer %d%s%s%s: <%lf x %lf> @ (%lf | %lf)\n",
+			linfo->layer,
+			(linfo->name && linfo->name[0] ? " (" : ""),
+			(linfo->name && linfo->name[0] ? linfo->name : ""),
+			(linfo->name && linfo->name[0] ? ")" : ""),
+			rec_width, rec_height, rec_x0, rec_y0);
 
 		/* update bounding box */
 		xmin = MIN(xmin, rec_x0);
@@ -250,7 +254,7 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 
 	}
 
-	printf("Bounding box: (%lf,%lf) -- (%lf,%lf)\n", xmin, ymin, xmax, ymax);
+	printf("Cell bounding box: (%lf | %lf) -- (%lf | %lf)\n", xmin, ymin, xmax, ymax);
 
 	if (pdf_file) {
 		pdf_surface = cairo_pdf_surface_create(pdf_file, xmax-xmin, ymax-ymin);

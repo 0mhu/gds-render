@@ -140,6 +140,7 @@ static double convert_number_to_engineering(double input, const char **out_prefi
 					1E2, 1E3, 1E6, 1E9, 1E12, 1E15, 1E18, 1E21, 1E24};
 	const int prefix_count = (int)(sizeof(prefixes)/sizeof(char *));
 
+	/* Start with the 2nd smallest prefix */
 	for (idx = 1; idx < prefix_count; idx++) {
 		if (input < scale[idx]) {
 			/* This prefix is bigger than the number. Take the previous one */
@@ -212,7 +213,7 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 	GtkWidget *box;
 	GtkDialog *dialog;
 
-	dialog = &(self->parent);
+	dialog = &self->parent;
 
 	builder = gtk_builder_new_from_resource("/dialog.glade");
 	box = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-box"));
@@ -260,10 +261,7 @@ RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent)
 
 void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struct render_settings *settings)
 {
-	/*GList *radio_buttons;
-	 *GList *temp_button_list;
-	 *GtkToggleButton *temp_button = NULL;
-	 */
+
 	if (!settings || !dialog)
 		return;
 	settings->scale = gtk_range_get_value(GTK_RANGE(dialog->scale));

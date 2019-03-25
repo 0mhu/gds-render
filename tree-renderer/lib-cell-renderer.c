@@ -18,7 +18,7 @@
  */
 
 #include "lib-cell-renderer.h"
-#include "../gds-parser/gds-types.h"
+#include "../gds-utils/gds-types.h"
 
 G_DEFINE_TYPE(LibCellRenderer, lib_cell_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
 

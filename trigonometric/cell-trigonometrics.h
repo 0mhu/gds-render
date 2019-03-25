@@ -32,7 +32,7 @@
 #define _CELL_TRIGONOMETRICS_H_
 
 #include "bounding-box.h"
-#include "../gds-parser/gds-types.h"
+#include "../gds-utils/gds-types.h"
 
 /**
  * @brief calculate_cell_bounding_box Calculate bounding box of gds cell

@@ -31,7 +31,7 @@
 
 #include "mapping-parser.h"
 
-int load_csv_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color)
+int mapping_parser_load_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color)
 {
 	int ret;
 	gsize len;
@@ -94,7 +94,7 @@ ret_direct:
 
 }
 
-void create_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len)
+void mapping_parser_gen_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len)
 {
 	int i;
 	GString *string;

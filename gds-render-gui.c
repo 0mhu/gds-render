@@ -29,7 +29,7 @@
 
 #include "gds-render-gui.h"
 #include <stdio.h>
-#include "gds-parser/gds-parser.h"
+#include "gds-utils/gds-parser.h"
 #include <gtk/gtk.h>
 #include "layer/layer-selector.h"
 #include "tree-renderer/tree-store.h"
@@ -39,7 +39,7 @@
 #include "trigonometric/cell-trigonometrics.h"
 #include "version/version.h"
 #include "tree-renderer/lib-cell-renderer.h"
-#include "gds-parser/gds-tree-checker.h"
+#include "gds-utils/gds-tree-checker.h"
 
 enum gds_render_gui_signal_sig_ids {SIGNAL_WINDOW_CLOSED = 0, SIGNAL_COUNT};
 
@@ -57,17 +57,17 @@ struct _GdsRenderGui {
 	LayerSelector *layer_selector;
 	GtkTreeView *cell_tree_view;
 	GList *gds_libraries;
+	struct render_settings render_dialog_settings;
 };
 
 G_DEFINE_TYPE(GdsRenderGui, gds_render_gui, G_TYPE_OBJECT)
 
 /**
- * @brief Window close event of main window
- *
- * Closes the main window. This leads to the termination of the whole application
- * @param window main window
- * @param user not used
- * @return TRUE. This indicates that the event has been fully handled
+ * @brief Main window close event
+ * @param window GtkWindow which is closed
+ * @param event unused event
+ * @param user GdsRenderGui instance
+ * @return Status of the event handling. Always true.
  */
 static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 {
@@ -112,7 +112,7 @@ static GString *generate_string_from_date(struct gds_time_field *date)
 /**
  * @brief Callback function of Load GDS button
  * @param button
- * @param user Necessary Data
+ * @param user GdsRenderGui instance
  */
 static void on_load_gds(gpointer button, gpointer user)
 {
@@ -152,85 +152,83 @@ static void on_load_gds(gpointer button, gpointer user)
 
 	dialog_result = gtk_dialog_run(GTK_DIALOG(open_dialog));
 
-	if (dialog_result == GTK_RESPONSE_ACCEPT) {
+	if (dialog_result != GTK_RESPONSE_ACCEPT)
+		goto end_destroy;
 
-		/* Get File name */
-		filename = gtk_file_chooser_get_filename(file_chooser);
+	/* Get File name */
+	filename = gtk_file_chooser_get_filename(file_chooser);
 
-		gtk_tree_store_clear(self->cell_tree_store);
-		clear_lib_list(&self->gds_libraries);
+	gtk_tree_store_clear(self->cell_tree_store);
+	clear_lib_list(&self->gds_libraries);
 
-		/* Parse new GDSII file */
-		gds_result = parse_gds_from_file(filename, &self->gds_libraries);
+	/* Parse new GDSII file */
+	gds_result = parse_gds_from_file(filename, &self->gds_libraries);
 
-		/* Delete file name afterwards */
-		g_free(filename);
-		if (gds_result)
-			goto end_destroy;
+	/* Delete file name afterwards */
+	g_free(filename);
+	if (gds_result)
+		goto end_destroy;
 
-		/* remove suggested action from Open button */
-		button_style = gtk_widget_get_style_context(GTK_WIDGET(button));
-		gtk_style_context_remove_class(button_style, "suggested-action");
+	/* remove suggested action from Open button */
+	button_style = gtk_widget_get_style_context(GTK_WIDGET(button));
+	gtk_style_context_remove_class(button_style, "suggested-action");
 
-		for (lib = self->gds_libraries; lib != NULL; lib = lib->next) {
-			gds_lib = (struct gds_library *)lib->data;
-			/* Create top level iter */
-			gtk_tree_store_append(self->cell_tree_store, &libiter, NULL);
+	for (lib = self->gds_libraries; lib != NULL; lib = lib->next) {
+		gds_lib = (struct gds_library *)lib->data;
+		/* Create top level iter */
+		gtk_tree_store_append(self->cell_tree_store, &libiter, NULL);
 
+		/* Convert dates to String */
+		mod_date = generate_string_from_date(&gds_lib->mod_time);
+		acc_date = generate_string_from_date(&gds_lib->access_time);
+
+		gtk_tree_store_set(self->cell_tree_store, &libiter,
+				   CELL_SEL_LIBRARY, gds_lib,
+				   CELL_SEL_MODDATE, mod_date->str,
+				   CELL_SEL_ACCESSDATE, acc_date->str,
+				   -1);
+
+		/* Check this library. This might take a while */
+		(void)gds_tree_check_cell_references(gds_lib);
+		(void)gds_tree_check_reference_loops(gds_lib);
+		/* Delete GStrings including string data. */
+		/* Cell store copies String type data items */
+		g_string_free(mod_date, TRUE);
+		g_string_free(acc_date, TRUE);
+
+		for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
+			gds_c = (struct gds_cell *)cell->data;
+			gtk_tree_store_append(self->cell_tree_store, &celliter, &libiter);
 			/* Convert dates to String */
-			mod_date = generate_string_from_date(&gds_lib->mod_time);
-			acc_date = generate_string_from_date(&gds_lib->access_time);
+			mod_date = generate_string_from_date(&gds_c->mod_time);
+			acc_date = generate_string_from_date(&gds_c->access_time);
 
-			gtk_tree_store_set(self->cell_tree_store, &libiter,
-					   CELL_SEL_LIBRARY, gds_lib,
+			/* Get the checking results for this cell */
+			cell_error_level = 0;
+			if (gds_c->checks.unresolved_child_count)
+				cell_error_level |= LIB_CELL_RENDERER_ERROR_WARN;
+
+			/* Check if it is completely b0rken */
+			if (gds_c->checks.affected_by_reference_loop)
+				cell_error_level |= LIB_CELL_RENDERER_ERROR_ERR;
+
+			/* Add cell to tree store model */
+			gtk_tree_store_set(self->cell_tree_store, &celliter,
+					   CELL_SEL_CELL, gds_c,
 					   CELL_SEL_MODDATE, mod_date->str,
 					   CELL_SEL_ACCESSDATE, acc_date->str,
+					   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
 					   -1);
-
-			/* Check this library. This might take a while */
-			(void)gds_tree_check_cell_references(gds_lib);
-			(void)gds_tree_check_reference_loops(gds_lib);
 
 			/* Delete GStrings including string data. */
 			/* Cell store copies String type data items */
 			g_string_free(mod_date, TRUE);
 			g_string_free(acc_date, TRUE);
+		} /* for cells */
+	} /* for libraries */
 
-			for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
-				gds_c = (struct gds_cell *)cell->data;
-				gtk_tree_store_append(self->cell_tree_store, &celliter, &libiter);
-
-				/* Convert dates to String */
-				mod_date = generate_string_from_date(&gds_c->mod_time);
-				acc_date = generate_string_from_date(&gds_c->access_time);
-
-				/* Get the checking results for this cell */
-				cell_error_level = 0;
-				if (gds_c->checks.unresolved_child_count)
-					cell_error_level |= LIB_CELL_RENDERER_ERROR_WARN;
-
-				/* Check if it is completely b0rken */
-				if (gds_c->checks.affected_by_reference_loop)
-					cell_error_level |= LIB_CELL_RENDERER_ERROR_ERR;
-
-				/* Add cell to tree store model */
-				gtk_tree_store_set(self->cell_tree_store, &celliter,
-						   CELL_SEL_CELL, gds_c,
-						   CELL_SEL_MODDATE, mod_date->str,
-						   CELL_SEL_ACCESSDATE, acc_date->str,
-						   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
-						   -1);
-
-				/* Delete GStrings including string data. */
-				/* Cell store copies String type data items */
-				g_string_free(mod_date, TRUE);
-				g_string_free(acc_date, TRUE);
-			}
-		}
-
-		/* Create Layers in Layer Box */
-		layer_selector_generate_layer_widgets(self->layer_selector, self->gds_libraries);
-	}
+	/* Create Layers in Layer Box */
+	layer_selector_generate_layer_widgets(self->layer_selector, self->gds_libraries);
 
 end_destroy:
 	/* Destroy dialog and filter */
@@ -245,10 +243,6 @@ end_destroy:
 static void on_convert_clicked(gpointer button, gpointer user)
 {
 	(void)button;
-	static struct render_settings sett = {
-		.scale = 1000.0,
-		.renderer = RENDERER_LATEX_TIKZ,
-	};
 	GdsRenderGui *self;
 	GtkTreeSelection *selection;
 	GtkTreeIter iter;
@@ -263,11 +257,14 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	char *file_name;
 	union bounding_box cell_box;
 	unsigned int height, width;
+	struct render_settings *sett;
 
 	self = RENDERER_GUI(user);
 
 	if (!self)
 		return;
+
+	sett = &self->render_dialog_settings;
 
 	/* Get selected cell */
 	selection = gtk_tree_view_get_selection(self->cell_tree_view);
@@ -295,14 +292,14 @@ static void on_convert_clicked(gpointer button, gpointer user)
 
 	/* Show settings dialog */
 	settings = renderer_settings_dialog_new(GTK_WINDOW(self->main_window));
-	renderer_settings_dialog_set_settings(settings, &sett);
+	renderer_settings_dialog_set_settings(settings, sett);
 	renderer_settings_dialog_set_database_unit_scale(settings, cell_to_render->parent_library->unit_in_meters);
 	renderer_settings_dialog_set_cell_height(settings, height);
 	renderer_settings_dialog_set_cell_width(settings, width);
 
 	res = gtk_dialog_run(GTK_DIALOG(settings));
 	if (res == GTK_RESPONSE_OK) {
-		renderer_settings_dialog_get_settings(settings, &sett);
+		renderer_settings_dialog_get_settings(settings, sett);
 		gtk_widget_destroy(GTK_WIDGET(settings));
 	} else {
 		gtk_widget_destroy(GTK_WIDGET(settings));
@@ -310,13 +307,13 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	}
 
 	/* save file dialog */
-	dialog = gtk_file_chooser_dialog_new((sett.renderer == RENDERER_LATEX_TIKZ
+	dialog = gtk_file_chooser_dialog_new((sett->renderer == RENDERER_LATEX_TIKZ
 					      ? "Save LaTeX File" : "Save PDF"),
 					     GTK_WINDOW(self->main_window), GTK_FILE_CHOOSER_ACTION_SAVE,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save", GTK_RESPONSE_ACCEPT, NULL);
 	/* Set file filter according to settings */
 	filter = gtk_file_filter_new();
-	switch (sett.renderer) {
+	switch (sett->renderer) {
 	case RENDERER_LATEX_TIKZ:
 		gtk_file_filter_add_pattern(filter, "*.tex");
 		gtk_file_filter_set_name(filter, "LaTeX-Files");
@@ -340,23 +337,23 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		file_name = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 		gtk_widget_destroy(dialog);
 
-		switch (sett.renderer) {
+		switch (sett->renderer) {
 		case RENDERER_LATEX_TIKZ:
 			output_file = fopen(file_name, "w");
-			latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett.scale,
-						  sett.tex_pdf_layers, sett.tex_standalone);
+			latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett->scale,
+						  sett->tex_pdf_layers, sett->tex_standalone);
 			fclose(output_file);
 			break;
 		case RENDERER_CAIROGRAPHICS_SVG:
 		case RENDERER_CAIROGRAPHICS_PDF:
 			cairo_render_cell_to_vector_file(cell_to_render, layer_list,
-							 (sett.renderer == RENDERER_CAIROGRAPHICS_PDF
-								? file_name
-								: NULL),
-							 (sett.renderer == RENDERER_CAIROGRAPHICS_SVG
-								? file_name
-								: NULL),
-							 sett.scale);
+							 (sett->renderer == RENDERER_CAIROGRAPHICS_PDF
+							  ? file_name
+							  : NULL),
+							 (sett->renderer == RENDERER_CAIROGRAPHICS_SVG
+							  ? file_name
+							  : NULL),
+							 sett->scale);
 			break;
 		}
 		g_free(file_name);
@@ -369,9 +366,11 @@ ret_layer_destroy:
 }
 
 /**
- * @brief cell_tree_view_activated
- * @param tree_view Not used
- * @param user convert button data
+ * @brief cell_tree_view_activated Callback for 'double click' on cell selector element
+ * @param tree_view The tree view the event occured in
+ * @param path path to the selected row
+ * @param column The clicked column
+ * @param user pointer to GdsRenderGui object
  */
 static void cell_tree_view_activated(gpointer tree_view, GtkTreePath *path,
 				     GtkTreeViewColumn *column, gpointer user)
@@ -484,7 +483,6 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	GtkWidget *sort_down_button;
 
 	main_builder = gtk_builder_new_from_resource("/main.glade");
-	gtk_builder_connect_signals(main_builder, NULL);
 
 	self->cell_tree_view = GTK_TREE_VIEW(gtk_builder_get_object(main_builder, "cell-tree"));
 	self->cell_search_entry = GTK_WIDGET(gtk_builder_get_object(main_builder, "cell-search"));
@@ -523,16 +521,23 @@ static void gds_render_gui_init(GdsRenderGui *self)
 
 	/* Set buttons for loading and saving */
 	layer_selector_set_load_mapping_button(self->layer_selector,
-						GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
-						self->main_window);
+					       GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
+					       self->main_window);
 	layer_selector_set_save_mapping_button(self->layer_selector, GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
-						self->main_window);
+					       self->main_window);
 
 	/* Connect delete-event */
 	g_signal_connect(GTK_WIDGET(self->main_window), "delete-event",
 			 G_CALLBACK(on_window_close), self);
 
 	g_object_unref(main_builder);
+
+	/* Set default conversion/rendering settings */
+	self->render_dialog_settings.scale = 1000;
+	self->render_dialog_settings.renderer = RENDERER_LATEX_TIKZ;
+	self->render_dialog_settings.tex_pdf_layers = FALSE;
+	self->render_dialog_settings.tex_standalone = FALSE;
+
 
 	/* Reference all objects referenced by this object */
 	g_object_ref(self->main_window);
