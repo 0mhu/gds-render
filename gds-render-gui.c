@@ -63,12 +63,11 @@ struct _GdsRenderGui {
 G_DEFINE_TYPE(GdsRenderGui, gds_render_gui, G_TYPE_OBJECT)
 
 /**
- * @brief Window close event of main window
- *
- * Closes the main window. This leads to the termination of the whole application
- * @param window main window
- * @param user not used
- * @return TRUE. This indicates that the event has been fully handled
+ * @brief Main window close event
+ * @param window GtkWindow which is closed
+ * @param event unused event
+ * @param user GdsRenderGui instance
+ * @return Status of the event handling. Always true.
  */
 static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 {
@@ -113,7 +112,7 @@ static GString *generate_string_from_date(struct gds_time_field *date)
 /**
  * @brief Callback function of Load GDS button
  * @param button
- * @param user Necessary Data
+ * @param user GdsRenderGui instance
  */
 static void on_load_gds(gpointer button, gpointer user)
 {
@@ -367,9 +366,11 @@ ret_layer_destroy:
 }
 
 /**
- * @brief cell_tree_view_activated
- * @param tree_view Not used
- * @param user convert button data
+ * @brief cell_tree_view_activated Callback for 'double click' on cell selector element
+ * @param tree_view The tree view the event occured in
+ * @param path path to the selected row
+ * @param column The clicked column
+ * @param user pointer to GdsRenderGui object
  */
 static void cell_tree_view_activated(gpointer tree_view, GtkTreePath *path,
 				     GtkTreeViewColumn *column, gpointer user)

@@ -120,26 +120,29 @@ void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba)
 {
 	if (!rgba)
 		return;
+
 	gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(elem->priv.color), rgba);
 }
 
 void layer_element_set_color(LayerElement *elem, GdkRGBA *rgba)
 {
+	if (!elem || !rgba)
+		return;
+
 	gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(elem->priv.color), rgba);
 }
 
-void layer_element_set_dnd_callbacks(LayerElement *elem, GtkTargetEntry *entries, int entry_count,
-				     void (*drag_begin)(GtkWidget *, GdkDragContext *, gpointer),
-				     void (*drag_data_get)(GtkWidget *, GdkDragContext *,
-							   GtkSelectionData *, guint , guint, gpointer),
-				     void (*drag_end)(GtkWidget *, GdkDragContext *, gpointer))
+void layer_element_set_dnd_callbacks(LayerElement *elem, struct layer_element_dnd_data *data)
 {
+	if (!elem || !data)
+		return;
+
 	/* Setup drag and drop */
 	gtk_style_context_add_class (gtk_widget_get_style_context(GTK_WIDGET(elem)), "row");
-	gtk_drag_source_set(GTK_WIDGET(elem->priv.event_handle), GDK_BUTTON1_MASK, entries, entry_count, GDK_ACTION_MOVE);
-	g_signal_connect(elem->priv.event_handle, "drag-begin", G_CALLBACK(drag_begin), NULL);
-	g_signal_connect(elem->priv.event_handle, "drag-data-get", G_CALLBACK(drag_data_get), NULL);
-	g_signal_connect(elem->priv.event_handle, "drag-end", G_CALLBACK(drag_end), NULL);
+	gtk_drag_source_set(GTK_WIDGET(elem->priv.event_handle), GDK_BUTTON1_MASK, data->entries, data->entry_count, GDK_ACTION_MOVE);
+	g_signal_connect(elem->priv.event_handle, "drag-begin", G_CALLBACK(data->drag_begin), NULL);
+	g_signal_connect(elem->priv.event_handle, "drag-data-get", G_CALLBACK(data->drag_data_get), NULL);
+	g_signal_connect(elem->priv.event_handle, "drag-end", G_CALLBACK(data->drag_end), NULL);
 
 }
 

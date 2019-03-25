@@ -424,9 +424,10 @@ static void layer_selector_clear_widgets(LayerSelector *self)
 }
 
 /**
- * @brief Check if specific layer number is present in list box
- * @param layer Layer nu,ber
- * @return TRUE if present
+ * @brief Check if a specific layer element with the given layer number is present in the layer selector
+ * @param self LayerSelector instance
+ * @param layer Layer number to check for
+ * @return TRUE if layer is present, else FALSE
  */
 static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self, int layer) {
 	GList *list;
@@ -449,17 +450,30 @@ static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self,
 	return ret;
 }
 
+/**
+ * @brief Setup the necessary drag and drop callbacks of layer elements.
+ * @param self LayerSelector instance. Used to get the DnD target entry.
+ * @param element LayerElement instance to set the callbacks
+ */
 static void sel_layer_element_setup_dnd_callbacks(LayerSelector *self, LayerElement *element)
 {
-	layer_element_set_dnd_callbacks(element, &self->dnd_target, 1,
-					sel_layer_element_drag_begin,
-					sel_layer_element_drag_data_get,
-					sel_layer_element_drag_end);
+	struct layer_element_dnd_data dnd_data;
+
+	if (!self || !element)
+		return;
+
+	dnd_data.entries = &self->dnd_target;
+	dnd_data.entry_count = 1;
+	dnd_data.drag_end = sel_layer_element_drag_end;
+	dnd_data.drag_begin = sel_layer_element_drag_begin;
+	dnd_data.drag_data_get = sel_layer_element_drag_data_get;
+
+	layer_element_set_dnd_callbacks(element, &dnd_data);
 }
 
 /**
- * @brief Analyze \p cell and append used layers to list box
- * @param listbox listbox to add layer
+ * @brief Analyze \p cell layers and append detected layers to layer selector \p self
+ * @param self LayerSelector instance
  * @param cell Cell to analyze
  */
 static void layer_selector_analyze_cell_layers(LayerSelector *self, struct gds_cell *cell)
@@ -557,8 +571,15 @@ static LayerElement *layer_selector_find_layer_element_in_list(GList *el_list, i
 }
 
 /**
- * @brief Load file and apply layer definitions to listbox
- * @param file_name CSV Layer Mapping File
+ * @brief Load the layer mapping from a CSV formatted file
+ *
+ * This function imports the layer specification from a file (see @ref lmf-spec).
+ * The layer ordering defined in the file is kept. All layers present in the
+ * current loaded library, which are not present in the layer mapping file
+ * are appended at the end of the layer selector list.
+ *
+ * @param self LayerSelector instance
+ * @param file_name File name to load from
  */
 static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, gchar *file_name)
 {
@@ -658,9 +679,9 @@ static void layer_selector_load_mapping_clicked(GtkWidget *button, gpointer user
 
 
 /**
- * @brief Save layer mapping of whole list box into file
- * @param file_name layer mapping file
- * @param list_box listbox
+ * @brief Save layer mapping of selector \p self to a file
+ * @param self LayerSelector instance
+ * @param file_name File name to save to
  */
 static void layer_selector_save_layer_mapping_data(LayerSelector *self, const gchar *file_name)
 {

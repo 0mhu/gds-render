@@ -57,6 +57,22 @@ struct _LayerElement {
 };
 
 /**
+ * @brief This structure holds the necessary data to set up a LayerElement for Drag'n'Drop
+ */
+struct layer_element_dnd_data {
+	/** @brief Array of target entries for the DnD operation */
+	GtkTargetEntry *entries;
+	/** @brief Count of elements in layer_element_dnd_data::entries array */
+	int entry_count;
+	/** @brief Callback function for drag_begin event */
+	void (*drag_begin)(GtkWidget *, GdkDragContext *, gpointer);
+	/** @brief Callback fucktion for data_get event */
+	void (*drag_data_get)(GtkWidget *, GdkDragContext *, GtkSelectionData *, guint, guint, gpointer);
+	/** @brief Callback function for drag_end event */
+	void (*drag_end)(GtkWidget *, GdkDragContext *, gpointer);
+};
+
+/**
  * @brief Create new layer element object
  * @return new object
  */
@@ -119,16 +135,11 @@ void layer_element_get_color(LayerElement *elem, GdkRGBA *rgba);
 void layer_element_set_color(LayerElement *elem, GdkRGBA *rgba);
 
 /**
- * @brief layer_element_set_dnd_callbacks
- * @param elem
- * @param entries
- * @param entry_count
+ * @brief Setup drag and drop of \p elem for use in the LayerSelector
+ * @param elem Layer element to set up
+ * @param data Data array containing the necessary callbacks etc. for drag and drop.
  */
-void layer_element_set_dnd_callbacks(LayerElement *elem, GtkTargetEntry *entries, int entry_count,
-				     void (*drag_begin)(GtkWidget *, GdkDragContext *, gpointer),
-				     void (*drag_data_get)(GtkWidget *, GdkDragContext *,
-							   GtkSelectionData *, guint , guint, gpointer),
-				     void (*drag_end)(GtkWidget *, GdkDragContext *, gpointer));
+void layer_element_set_dnd_callbacks(LayerElement *elem, struct layer_element_dnd_data *data);
 
 G_END_DECLS
 
