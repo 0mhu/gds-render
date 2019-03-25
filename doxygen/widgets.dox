@@ -2,5 +2,5 @@
 
 /**
  * @defgroup Widgets Custom GTK Widgets
- *
+ * @ingroup GUI
  */
