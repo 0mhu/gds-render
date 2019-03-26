@@ -33,8 +33,9 @@
  * @{
  */
 
-#include "gds-tree-checker.h"
 #include <stdio.h>
+
+#include <gds-render/gds-utils/gds-tree-checker.h>
 
 int gds_tree_check_cell_references(struct gds_library *lib)
 {

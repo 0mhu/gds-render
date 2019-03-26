@@ -10,18 +10,18 @@ add_subdirectory(glade)
 add_subdirectory(doxygen)
 add_subdirectory(version)
 
-include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS})
+include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
 
 aux_source_directory("widgets" LAYER_SOURCES)
 aux_source_directory("tree-renderer" RENDERER_SOURCES)
 aux_source_directory("gds-utils" GDS_SOURCES)
-aux_source_directory("latex-output" LATEX_SOURCES)
-aux_source_directory("cairo-output" CAIRO_SOURCES)
-aux_source_directory("trigonometric" TRIG_SOURCES)
+aux_source_directory("latex-renderer" LATEX_SOURCES)
+aux_source_directory("cairo-renderer" CAIRO_SOURCES)
+aux_source_directory("geometric" GEOMETRIC_SOURCES)
 aux_source_directory("layer" LAYER_SELECTOR_SOURCES)
-set(SOURCE "main.c" "mapping-parser.c" "command-line.c" "gds-render-gui.c" "external-renderer.c")
+set(SOURCE "main.c" "command-line.c" "gds-render-gui.c" "external-renderer.c")
 
 set(SOURCE
   ${SOURCE}
@@ -30,7 +30,7 @@ set(SOURCE
   ${GDS_SOURCES}
   ${LATEX_SOURCES}
   ${CAIRO_SOURCES}
-  ${TRIG_SOURCES}
+  ${GEOMETRIC_SOURCES}
   ${LAYER_SELECTOR_SOURCES}
 )
 

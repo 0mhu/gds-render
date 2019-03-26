@@ -18,16 +18,17 @@
  */
 
 /**
- * @file cell-trigonometrics.c
+ * @file cell-geometrics.c
  * @brief Calculation of gds_cell trigonometrics
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-#include "cell-trigonometrics.h"
 #include <math.h>
 
+#include <gds-render/geometric/cell-geometrics.h>
+
 /**
- * @addtogroup trigonometric
+ * @addtogroup geometric
  * @{
  */
 

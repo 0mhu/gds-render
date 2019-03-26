@@ -31,10 +31,11 @@
  * @{
  */
 
-#include "../gds-utils/gds-types.h"
 #include <glib.h>
 #include <stdio.h>
-#include "../layer/layer-info.h"
+
+#include "gds-render/layer/layer-info.h"
+#include <gds-render/gds-utils/gds-types.h>
 
 #define LATEX_LINE_BUFFER_KB (10) /**< @brief Buffer for LaTeX Code line in KiB */
 

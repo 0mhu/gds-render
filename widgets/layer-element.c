@@ -35,7 +35,7 @@
  * @{
  */
 
-#include "layer-element.h"
+#include <gds-render/widgets/layer-element.h>
 
 G_DEFINE_TYPE(LayerElement, layer_element, GTK_TYPE_LIST_BOX_ROW)
 

@@ -28,7 +28,7 @@
  * @{
  */
 
-#include "conv-settings-dialog.h"
+#include <gds-render/widgets/conv-settings-dialog.h>
 
 struct  _RendererSettingsDialog {
 		GtkDialog parent;

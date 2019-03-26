@@ -18,32 +18,30 @@
  */
 
 /**
- * @file gds-parser.h
- * @brief Header file for the GDS-Parser
+ * @file cell-trigonometrics.h
+ * @brief Calculation of gds_cell trigonometrics
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
 /**
- * @addtogroup GDS-Utilities
+ * @addtogroup geometric
  * @{
  */
 
-#ifndef __GDSPARSE_H__
-#define __GDSPARSE_H__
+#ifndef _CELL_TRIGONOMETRICS_H_
+#define _CELL_TRIGONOMETRICS_H_
 
-#include <glib.h>
-#include "gds-types.h"
+#include <gds-render/geometric/bounding-box.h>
+#include <gds-render/gds-utils/gds-types.h>
 
-#define GDS_PRINT_DEBUG_INFOS (0) /**< @brief 1: Print infos, 0: Don't print */
-
-int parse_gds_from_file(const char *filename, GList **library_array);
 /**
- * @brief Deletes all libraries including cells, references etc.
- * @param library_list Pointer to a list of #gds_library. Is set to NULL after completion.
- * @return 0
+ * @brief calculate_cell_bounding_box Calculate bounding box of gds cell
+ * @param box Resulting boundig box. Will be uüdated and not overwritten
+ * @param cell toplevel cell
+ * @warning Path handling not yet implemented correctly.
  */
-int clear_lib_list(GList **library_list);
+void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell);
+
+#endif /* _CELL_TRIGONOMETRICS_H_ */
 
 /** @} */
-
-#endif /* __GDSPARSE_H__ */

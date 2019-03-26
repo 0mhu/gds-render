@@ -28,9 +28,10 @@
  * @{
  */
 
-#include "external-renderer.h"
 #include <dlfcn.h>
 #include <stdio.h>
+
+#include <gds-render/external-renderer.h>
 
 int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_info_list,
 				  char *output_file, char *so_path)

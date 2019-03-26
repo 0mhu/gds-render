@@ -26,12 +26,13 @@
  *  @{
  */
 
-#include "cairo-output.h"
 #include <math.h>
 #include <stdlib.h>
 #include <cairo.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
+
+#include <gds-render/cairo-renderer/cairo-output.h>
 
 /**
  * @brief The cairo_layer struct

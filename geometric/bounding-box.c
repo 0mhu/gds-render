@@ -24,13 +24,14 @@
  */
 
 /**
- * @addtogroup trigonometric
+ * @addtogroup geometric
  * @{
  */
 
 #include <stdio.h>
-#include "bounding-box.h"
 #include <math.h>
+
+#include <gds-render/geometric/bounding-box.h>
 
 #define MIN(a,b) (((a) < (b)) ? (a) : (b)) /**< @brief Return smaller number */
 #define MAX(a,b) (((a) > (b)) ? (a) : (b)) /**< @brief Return bigger number */

@@ -1,8 +1,8 @@
 /* This file only contains help information for doxygen */
 
 /**
- * @defgroup trigonometric Trigonometric Helper Functions
+ * @defgroup geometric Geometric Helper Functions
  * 
- * The trigonometric helper function are used to calculate bounding boxes
+ * The geometric helper function are used to calculate bounding boxes
  * @warning Code is incomplete. Please double check for functionality!
  */

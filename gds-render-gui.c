@@ -27,19 +27,20 @@
  * @{
  */
 
-#include "gds-render-gui.h"
 #include <stdio.h>
-#include "gds-utils/gds-parser.h"
 #include <gtk/gtk.h>
-#include "layer/layer-selector.h"
-#include "tree-renderer/tree-store.h"
-#include "latex-output/latex-output.h"
-#include "widgets/conv-settings-dialog.h"
-#include "cairo-output/cairo-output.h"
-#include "trigonometric/cell-trigonometrics.h"
-#include "version/version.h"
-#include "tree-renderer/lib-cell-renderer.h"
-#include "gds-utils/gds-tree-checker.h"
+
+#include <gds-render/gds-render-gui.h>
+#include <gds-render/gds-utils/gds-parser.h>
+#include <gds-render/gds-utils/gds-tree-checker.h>
+#include <gds-render/layer/layer-selector.h>
+#include <gds-render/tree-renderer/tree-store.h>
+#include <gds-render/tree-renderer/lib-cell-renderer.h>
+#include <gds-render/latex-renderer/latex-output.h>
+#include <gds-render/cairo-renderer/cairo-output.h>
+#include <gds-render/widgets/conv-settings-dialog.h>
+#include <gds-render/geometric/cell-geometrics.h>
+#include <gds-render/version.h>
 
 enum gds_render_gui_signal_sig_ids {SIGNAL_WINDOW_CLOSED = 0, SIGNAL_COUNT};
 

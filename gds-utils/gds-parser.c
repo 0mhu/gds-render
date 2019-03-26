@@ -34,14 +34,14 @@
  * @{
  */
 
-
-#include "gds-parser.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
 #include <cairo.h>
+
+#include <gds-render/gds-utils/gds-parser.h>
 
 /**
  * @brief Default units assumed for library.

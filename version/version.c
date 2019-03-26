@@ -23,7 +23,6 @@
  */
 
 #ifdef PROJECT_GIT_VERSION
-
 #define xstr(a) str(a)
 #define str(a) #a
 const char *_app_version_string = xstr(PROJECT_GIT_VERSION);

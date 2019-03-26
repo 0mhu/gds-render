@@ -23,8 +23,9 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-#include "latex-output.h"
 #include <math.h>
+
+#include <gds-render/latex-renderer/latex-output.h>
 
 /**
  * @addtogroup LaTeX-Renderer

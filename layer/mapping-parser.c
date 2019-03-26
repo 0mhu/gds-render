@@ -29,7 +29,7 @@
  * @{
  */
 
-#include "mapping-parser.h"
+#include <gds-render/layer/mapping-parser.h>
 
 int mapping_parser_load_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color)
 {

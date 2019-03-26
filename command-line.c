@@ -29,14 +29,15 @@
  */
 
 #include <stdio.h>
-#include "command-line.h"
-#include "gds-utils/gds-parser.h"
-#include "mapping-parser.h"
-#include "layer/layer-info.h"
-#include "cairo-output/cairo-output.h"
-#include "latex-output/latex-output.h"
-#include "external-renderer.h"
-#include "gds-utils/gds-tree-checker.h"
+
+#include <gds-render/command-line.h>
+#include <gds-render/gds-utils/gds-parser.h>
+#include <gds-render/layer/mapping-parser.h>
+#include <gds-render/layer/layer-info.h>
+#include <gds-render/cairo-renderer/cairo-output.h>
+#include <gds-render/latex-renderer/latex-output.h>
+#include <gds-render/external-renderer.h>
+#include <gds-render/gds-utils/gds-tree-checker.h>
 
 /**
  * @brief Delete layer_info and free nem element.

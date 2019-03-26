@@ -20,10 +20,11 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
-#include "gds-render-gui.h"
-#include "command-line.h"
-#include "external-renderer.h"
-#include "version/version.h"
+
+#include <gds-render/gds-render-gui.h>
+#include <gds-render/command-line.h>
+#include <gds-render/external-renderer.h>
+#include <gds-render/version.h>
 
 struct application_data {
 		GtkApplication *app;
@@ -119,7 +120,9 @@ static int start_gui(int argc, char **argv)
 
 	GtkApplication *gapp;
 	int app_status;
-	static struct application_data appdata = {.gui_list = NULL};
+	static struct application_data appdata = {
+		.gui_list = NULL
+	};
 	GMenu *menu;
 	GMenu *m_quit;
 	GMenu *m_about;

@@ -30,6 +30,7 @@
 
 #ifndef _COMMAND_LINE_H_
 #define _COMMAND_LINE_H_
+
 #include <glib.h>
 
 /**
@@ -48,6 +49,8 @@
  * @param so_name Path to shared object of custom renderer
  * @param so_out_file Output file path for custom renderer
  * @param svg_name SVG file name
+ *
+ * @note This function is pretty damn retarded (Lots of parameters). Will be reworked when generating GObjects for renderers.
  */
 void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
 			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers,

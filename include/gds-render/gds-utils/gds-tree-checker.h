@@ -31,7 +31,7 @@
 #ifndef _GDS_TREE_CHECKER_H_
 #define _GDS_TREE_CHECKER_H_
 
-#include "gds-types.h"
+#include <gds-render/gds-utils/gds-types.h>
 
 /**
  * @brief gds_tree_check_cell_references checks if all child cell references can be resolved in the given library

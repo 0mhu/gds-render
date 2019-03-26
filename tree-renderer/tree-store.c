@@ -28,9 +28,9 @@
  * @{
  */
 
-#include "tree-store.h"
-#include "lib-cell-renderer.h"
-#include "../gds-utils/gds-types.h"
+#include <gds-render/tree-renderer/tree-store.h>
+#include <gds-render/tree-renderer/lib-cell-renderer.h>
+#include <gds-render/gds-utils/gds-types.h>
 
 /**
  * @brief this function olny allows cells to be selected

@@ -24,13 +24,14 @@
  */
 
 /**
- * @addtogroup trigonometric
+ * @addtogroup geometric
  * @{
  */
 
-#include "vector-operations.h"
 #include <math.h>
 #include <stdlib.h>
+
+#include <gds-render/geometric/vector-operations.h>
 
 #define ABS_DBL(a) ((a) < 0 ? -(a) : (a))
 

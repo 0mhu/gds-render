@@ -28,15 +28,16 @@
  * @{
  */
 
-#include "layer-selector.h"
-#include "layer-info.h"
-#include "../gds-utils/gds-parser.h"
-#include "../widgets/layer-element.h"
-#include "../mapping-parser.h"
 #include <glib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <gds-render/layer/layer-selector.h>
+#include <gds-render/layer/layer-info.h>
+#include <gds-render/gds-utils/gds-parser.h>
+#include <gds-render/widgets/layer-element.h>
+#include <gds-render/layer/mapping-parser.h>
 
 struct _LayerSelector {
 	/* Parent */
@@ -54,7 +55,6 @@ struct _LayerSelector {
 };
 
 G_DEFINE_TYPE(LayerSelector, layer_selector, G_TYPE_OBJECT)
-
 
 /* Drag and drop code 
  * Original code from https://blog.gtk.org/2017/06/01/drag-and-drop-in-lists-revisited/

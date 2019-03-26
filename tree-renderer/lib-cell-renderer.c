@@ -17,8 +17,8 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lib-cell-renderer.h"
-#include "../gds-utils/gds-types.h"
+#include <gds-render/tree-renderer/lib-cell-renderer.h>
+#include <gds-render/gds-utils/gds-types.h>
 
 G_DEFINE_TYPE(LibCellRenderer, lib_cell_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
 

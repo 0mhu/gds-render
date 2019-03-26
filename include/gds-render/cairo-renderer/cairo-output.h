@@ -21,11 +21,11 @@
  * @brief Header File for Cairo output renderer
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
-#ifndef __CAIRO_OUTPUT_H__
-#define __CAIRO_OUTPUT_H__
+#ifndef _CAIRO_OUTPUT_H_
+#define _CAIRO_OUTPUT_H_
 
-#include "../layer/layer-info.h"
-#include "../gds-utils/gds-types.h"
+#include <gds-render/gds-utils/gds-types.h>
+#include <gds-render/layer/layer-info.h>
 
 /** @addtogroup Cairo-Renderer
  *  @{
@@ -45,4 +45,4 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 
 /** @} */
 
-#endif /* __CAIRO_OUTPUT_H__ */
+#endif /* _CAIRO_OUTPUT_H_ */

@@ -24,7 +24,7 @@
  */
 
 /**
- * @addtogroup trigonometric
+ * @addtogroup geometric
  * @{
  */
 

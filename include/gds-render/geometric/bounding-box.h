@@ -24,14 +24,15 @@
  */
 
 /**
- * @addtogroup trigonometric
+ * @addtogroup geometric
  * @{
  */
 
 #ifndef _BOUNDING_BOX_H_
 #define _BOUNDING_BOX_H_
+
 #include <glib.h>
-#include "vector-operations.h"
+#include <gds-render/geometric/vector-operations.h>
 #include <stdbool.h>
 
 union bounding_box {

@@ -31,8 +31,9 @@
  * @{
  */
 
-#include <gtk/gtk.h>
-#include "widgets/layer-element.h"
+#include <glib.h>
+
+#include <gds-render/widgets/layer-element.h>
 
 /**
  * @brief Load a line from \p stream and parse try to parse it as layer information
