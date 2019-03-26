@@ -57,4 +57,11 @@ in order to build the program and
 
 The subfolder 'AUR' contains a PKGBUILD file to build an Archlinux/Pacman package.
 
+@subsection Compiler Warnings
+
+The compiler will throw the following warnings. Compiled with GCC 8.2.1.
+
+| Warning | Assessment |
+| ------- | ---------- |
+| warning: ‘calculate_path_miter_points’ defined but not used [-Wunused-function] | Ignore. Function will be used in later versions. |
 */
