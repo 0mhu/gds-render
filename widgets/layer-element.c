@@ -31,7 +31,8 @@
  */
 
 /**
- * @addtogroup Widgets
+ * @addtogroup LayerElement
+ * @ingroup Widgets
  * @{
  */
 

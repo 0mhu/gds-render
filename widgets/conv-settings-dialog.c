@@ -24,7 +24,8 @@
  */
 
 /**
- * @addtogroup Widgets
+ * @addtogroup RendererSettingsDialog
+ * @ingroup Widgets
  * @{
  */
 
