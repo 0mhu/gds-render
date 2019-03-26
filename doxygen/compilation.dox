@@ -1,0 +1,60 @@
+/**
+
+@page compilation Compilation
+
+@section Preface
+
+GDS-Render is designed for UNIX-like, especially GNU/Linux based systems.
+It was developed under a Linux system. Therefore, best performance is expected using a Linux operating system.
+
+@section depencencies Dependencies
+The dependencies of GDS-Render are:
+
+@subsection run-deps Program Dependencies
+
+ - GLib2
+ - GTK3
+ - Cairographics
+
+@subsection comp-deps Compilation Dependencies
+These dependencies are not needed for running the program; just for compilation.
+
+ - Build System (GCC + binutils, make, etc...). Most distributions supply a "development" meta-package containing this stuff.
+ - cmake >= 2.8
+ - More or less optional: git. Used for extraction of the precise version number. It is strongly recommended to provide git!
+ - Optional: doxygen for this nice documentation.
+
+The dependency list of GTK3 already includes Cairographics and GLib2. You should be on the safe side with a recent GTK3 version.
+
+Development is done with the following library versions:
+
+| Cairographics | GLib2      | GTK3   |
+| ------------- | ---------- | ------ |
+| 1.16.0-2      | 2.60.0-1   | 3.24.7 |
+
+@section comp-instr Compilation Instructions
+@subsection linux-build General Linux Build Instruction
+Go to the build directory you want to compile in. This may be the gds-render project root.
+Execute
+@code
+ cmake <Path to gds-render root>
+@endcode
+
+Cmake will check the dependencies. Once cmake has finished. Type
+
+@code
+ make
+@endcode
+
+in order to build the program and 
+
+@code
+ make documentation
+@endcode
+ to build the doxygen documentation.
+
+@subsection arch-makepkg Archlinux Package
+
+The subfolder 'AUR' contains a PKGBUILD file to build an Archlinux/Pacman package.
+
+*/

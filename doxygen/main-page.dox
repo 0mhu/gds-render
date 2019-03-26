@@ -6,7 +6,7 @@ This programm converts GDS layout files to
 - PDF Files using the @ref Cairo-Renderer
 - Latex code (TikZ) using the @ref LaTeX-Renderer
 
-See the @subpage usage page for details 
+See the @subpage usage page for details and @subpage compilation for building instructions.
 
 
 

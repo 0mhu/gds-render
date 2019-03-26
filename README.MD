@@ -1,4 +1,4 @@
-# GDS-Render
+# GDS-Render Readme
 
 This software is a rendering programm for GDS2 layout files.
 The GDS2 format is mainly used in integrated circuit development.

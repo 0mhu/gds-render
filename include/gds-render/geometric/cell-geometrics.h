@@ -18,8 +18,8 @@
  */
 
 /**
- * @file cell-trigonometrics.h
- * @brief Calculation of gds_cell trigonometrics
+ * @file cell-geometrics.h
+ * @brief Calculation of gds_cell geometrics
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
@@ -28,8 +28,8 @@
  * @{
  */
 
-#ifndef _CELL_TRIGONOMETRICS_H_
-#define _CELL_TRIGONOMETRICS_H_
+#ifndef _CELL_GEOMETRICS_H_
+#define _CELL_GEOMETRICS_H_
 
 #include <gds-render/geometric/bounding-box.h>
 #include <gds-render/gds-utils/gds-types.h>
@@ -37,11 +37,11 @@
 /**
  * @brief calculate_cell_bounding_box Calculate bounding box of gds cell
  * @param box Resulting boundig box. Will be uüdated and not overwritten
- * @param cell toplevel cell
+ * @param cell Toplevel cell
  * @warning Path handling not yet implemented correctly.
  */
 void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell);
 
-#endif /* _CELL_TRIGONOMETRICS_H_ */
+#endif /* _CELL_GEOMETRICS_H_ */
 
 /** @} */
