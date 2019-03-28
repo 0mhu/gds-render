@@ -69,8 +69,8 @@ struct gds_point {
  * @brief Stores the result of the cell checks.
  */
 struct gds_cell_checks {
-	int unresolved_child_count; /**< @brief Number of unresolved cell instances inside this cell. Default: GDS_CELL_CHECK_NOT_RUN */
-	int affected_by_reference_loop; /**< @brief 1 if the cell is affected by a reference loop and therefore not renderable. Default: GDS_CELL_CHECK_NOT_RUN*/
+	int unresolved_child_count; /**< @brief Number of unresolved cell instances inside this cell. Default: @ref GDS_CELL_CHECK_NOT_RUN */
+	int affected_by_reference_loop; /**< @brief 1 if the cell is affected by a reference loop and therefore not renderable. Default: @ref GDS_CELL_CHECK_NOT_RUN*/
 	/**
 	 * @brief For the internal use of the checker.
 	 * @warning Do not use this structure and its contents!
