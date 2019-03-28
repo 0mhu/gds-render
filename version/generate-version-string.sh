@@ -1,1 +1,1 @@
-git describe --tags
+git describe --tags --dirty
