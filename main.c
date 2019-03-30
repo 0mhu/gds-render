@@ -126,7 +126,7 @@ const static GActionEntry app_actions[] = {
  * @brief Called when a GUI main window is closed
  *
  * The GdsRenderGui object associated with the closed main window
- * is removed from the list of open GUIs and unreferenced.
+ * is removed from the list of open GUIs (\p user_data) and unreferenced.
  *
  * @param gui The GUI instance the closed main window belongs to
  * @param user_data List of GUIs
