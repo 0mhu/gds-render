@@ -27,7 +27,7 @@
 #define __MAPPING_PARSER_H__
 
 /**
- * @addtogroup MainApplication
+ * @addtogroup  Mapping-Parser
  * @{
  */
 

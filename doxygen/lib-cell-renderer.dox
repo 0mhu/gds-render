@@ -1,0 +1,18 @@
+/**
+ * @defgroup LibCellRenderer LibCellRenderer GObject
+ * @ingroup GUI
+ *
+ * The LibCellRenderer Object is used to render @ref gds_cell and @ref gds_library elements 
+ * to a GtkTreeView.
+ *
+ * The LibCellRenderer class is derived from a GtkCellRendererText and works the same way.
+ * The additinal features are three new properties:
+ *
+ * - *gds-lib*: This property can be used to set a @ref gds_library structure. The renderer will render the name of the library.
+ * - *gds-cell*: This property can be used to set a @ref gds_cell structure. The renderer will render the name of the cell.
+ * - *error-level*: Set the error level of the cell/library. This affects the foreground color of hte rendered output.
+ *
+ * Internally the class operates by setting the 'text' property, which is inherited form the base class to the library/cell name (gds_library::name and gds_cell::name fields).
+ * The error level (@ref LIB_CELL_RENDERER_ERROR_WARN and @ref LIB_CELL_RENDERER_ERROR_ERR) is translated to the inherited 'foreground-rgba' property.
+ *
+ */

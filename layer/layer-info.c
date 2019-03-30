@@ -23,11 +23,6 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-/**
- * @addtogroup MainApplication
- * @{
- */
-
 #include <gds-render/layer/layer-info.h>
 
 void layer_info_delete_struct(struct layer_info *info)
@@ -36,4 +31,3 @@ void layer_info_delete_struct(struct layer_info *info)
 		free(info);
 }
 
-/** @} */

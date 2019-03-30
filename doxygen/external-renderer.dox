@@ -1,0 +1,4 @@
+/**
+ * @defgroup external-renderer External Shared Object Renderer
+ * @ingroup renderers
+ */

@@ -24,7 +24,7 @@
  */
 
 /**
- * @addtogroup MainApplication
+ * @addtogroup layer-selector
  * @{
  */
 

@@ -27,7 +27,7 @@
 #define _GDS_RENDER_GUI_
 
 /**
- * @addtogroup MainApplication
+ * @addtogroup GUI
  * @{
  */
 

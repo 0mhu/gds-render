@@ -18,7 +18,7 @@
  */
 
 /**
- * @file layer-info.c
+ * @file layer-info.h
  * @brief Helper functions and definition of layer info struct
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */

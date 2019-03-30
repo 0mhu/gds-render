@@ -23,6 +23,11 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+/**
+ * @addtogroup layer-selector
+ * @{
+ */
+
 #ifndef __LAYER_SELECTOR_H__
 #define __LAYER_SELECTOR_H__
 
@@ -88,3 +93,5 @@ void layer_selector_force_sort(LayerSelector *selector, enum layer_selector_sort
 G_END_DECLS
 
 #endif /* __LAYER_SELECTOR_H__ */
+
+/** @} */

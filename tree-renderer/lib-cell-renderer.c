@@ -17,6 +17,17 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file lib-cell-renderer.c
+ * @brief LibCellRenderer GObject Class
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
+/**
+ * @addtogroup LibCellRenderer
+ * @{
+ */
+
 #include <gds-render/tree-renderer/lib-cell-renderer.h>
 #include <gds-render/gds-utils/gds-types.h>
 
@@ -132,3 +143,5 @@ GtkCellRenderer *lib_cell_renderer_new()
 {
 	return GTK_CELL_RENDERER(g_object_new(TYPE_LIB_CELL_RENDERER, NULL));
 }
+
+/** @} */

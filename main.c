@@ -17,6 +17,12 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file main.c
+ * @brief main.c
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
+
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
@@ -26,11 +32,27 @@
 #include <gds-render/external-renderer.h>
 #include <gds-render/version.h>
 
+/**
+ * @brief Structure containing The GtkApplication and a list containing the GdsRenderGui objects.
+ */
 struct application_data {
 		GtkApplication *app;
 		GList *gui_list;
 };
 
+/**
+ * @brief Callback for the menu entry 'Quit'
+ *
+ * Destroys all GUIs contained in the application_data structure
+ * provided by \p user_data.
+ *
+ * The complete suspension of all main windows leads to the termination of the
+ * GApplication.
+ *
+ * @param action unused
+ * @param parameter unused
+ * @param user_data application_data structure
+ */
 static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
 	struct application_data * const appdata = (struct application_data *)user_data;
@@ -49,6 +71,15 @@ static void app_quit(GSimpleAction *action, GVariant *parameter, gpointer user_d
 	appdata->gui_list = NULL;
 }
 
+/**
+ * @brief Callback for the 'About' menu entry
+ *
+ * This function shows the about dialog.
+ *
+ * @param action GSimpleAction, unused
+ * @param parameter Unused.
+ * @param user_data Unused
+ */
 static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
 	GtkBuilder *builder;
@@ -83,11 +114,23 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	g_object_unref(builder);
 }
 
+/**
+ * @brief Contains the application menu entries
+ */
 const static GActionEntry app_actions[] = {
 	{"quit", app_quit, NULL, NULL, NULL, {0}},
 	{"about", app_about, NULL, NULL, NULL, {0}}
 };
 
+/**
+ * @brief Called when a GUI main window is closed
+ *
+ * The GdsRenderGui object associated with the closed main window
+ * is removed from the list of open GUIs and unreferenced.
+ *
+ * @param gui The GUI instance the closed main window belongs to
+ * @param user_data List of GUIs
+ */
 static void gui_window_closed_callback(GdsRenderGui *gui, gpointer user_data)
 {
 	GList **gui_list = (GList **)user_data;
@@ -97,6 +140,11 @@ static void gui_window_closed_callback(GdsRenderGui *gui, gpointer user_data)
 	g_object_unref(gui);
 }
 
+/**
+ * @brief Activation of the GUI
+ * @param app The GApplication reference
+ * @param user_data Used to store the individual GUI instances.
+ */
 static void gapp_activate(GApplication *app, gpointer user_data)
 {
 	GtkWindow *main_window;
@@ -115,6 +163,17 @@ static void gapp_activate(GApplication *app, gpointer user_data)
 	gtk_widget_show(GTK_WIDGET(main_window));
 }
 
+/**
+ * @brief Start the graphical interface.
+ *
+ * This function starts the GUI. If there's already a
+ * running instance of this program, a second window will be
+ * created in that instance and the second one is terminated.
+ *
+ * @param argc
+ * @param argv
+ * @return
+ */
 static int start_gui(int argc, char **argv)
 {
 
@@ -160,12 +219,21 @@ static int start_gui(int argc, char **argv)
 	return app_status;
 }
 
-static void print_version()
+/**
+ * @brief Print the application version string to stdout
+ */
+static void print_version(void)
 {
 	printf("This is gds-render, version: %s\n\nFor a list of supported commands execute with --help option.\n",
 	       _app_version_string);
 }
 
+/**
+ * @brief The "entry point" of the application
+ * @param argc Number of command line parameters
+ * @param argv Command line parameters
+ * @return Execution status of the application
+ */
 int main(int argc, char **argv)
 {
 	int i;

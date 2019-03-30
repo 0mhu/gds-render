@@ -25,7 +25,7 @@
  */
 
 /**
- * @addtogroup MainApplication
+ * @addtogroup Mapping-Parser
  * @{
  */
 

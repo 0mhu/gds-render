@@ -17,8 +17,10 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 /**
- * @addtogroup MainApplication
+ * @defgroup version Git-based Versioning Number
+ * @addtogroup version
  * @{
  */
 

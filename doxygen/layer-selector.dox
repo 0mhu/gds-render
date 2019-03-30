@@ -1,0 +1,7 @@
+/**
+ * @defgroup layer-selector LayerSelector Object
+ * @ingroup GUI
+ *
+ * This objects implements the layer selector and displays the layers in a list box.
+ * It uses @ref LayerElement objects to display the individual layers inside the list box. 
+ */

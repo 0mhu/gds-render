@@ -1,0 +1,4 @@
+/**
+ * @defgroup LaTeX-Renderer LaTeX/TikZ Renderer 
+ * @ingroup renderers
+ */

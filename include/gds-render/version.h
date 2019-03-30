@@ -18,11 +18,11 @@
  */
 
 /**
- * @addtogroup MainApplication
+ * @addtogroup version
  * @{
  */
 
 /** @brief This string holds the 'git describe' version of the app */
-extern char *_app_version_string;
+extern const char *_app_version_string;
 
 /** @} */

@@ -23,7 +23,7 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-/** @addtogroup MainApplication
+/** @addtogroup GUI
  * @{
  */
 
@@ -145,6 +145,7 @@ static void on_load_gds(gpointer button, gpointer user)
 						  "Open GDSII", GTK_RESPONSE_ACCEPT,
 						  NULL);
 	file_chooser = GTK_FILE_CHOOSER(open_dialog);
+
 	/* Add GDS II Filter */
 	filter = gtk_file_filter_new();
 	gtk_file_filter_add_pattern(filter, "*.gds");
