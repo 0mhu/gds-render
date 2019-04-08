@@ -101,8 +101,9 @@ static void sel_layer_element_drag_end(GtkWidget *widget, GdkDragContext *contex
 	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-hover");
 }
 
-static void sel_layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
-					guint info, guint time, gpointer data)
+static void sel_layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *context,
+					    GtkSelectionData *selection_data,
+					    guint info, guint time, gpointer data)
 {
 	(void)context;
 	(void)info;
@@ -216,10 +217,12 @@ static gboolean layer_selector_drag_motion(GtkWidget *widget, GdkDragContext *co
 
 		if (y < hover_row_y + hover_row_height/2) {
 			row_after = row;
-			row_before = GTK_WIDGET(layer_selector_get_row_before(GTK_LIST_BOX(widget), GTK_LIST_BOX_ROW(row)));
+			row_before = GTK_WIDGET(layer_selector_get_row_before(GTK_LIST_BOX(widget),
+									      GTK_LIST_BOX_ROW(row)));
 		} else {
 			row_before = row;
-			row_after = GTK_WIDGET(layer_selector_get_row_after(GTK_LIST_BOX(widget), GTK_LIST_BOX_ROW(row)));
+			row_after = GTK_WIDGET(layer_selector_get_row_after(GTK_LIST_BOX(widget),
+									    GTK_LIST_BOX_ROW(row)));
 		}
 	} else {
 		row_before = GTK_WIDGET(layer_selector_get_last_row(GTK_LIST_BOX(widget)));
