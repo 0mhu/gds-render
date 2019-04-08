@@ -118,11 +118,12 @@ static void lib_cell_renderer_get_property(GObject      *object,
 	}
 }
 
-static GParamSpec *properties [PROP_COUNT];
+static GParamSpec *properties[PROP_COUNT];
 
 void lib_cell_renderer_class_init(LibCellRendererClass *klass)
 {
 	GObjectClass *oclass = G_OBJECT_CLASS(klass);
+
 	oclass->constructed = lib_cell_renderer_constructed;
 	oclass->set_property = lib_cell_renderer_set_property;
 	oclass->get_property = lib_cell_renderer_get_property;

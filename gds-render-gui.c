@@ -298,6 +298,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	renderer_settings_dialog_set_database_unit_scale(settings, cell_to_render->parent_library->unit_in_meters);
 	renderer_settings_dialog_set_cell_height(settings, height);
 	renderer_settings_dialog_set_cell_width(settings, width);
+	g_object_set(G_OBJECT(settings), "cell-name", cell_to_render->name, NULL);
 
 	res = gtk_dialog_run(GTK_DIALOG(settings));
 	if (res == GTK_RESPONSE_OK) {

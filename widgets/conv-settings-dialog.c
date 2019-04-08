@@ -54,10 +54,60 @@ struct  _RendererSettingsDialog {
 
 G_DEFINE_TYPE(RendererSettingsDialog, renderer_settings_dialog, GTK_TYPE_DIALOG)
 
+enum {
+	PROP_CELL_NAME = 1,
+	PROP_COUNT
+};
+
+static GParamSpec *properties[PROP_COUNT];
+
+static void renderer_settings_dialog_set_property(GObject *object, guint property_id,
+						  const GValue *value, GParamSpec *pspec)
+{
+	const gchar *title = NULL;
+
+	switch (property_id) {
+	case PROP_CELL_NAME:
+		title = g_value_get_string(value);
+		if (title)
+			gtk_window_set_title(GTK_WINDOW(object), title);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
+		break;
+	}
+}
+
+static void renderer_settings_dialog_get_property(GObject *object, guint property_id,
+						  GValue *value, GParamSpec *pspec)
+{
+	const gchar *title;
+
+	switch (property_id) {
+	case PROP_CELL_NAME:
+		title = gtk_window_get_title(GTK_WINDOW(object));
+		g_value_set_string(value, title);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
+		break;
+	}
+}
+
 static void renderer_settings_dialog_class_init(RendererSettingsDialogClass *klass)
 {
-	/*  No special code needed. Child cells are destroyed automatically due to reference counter */
-	return;
+	GObjectClass *oclass = G_OBJECT_CLASS(klass);
+
+	/* Override virtual functions */
+	oclass->set_property = renderer_settings_dialog_set_property;
+	oclass->get_property = renderer_settings_dialog_get_property;
+
+	properties[PROP_CELL_NAME] = g_param_spec_string("cell-name",
+							 "cell-name",
+							 "Cell name to be displayed in header bar",
+							 "",
+							 G_PARAM_READWRITE);
+	g_object_class_install_properties(oclass, PROP_COUNT, properties);
 }
 
 static void show_tex_options(RendererSettingsDialog *self)
