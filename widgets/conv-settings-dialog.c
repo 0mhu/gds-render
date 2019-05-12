@@ -191,6 +191,10 @@ static double convert_number_to_engineering(double input, const char **out_prefi
 					1E2, 1E3, 1E6, 1E9, 1E12, 1E15, 1E18, 1E21, 1E24};
 	const int prefix_count = (int)(sizeof(prefixes)/sizeof(char *));
 
+	/* If pointer is invalid, return NaN */
+	if (!out_prefix)
+		return 0.0 / 0.0;
+
 	/* Start with the 2nd smallest prefix */
 	for (idx = 1; idx < prefix_count; idx++) {
 		if (input < scale[idx]) {
