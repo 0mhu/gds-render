@@ -9,7 +9,7 @@ done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null && pwd )"
 cd "$DIR"
 
-export PROJECT_NUMBER=`git describe --tags`
+export PROJECT_NUMBER=`../version/generate-version-string.sh`
 
 if [ $# != 1 ]; then
 	export OUTPUT_DIRECTORY="./output"
