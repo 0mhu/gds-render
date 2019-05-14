@@ -502,6 +502,7 @@ static void gds_parse_date(const char *buffer, int length, struct gds_time_field
 		temp_date->minute = gds_convert_unsigend_int16(buffer);
 		buffer += 2;
 		temp_date->second = gds_convert_unsigend_int16(buffer);
+		buffer += 2;
 
 		if (temp_date == access_date)
 			break;
