@@ -19,7 +19,8 @@
 
 
 /**
- * @defgroup version Git-based Versioning Number
+ * @defgroup version Version Number
+ * See @ref git-version-num
  * @addtogroup version
  * @{
  */

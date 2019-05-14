@@ -1,0 +1,36 @@
+/**
+@page versioning Version Number
+
+@section main-version Main Versioning Scheme
+The version number of this application consists of a given version in the format of 'v1.0'.
+Where the first number indicates a major release and the second number indicates minor changes.
+
+Versions, including release candidates and path-levels, are tagged in git.
+
+@subsection rc Release Candidates
+Release candidates are software versions that seem stable and functional to become a new version but testing is not fully finished. These versions are marked with an '-rcX', where X is the number of the release candidate.
+The 3rd release candidate of version 4.2 would be '*v4.2-rc3*'.
+Release candidates are in a frozen state. Only bugfixes that are necessary for functionality are applied to these versions before releasing the final version.
+
+@subsection patch-level Patch Levels
+If an already released version contains bugs that need to be fixed, the version number is not incremented. Insted a new version number with a patch-level is created. The patch-level is appended with a dash directly after the version number. The fist patch-level of version 3.5 would be: 'v3.5-1'.
+
+
+@section git-version-num Git Based Version Number
+
+The application and this documentation contain a git-based version number. With this version number not only released versions but all development points of the software can be uniquely identified.
+
+An example for such a version number is: *v1.0-rc4-41-gaa41373-dirty*
+
+It consists of the last @ref main-version (in this case version 1.0 -- Release candidate 4) and some other information from the source code management system. The number after the version tag is the commit count after the given version. In this case the specified version is 41 commits after the last tagged version 'v1.0-rc4'. The next section always starts with a 'g' (for git) and after that contains the first letters of the commit ID. In this case an additional '-dirty' is appended, showing that the software version contains unstaged changes.
+
+In tabular form: *v1.0-rc4-41-gaa41373-dirty*
+
+| Last tagged version | Commits since that version | Start of commit ID | Unstaged changes? |
+|---------------------|----------------------------|--------------------|---------------------|
+| 1.0-rc4             | 41                         | aa41373            | yes                 |
+
+
+This git-based version number is automatically put into the application and this doxumentation during the application's compilation / the documentation's generation. For this *git* is needed. Therefore, it is highly recommended to have 'git' installed for compilation although it is no build dependency. In case of a missing git installation, the string "! version not set !" is compiled into the application.
+
+**/

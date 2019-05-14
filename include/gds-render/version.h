@@ -22,7 +22,7 @@
  * @{
  */
 
-/** @brief This string holds the 'git describe' version of the app */
+/** @brief This string holds the @ref git-version-num of the app */
 extern const char *_app_version_string;
 
 /** @} */
