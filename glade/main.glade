@@ -7,15 +7,25 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-select-color</property>
   </object>
-  <object class="GtkImage" id="image1">
+  <object class="GtkImage" id="load-mapping-img">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="stock">gtk-go-up</property>
+    <property name="stock">gtk-open</property>
   </object>
-  <object class="GtkImage" id="image2">
+  <object class="GtkImage" id="save-mapping-img">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="stock">gtk-go-down</property>
+    <property name="stock">gtk-save-as</property>
+  </object>
+  <object class="GtkImage" id="sort-down-img">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-sort-ascending</property>
+  </object>
+  <object class="GtkImage" id="sort-up-img">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-sort-descending</property>
   </object>
   <object class="GtkWindow" id="main-window">
     <property name="height_request">250</property>
@@ -48,6 +58,8 @@
             <property name="sensitive">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="image">load-mapping-img</property>
+            <property name="always_show_image">True</property>
             <style>
               <class name="suggested-action"/>
             </style>
@@ -63,6 +75,8 @@
             <property name="sensitive">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="image">save-mapping-img</property>
+            <property name="always_show_image">True</property>
             <style>
               <class name="suggested-action"/>
             </style>
@@ -160,7 +174,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="image">image1</property>
+                    <property name="image">sort-up-img</property>
                     <property name="always_show_image">True</property>
                   </object>
                   <packing>
@@ -174,7 +188,7 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="image">image2</property>
+                    <property name="image">sort-down-img</property>
                     <property name="always_show_image">True</property>
                   </object>
                   <packing>
