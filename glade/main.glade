@@ -199,7 +199,6 @@
                 </child>
                 <child>
                   <object class="GtkButton" id="auto-color-button">
-                    <property name="label" translatable="yes">Auto-Coloring</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
