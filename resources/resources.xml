@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/">
-    <file compressed="true">main.glade</file>
-    <file compressed="true">about.glade</file>
-    <file>layer-widget.glade</file>
-    <file>dialog.glade</file>
-    <file compressed="true" alias="logo.svg">../icon/gds-render.svg</file>
-  </gresource>
+	<gresource prefix="/gui">
+		<file compressed="true">main.glade</file>
+		<file compressed="true">about.glade</file>
+		<file>layer-widget.glade</file>
+		<file>dialog.glade</file>
+	</gresource>
+	<gresource prefix="/data">
+		<file compressed="true">color-palette.txt</file>
+	</gresource>
+	<gresource prefix="/images">
+		<file compressed="true" alias="logo.svg">../icon/gds-render.svg</file>
+	</gresource>
 </gresources>
 
 

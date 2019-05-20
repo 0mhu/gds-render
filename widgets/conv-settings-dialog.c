@@ -270,7 +270,7 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 
 	dialog = &self->parent;
 
-	builder = gtk_builder_new_from_resource("/dialog.glade");
+	builder = gtk_builder_new_from_resource("/gui/dialog.glade");
 	box = GTK_WIDGET(gtk_builder_get_object(builder, "dialog-box"));
 	self->radio_latex = GTK_WIDGET(gtk_builder_get_object(builder, "latex-radio"));
 	self->radio_cairo_pdf = GTK_WIDGET(gtk_builder_get_object(builder, "cairo-pdf-radio"));

@@ -90,13 +90,13 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	(void)action;
 	(void)parameter;
 
-	builder = gtk_builder_new_from_resource("/about.glade");
+	builder = gtk_builder_new_from_resource("/gui/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), NULL);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), _app_version_string);
 
 	/* Load icon from resource */
-	logo_buf = gdk_pixbuf_new_from_resource_at_scale("/logo.svg", 100, 100, TRUE, &error);
+	logo_buf = gdk_pixbuf_new_from_resource_at_scale("/images/logo.svg", 100, 100, TRUE, &error);
 	if (logo_buf) {
 		/* Set logo */
 		gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dialog), logo_buf);
