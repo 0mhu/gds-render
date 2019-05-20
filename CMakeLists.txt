@@ -6,7 +6,7 @@ pkg_search_module(GLIB REQUIRED glib-2.0)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(CAIRO REQUIRED cairo)
 
-add_subdirectory(glade)
+add_subdirectory(resources)
 add_subdirectory(doxygen)
 add_subdirectory(version)
 
@@ -36,10 +36,10 @@ set(SOURCE
 
 add_compile_options(-Wall)
 
-add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/glade/resources.c)
+add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c)
 add_dependencies(${PROJECT_NAME} glib-resources)
 add_dependencies(${PROJECT_NAME} version)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/glade/resources.c PROPERTIES GENERATED 1)
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c PROPERTIES GENERATED 1)
 target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
 install (TARGETS ${PROJECT_NAME} DESTINATION bin)
 
