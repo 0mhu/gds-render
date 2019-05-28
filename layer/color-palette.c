@@ -49,7 +49,8 @@ G_DEFINE_TYPE(ColorPalette, color_palette, G_TYPE_OBJECT)
 static int color_palette_fill_with_resource(ColorPalette *palette, char *resource_name)
 {
 	GBytes *data;
-	char *char_array;
+	const char *char_array;
+	gsize byte_count;
 
 	if (!palette || !resource_name)
 		return -1;
@@ -59,7 +60,15 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 	if (!data)
 		return -2;
 
+	char_array = (const char *)g_bytes_get_data(data, &byte_count);
 
+	if (!char_array || !byte_count)
+		goto ret_unref;
+
+
+
+
+ret_unref:
 	g_bytes_unref(data);
 
 	return 0;
