@@ -34,6 +34,7 @@
 #include <gds-render/gds-utils/gds-parser.h>
 #include <gds-render/gds-utils/gds-tree-checker.h>
 #include <gds-render/layer/layer-selector.h>
+#include <gds-render/widgets/activity-bar.h>
 #include <gds-render/tree-renderer/tree-store.h>
 #include <gds-render/tree-renderer/lib-cell-renderer.h>
 #include <gds-render/latex-renderer/latex-output.h>
@@ -58,6 +59,7 @@ struct _GdsRenderGui {
 	LayerSelector *layer_selector;
 	GtkTreeView *cell_tree_view;
 	GList *gds_libraries;
+	ActivityBar *activity_status_bar;
 	struct render_settings render_dialog_settings;
 };
 
@@ -442,6 +444,7 @@ static void gds_render_gui_dispose(GObject *gobject)
 	g_clear_object(&self->layer_selector);
 	g_clear_object(&self->cell_tree_store);
 	g_clear_object(&self->cell_search_entry);
+	g_clear_object(&self->activity_status_bar);
 
 	if (self->main_window) {
 		g_signal_handlers_destroy(self->main_window);
@@ -484,6 +487,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	struct tree_stores *cell_selector_stores;
 	GtkWidget *sort_up_button;
 	GtkWidget *sort_down_button;
+	GtkWidget *activity_bar_box;
 
 	main_builder = gtk_builder_new_from_resource("/gui/main.glade");
 
@@ -505,6 +509,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	/* Create layer selector */
 	self->layer_selector = layer_selector_new(GTK_LIST_BOX(listbox));
 
+	activity_bar_box = GTK_WIDGET(gtk_builder_get_object(main_builder, "activity-bar"));
 
 	/* Callback for selection change of cell selector */
 	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(self->cell_tree_view)), "changed",
@@ -535,6 +540,11 @@ static void gds_render_gui_init(GdsRenderGui *self)
 
 	g_object_unref(main_builder);
 
+	/* Create and apply ActivityBar */
+	self->activity_status_bar = activity_bar_new();
+	gtk_container_add(GTK_CONTAINER(activity_bar_box), GTK_WIDGET(self->activity_status_bar));
+	gtk_widget_show(GTK_WIDGET(self->activity_status_bar));
+
 	/* Set default conversion/rendering settings */
 	self->render_dialog_settings.scale = 1000;
 	self->render_dialog_settings.renderer = RENDERER_LATEX_TIKZ;
@@ -543,6 +553,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 
 
 	/* Reference all objects referenced by this object */
+	g_object_ref(self->activity_status_bar);
 	g_object_ref(self->main_window);
 	g_object_ref(self->cell_tree_view);
 	g_object_ref(self->convert_button);
