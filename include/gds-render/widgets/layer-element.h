@@ -19,7 +19,7 @@
 
 /**
  * @file layer-element.h
- * @brief Omplementation of the layer element used for configuring layer colors etc.
+ * @brief Implementation of the layer element used for configuring layer colors etc.
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
