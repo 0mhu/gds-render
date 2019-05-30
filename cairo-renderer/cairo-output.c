@@ -181,8 +181,8 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 
 void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, char *pdf_file, char *svg_file, double scale)
 {
-	cairo_surface_t *pdf_surface, *svg_surface;
-	cairo_t *pdf_cr, *svg_cr;
+	cairo_surface_t *pdf_surface = NULL, *svg_surface = NULL;
+	cairo_t *pdf_cr = NULL, *svg_cr = NULL;
 	struct layer_info *linfo;
 	struct cairo_layer *layers;
 	struct cairo_layer *lay;
@@ -276,16 +276,15 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 			continue;
 		}
 
-		if (pdf_file) {
+		if (pdf_file && pdf_cr) {
 			cairo_set_source_surface(pdf_cr, layers[linfo->layer].rec, -xmin, -ymin);
 			cairo_paint_with_alpha(pdf_cr, linfo->color.alpha);
 		}
 
-		if (svg_file) {
+		if (svg_file && svg_cr) {
 			cairo_set_source_surface(svg_cr, layers[linfo->layer].rec, -xmin, -ymin);
 			cairo_paint_with_alpha(svg_cr, linfo->color.alpha);
 		}
-
 	}
 
 	if (pdf_file) {
