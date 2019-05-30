@@ -208,7 +208,7 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 	if (process_id < 0) {
 		/* Well... shit... We have to run it in our process. */
 	} else if (process_id > 0) {
-		/* Woohoo... Successfully dumped the shitty code to a unknowing victim */
+		/* Woohoo... Successfully dumped the shitty code to an unknowing victim */
 		goto ret_parent;
 	}
 
