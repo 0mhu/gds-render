@@ -325,13 +325,13 @@ ret_clear_layers:
 	}
 	free(layers);
 
-	printf("cairo export finished. It might still be buggy!\n");
+	printf("Cairo export finished. It might still be buggy!\n");
 
 	/* If forked, suspend process */
 	if (process_id == 0)
 		exit(0);
 
-	/* fork didn't work. Just return here */
+	/* Fork didn't work. Just return here */
 	return;
 ret_parent:
 	waitpid(process_id, NULL, 0);
