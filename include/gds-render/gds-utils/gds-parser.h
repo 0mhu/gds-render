@@ -37,7 +37,21 @@
 
 #define GDS_PRINT_DEBUG_INFOS (0) /**< @brief 1: Print infos, 0: Don't print */
 
+/**
+ * @brief Parse a GDS file
+ *
+ * This function parses a GDS File and creates a list of libraries,
+ * which then contain the different cells.
+ *
+ * The function appends The detected libraries to the \p library_array list.
+ * The library array may be empty, meaning *library_list may be NULL.
+ *
+ * @param filename[in] Path to the GDS file
+ * @param library_array[in] GList Pointer.
+ * @return 0 if successful
+ */
 int parse_gds_from_file(const char *filename, GList **library_array);
+
 /**
  * @brief Deletes all libraries including cells, references etc.
  * @param library_list Pointer to a list of #gds_library. Is set to NULL after completion.
