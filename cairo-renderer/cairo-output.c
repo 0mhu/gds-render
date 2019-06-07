@@ -33,6 +33,8 @@
 #include <cairo-svg.h>
 
 #include <gds-render/cairo-renderer/cairo-output.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 /**
  * @brief The cairo_layer struct
@@ -181,8 +183,8 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 
 void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, char *pdf_file, char *svg_file, double scale)
 {
-	cairo_surface_t *pdf_surface, *svg_surface;
-	cairo_t *pdf_cr, *svg_cr;
+	cairo_surface_t *pdf_surface = NULL, *svg_surface = NULL;
+	cairo_t *pdf_cr = NULL, *svg_cr = NULL;
 	struct layer_info *linfo;
 	struct cairo_layer *layers;
 	struct cairo_layer *lay;
@@ -190,10 +192,24 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 	int i;
 	double rec_x0, rec_y0, rec_width, rec_height;
 	double xmin = INT32_MAX, xmax = INT32_MIN, ymin = INT32_MAX, ymax = INT32_MIN;
+	pid_t process_id;
 
 	if (pdf_file == NULL && svg_file == NULL) {
 		/* No output specified */
 		return;
+	}
+
+	/* Fork to a new child process. This ensures the memory leaks (see issue #16) in Cairo don't
+	 * brick everything.
+	 *
+	 * And by the way: This now bricks all Windows compatibility. Deal with it.
+	 */
+	process_id = fork();
+	if (process_id < 0) {
+		/* Well... shit... We have to run it in our process. */
+	} else if (process_id > 0) {
+		/* Woohoo... Successfully dumped the shitty code to an unknowing victim */
+		goto ret_parent;
 	}
 
 	layers = (struct cairo_layer *)calloc(MAX_LAYERS, sizeof(struct cairo_layer));
@@ -276,16 +292,15 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 			continue;
 		}
 
-		if (pdf_file) {
+		if (pdf_file && pdf_cr) {
 			cairo_set_source_surface(pdf_cr, layers[linfo->layer].rec, -xmin, -ymin);
 			cairo_paint_with_alpha(pdf_cr, linfo->color.alpha);
 		}
 
-		if (svg_file) {
+		if (svg_file && svg_cr) {
 			cairo_set_source_surface(svg_cr, layers[linfo->layer].rec, -xmin, -ymin);
 			cairo_paint_with_alpha(svg_cr, linfo->color.alpha);
 		}
-
 	}
 
 	if (pdf_file) {
@@ -310,7 +325,17 @@ ret_clear_layers:
 	}
 	free(layers);
 
-	printf("cairo export finished. It might still be buggy!\n");
+	printf("Cairo export finished. It might still be buggy!\n");
+
+	/* If forked, suspend process */
+	if (process_id == 0)
+		exit(0);
+
+	/* Fork didn't work. Just return here */
+	return;
+ret_parent:
+	waitpid(process_id, NULL, 0);
+	return;
 }
 
 /** @} */

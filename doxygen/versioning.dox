@@ -31,6 +31,6 @@ In tabular form: *v1.0-rc4-41-gaa41373-dirty*
 | 1.0-rc4             | 41                         | aa41373            | yes                 |
 
 
-This git-based version number is automatically put into the application and this doxumentation during the application's compilation / the documentation's generation. For this *git* is needed. Therefore, it is highly recommended to have 'git' installed for compilation although it is no build dependency. In case of a missing git installation, the string "! version not set !" is compiled into the application.
+This git-based version number is automatically put into the application and this documentation during the application's compilation / the documentation's generation. For this *git* is needed. Therefore, it is highly recommended to have 'git' installed for compilation although it is no build dependency. In case of a missing git installation, the string "! version not set !" is compiled into the application.
 
 **/

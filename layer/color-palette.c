@@ -112,6 +112,7 @@ unsigned int color_palette_get_color_count(ColorPalette *palette)
 
 static void color_palette_class_init(ColorPaletteClass *klass)
 {
+	(void)klass;
 	/* Nothing to do for now */
 	return;
 }
