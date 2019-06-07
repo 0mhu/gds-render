@@ -53,7 +53,8 @@
 #define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS warning */
 
 #if GDS_PRINT_DEBUG_INFOS
-	#define GDS_INF(fmt, ...) printf(fmt, ##__VA_ARGS__) /**< @brief standard printf. But can be disabled in code */
+	/**< @brief standard printf. But can be disabled in code. */
+	#define GDS_INF(fmt, ...) printf(fmt, ##__VA_ARGS__)
 #else
 	#define GDS_INF(fmt, ...)
 #endif
@@ -813,7 +814,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			if (current_s_reference) {
 				name_cell_ref(current_s_reference, (unsigned int)read, workbuff);
 			} else {
-				GDS_ERROR("reference name set outside of cell reference.\n");
+				GDS_ERROR("Reference name set outside of cell reference");
 			}
 			break;
 		case WIDTH:
