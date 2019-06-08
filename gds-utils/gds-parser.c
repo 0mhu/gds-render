@@ -183,7 +183,7 @@ static double gds_convert_double(const char *data)
 		if (data[i] != 0)
 			break;
 		if (i == 7) {
-			/* 7 bytes all 0 */
+			/* All 8 bytes are 0 */
 			return 0.0;
 		}
 	}
@@ -377,9 +377,9 @@ static GList *append_cell_ref(GList *curr_list, struct gds_cell_instance **insta
 	if (inst) {
 		inst->cell_ref = NULL;
 		inst->ref_name[0] = 0;
-		inst->magnification = 1;
+		inst->magnification = 1.0;
 		inst->flipped = 0;
-		inst->angle = 0;
+		inst->angle = 0.0;
 	} else
 		return NULL;
 
@@ -734,7 +734,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 			current_cell->parent_library = current_lib;
 
-			GDS_INF("Entering Cell\n");
+			GDS_INF("Entering cell\n");
 			break;
 		case ENDSTR:
 			if (current_cell == NULL) {
@@ -801,7 +801,6 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		case ENDEL:
 			if (current_graphics != NULL) {
-
 				GDS_INF("\tLeaving %s\n", (current_graphics->gfx_type == GRAPHIC_POLYGON ? "boundary" : "path"));
 				current_graphics = NULL;
 			}
