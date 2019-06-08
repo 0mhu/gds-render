@@ -690,6 +690,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		}
 		rec_type = gds_convert_unsigend_int16(workbuff);
 
+
 		/* if begin: Allocate structures */
 		switch (rec_type) {
 		case BGNLIB:
@@ -865,7 +866,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		case STRNAME:
 			break;
 		default:
-			GDS_WARN("Unhandled Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
+			GDS_INF("Unhandled Record: %04x, len: %u\n", (unsigned int)rec_type, (unsigned int)rec_data_length);
 			break;
 		} /* switch(rec_type) */
 
