@@ -79,7 +79,26 @@ enum gds_record {
 	BOX = 0x2D00,
 	LAYER = 0x0D02,
 	WIDTH = 0x0F03,
-	PATHTYPE = 0x2102
+	PATHTYPE = 0x2102,
+	COLROW = 0x1302,
+	AREF = 0x0B00
+};
+
+/**
+ * @brief Struct representing an array instantiation.
+ *
+ * This struct is defined locally because it is not exposed to the outside of the
+ * parser. Array references are internally converted to a bunch of standard @ref gds_cell_instance elements.
+ */
+struct gds_cell_array_instance {
+	char ref_name[CELL_NAME_MAX]; /**< @brief Name of referenced cell */
+	struct gds_cell *cell_ref; /**< @brief Referenced gds_cell structure */
+	struct gds_point control_points[3]; /**< @brief The three control points */
+	int flipped; /**< @brief Mirror each instance on x-axis before rotation */
+	double angle; /**< @brief Angle of rotation for each instance (counter clockwise) in degrees */
+	double magnification; /**< @brief Magnification of each instance */
+	int columns; /**< @brief Column count */
+	int rows; /**< @brief Row count */
 };
 
 /**
@@ -96,6 +115,36 @@ static int name_cell_ref(struct gds_cell_instance *cell_inst,
 
 	if (cell_inst == NULL) {
 		GDS_ERROR("Naming cell ref with no opened cell ref");
+		return -1;
+	}
+	data[bytes] = 0; // Append '0'
+	len = (int)strlen(data);
+	if (len > CELL_NAME_MAX-1) {
+		GDS_ERROR("Cell name '%s' too long: %d\n", data, len);
+		return -1;
+	}
+
+	/* else: */
+	strcpy(cell_inst->ref_name, data);
+	GDS_INF("\tCell referenced: %s\n", cell_inst->ref_name);
+
+	return 0;
+}
+
+/**
+ * @brief Name cell reference
+ * @param cell_inst Cell reference
+ * @param bytes Length of name
+ * @param data Name
+ * @return 0 if successful
+ */
+static int name_array_cell_ref(struct gds_cell_array_instance *cell_inst,
+				unsigned int bytes, char *data)
+{
+	int len;
+
+	if (cell_inst == NULL) {
+		GDS_ERROR("Naming array cell ref with no opened cell ref");
 		return -1;
 	}
 	data[bytes] = 0; // Append '0'
@@ -509,6 +558,62 @@ static void gds_parse_date(const char *buffer, int length, struct gds_time_field
 	}
 }
 
+/**
+ * @brief Convert AREF to a bunch of SREFs and append them to \p container_cell
+ *
+ * This function converts a single array reference (\p aref) to gds_cell_array_instance::rows * gds_cell_array_instance::columns
+ * single references (SREFs). See @ref gds_cell_instance.
+ *
+ * Both gds_cell_array_instance::rows and gds_cell_array_instance::columns must be larger than zero.
+ *
+ * @param[in] aref Array reference to parse
+ * @param[in] container_cell cell to add the converted single references to.
+ */
+static void convert_aref_to_sref(struct gds_cell_array_instance *aref, struct gds_cell *container_cell)
+{
+	struct gds_point origin;
+	struct gds_point row_shift_vector;
+	struct gds_point col_shift_vector;
+	struct gds_cell_instance *sref_inst;
+	int col;
+	int row;
+
+	if (!aref || !container_cell)
+		return;
+
+	if (aref->columns == 0 || aref->rows == 0) {
+		GDS_ERROR("Conversion of array instance aborted. No rows / columns.");
+		return;
+	}
+	origin.x = aref->control_points[0].x;
+	origin.y = aref->control_points[0].y;
+
+	row_shift_vector.x = (aref->control_points[2].x - origin.x) / aref->rows;
+	row_shift_vector.y = (aref->control_points[2].y - origin.y) / aref->rows;
+	col_shift_vector.x = (aref->control_points[1].x - origin.x) / aref->columns;
+	col_shift_vector.y = (aref->control_points[1].y - origin.y) / aref->columns;
+
+	/* Iterate over columns and rows */
+	for (col = 0; col < aref->columns; col++) {
+		for (row = 0; row < aref->rows; row++) {
+			/* Create new instance for this row/column and aconfigure data */
+			container_cell->child_cells = append_cell_ref(container_cell->child_cells, &sref_inst);
+			if (!sref_inst) {
+				GDS_ERROR("Appending cell ref failed!");
+				continue;
+			}
+
+			sref_inst->angle = aref->angle;
+			sref_inst->magnification = aref->magnification;
+			sref_inst->flipped = aref->flipped;
+			strncpy(sref_inst->ref_name, aref->ref_name, CELL_NAME_MAX);
+			sref_inst->origin.x = origin.x + row_shift_vector.x * row + col_shift_vector.x * col;
+			sref_inst->origin.y = origin.y + row_shift_vector.y * row + col_shift_vector.y * col;
+		}
+	}
+	GDS_INF("Converted AREF to SREFs\n");
+}
+
 int parse_gds_from_file(const char *filename, GList **library_list)
 {
 	char *workbuff;
@@ -522,6 +627,8 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 	struct gds_cell *current_cell = NULL;
 	struct gds_graphics *current_graphics = NULL;
 	struct gds_cell_instance *current_s_reference = NULL;
+	struct gds_cell_array_instance *current_a_reference = NULL;
+	struct gds_cell_array_instance temp_a_reference;
 	int x, y;
 	////////////
 	GList *lib_list;
@@ -701,6 +808,12 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				GDS_INF("\tLeaving Reference\n");
 				current_s_reference = NULL;
 			}
+			if (current_a_reference != NULL) {
+				GDS_INF("\tLeaving Array Reference\n");
+				convert_aref_to_sref(current_a_reference, current_cell);
+				current_a_reference = NULL;
+			}
+
 			break;
 		case XY:
 			if (current_graphics) {
@@ -709,24 +822,51 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				if (rec_data_length != 8) {
 					GDS_WARN("Instance has weird coordinates. Rendered output might be screwed!");
 				}
+			} else if (current_a_reference) {
+				if (rec_data_length != (3*(4+4)))
+					GDS_WARN("Array instance has weird coordinates. Rendered output might be screwed!");
+			}
+			break;
+		case AREF:
+			if (current_cell == NULL) {
+				GDS_ERROR("Cell array reference outside of cell");
+				run = -3;
+				break;
 			}
 
-			break;
+			if (current_a_reference != NULL) {
+				GDS_ERROR("Recursive cell array reference");
+				run = -3;
+				break;
+			}
 
+			GDS_INF("Entering Array Reference\n");
+
+			/* Array references are coverted after fully declared. Therefore,
+			 * only a static buffer is needed
+			 */
+			current_a_reference = &temp_a_reference;
+			current_a_reference->ref_name[0] = '\0';
+			current_a_reference->angle = 0.0;
+			current_a_reference->magnification = 1.0;
+			current_a_reference->flipped = 0;
+			current_a_reference->rows = 0;
+			current_a_reference->columns = 0;
+			break;
+		case COLROW:
 		case MAG:
-			break;
 		case ANGLE:
-			break;
 		case STRANS:
-			break;
 		case WIDTH:
-			break;
 		case PATHTYPE:
-			break;
 		case UNITS:
+		case LIBNAME:
+		case SNAME:
+		case LAYER:
+		case STRNAME:
 			break;
 		default:
-			//GDS_WARN("Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
+			GDS_WARN("Unhandled Record: %04x, len: %u", (unsigned int)rec_type, (unsigned int)rec_data_length);
 			break;
 		} /* switch(rec_type) */
 
@@ -744,7 +884,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		}
 
 		switch (rec_type) {
-
+		case AREF:
 		case HEADER:
 		case ENDLIB:
 		case ENDSTR:
@@ -756,6 +896,20 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		case INVALID:
 			break;
 
+		case COLROW:
+			if (!current_a_reference) {
+				GDS_ERROR("COLROW record defined outside of array instance");
+				break;
+			}
+			if (rec_data_length != 4 || read != 4) {
+				GDS_ERROR("COLUMN/ROW count record contains too few data. Won't set column and row counts (%d, %d)",
+					  rec_data_length, read);
+				break;
+			}
+			current_a_reference->columns = (int)gds_convert_signed_int16(&workbuff[0]);
+			current_a_reference->rows = (int)gds_convert_signed_int16(&workbuff[2]);
+			GDS_INF("\tRows: %d\n\tColumns: %d\n", current_a_reference->rows, current_a_reference->columns);
+			break;
 		case UNITS:
 			if (!current_lib) {
 				GDS_WARN("Units defined outside of library!\n");
@@ -799,19 +953,31 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 					GDS_INF("\t\tSet coordinate: %d/%d\n", x, y);
 
 				}
+			} else if (current_a_reference) {
+				for (i = 0; i < 3; i++) {
+					x = gds_convert_signed_int(&workbuff[i*8]);
+					y = gds_convert_signed_int(&workbuff[i*8+4]);
+					current_a_reference->control_points[i].x = x;
+					current_a_reference->control_points[i].y = y;
+					GDS_INF("\tSet control point %d: %d/%d\n", i, x, y);
+				}
 			}
 			break;
 		case STRANS:
-			if (!current_s_reference) {
+			if (current_s_reference) {
+				current_s_reference->flipped = ((workbuff[0] & 0x80) ? 1 : 0);
+			} else if (current_a_reference) {
+				current_a_reference->flipped = ((workbuff[0] & 0x80) ? 1 : 0);
+			} else {
 				GDS_ERROR("Transformation defined outside of instance");
 				break;
 			}
-			current_s_reference->flipped = ((workbuff[0] & 0x80) ? 1 : 0);
 			break;
-
 		case SNAME:
 			if (current_s_reference) {
 				name_cell_ref(current_s_reference, (unsigned int)read, workbuff);
+			} else if (current_a_reference) {
+				name_array_cell_ref(current_a_reference, (unsigned int)read, workbuff);
 			} else {
 				GDS_ERROR("reference name set outside of cell reference.\n");
 			}
@@ -846,12 +1012,16 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				current_s_reference->magnification = gds_convert_double(workbuff);
 				GDS_INF("\t\tMagnification defined: %lf\n", current_s_reference->magnification);
 			}
+			if (current_a_reference != NULL) {
+				current_a_reference->magnification = gds_convert_double(workbuff);
+				GDS_INF("\t\tMagnification defined: %lf\n", current_a_reference->magnification);
+			}
 			break;
 		case ANGLE:
 			if (rec_data_length != 8) {
 				GDS_WARN("Angle is not an 8 byte real. Results may be wrong");
 			}
-			if (current_graphics != NULL && current_s_reference != NULL) {
+			if (current_graphics != NULL && current_s_reference != NULL && current_a_reference != NULL) {
 				GDS_ERROR("Open Graphics and Cell Reference\n\tMissing ENDEL?");
 				run = -6;
 				break;
@@ -859,6 +1029,10 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			if (current_s_reference != NULL) {
 				current_s_reference->angle = gds_convert_double(workbuff);
 				GDS_INF("\t\tAngle defined: %lf\n", current_s_reference->angle);
+			}
+			if (current_a_reference != NULL) {
+				current_a_reference->angle = gds_convert_double(workbuff);
+				GDS_INF("\t\tAngle defined: %lf\n", current_a_reference->angle);
 			}
 			break;
 		case PATHTYPE:
