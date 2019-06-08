@@ -46,8 +46,8 @@
  * The function appends The detected libraries to the \p library_array list.
  * The library array may be empty, meaning *library_list may be NULL.
  *
- * @param filename[in] Path to the GDS file
- * @param library_array[in] GList Pointer.
+ * @param[in] filename Path to the GDS file
+ * @param[in,out] library_array GList Pointer.
  * @return 0 if successful
  */
 int parse_gds_from_file(const char *filename, GList **library_array);
