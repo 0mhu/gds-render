@@ -184,6 +184,7 @@ int gds_tree_check_reference_loops(struct gds_library *lib)
 			if (res == 0)
 				fprintf(stderr, "Visited cell list should be empty. This is a bug. Please report this.\n");
 			g_list_free(visited_cells);
+			visited_cells = NULL;
 		}
 
 		if (res < 0) {
