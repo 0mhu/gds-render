@@ -241,6 +241,20 @@ end_destroy:
 }
 
 /**
+ * @brief Callback for auto coloring button
+ * @param button
+ * @param user
+ */
+static void on_auto_color_clicked(gpointer button, gpointer user)
+{
+	GdsRenderGui *self;
+	(void)button;
+
+	self = RENDERER_GUI(user);
+	layer_selector_auto_color_layers(self->layer_selector, self->palette, 1.0);
+}
+
+/**
  * @brief Convert button callback
  * @param button
  * @param user
@@ -490,6 +504,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	GtkWidget *sort_up_button;
 	GtkWidget *sort_down_button;
 	GtkWidget *activity_bar_box;
+	GtkWidget *auto_color_button;
 
 	main_builder = gtk_builder_new_from_resource("/gui/main.glade");
 
@@ -540,8 +555,6 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	g_signal_connect(GTK_WIDGET(self->main_window), "delete-event",
 			 G_CALLBACK(on_window_close), self);
 
-	g_object_unref(main_builder);
-
 	/* Create and apply ActivityBar */
 	self->activity_status_bar = activity_bar_new();
 	gtk_container_add(GTK_CONTAINER(activity_bar_box), GTK_WIDGET(self->activity_status_bar));
@@ -549,6 +562,9 @@ static void gds_render_gui_init(GdsRenderGui *self)
 
 	/* Create color palette */
 	self->palette = color_palette_new_from_resource("/data/color-palette.txt");
+	auto_color_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "auto-color-button"));
+	g_signal_connect(auto_color_button, "clicked", G_CALLBACK(on_auto_color_clicked), self);
+
 
 	/* Set default conversion/rendering settings */
 	self->render_dialog_settings.scale = 1000;
@@ -556,6 +572,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	self->render_dialog_settings.tex_pdf_layers = FALSE;
 	self->render_dialog_settings.tex_standalone = FALSE;
 
+	g_object_unref(main_builder);
 
 	/* Reference all objects referenced by this object */
 	g_object_ref(self->activity_status_bar);
