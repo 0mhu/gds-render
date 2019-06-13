@@ -781,4 +781,14 @@ void layer_selector_force_sort(LayerSelector *selector, enum layer_selector_sort
 	gtk_list_box_set_sort_func(box, NULL, NULL, NULL);
 }
 
+void layer_selector_auto_color_layers(LayerSelector *layer_selector, ColorPalette *palette, double global_alpha)
+{
+	if (GDS_RENDER_IS_COLOR_PALETTE(palette) == FALSE || LAYER_IS_SELECTOR(layer_selector) == FALSE)
+		return;
+	if (global_alpha <= 0)
+		return;
+
+
+}
+
 /** @} */
