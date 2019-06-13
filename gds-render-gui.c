@@ -61,6 +61,7 @@ struct _GdsRenderGui {
 	GList *gds_libraries;
 	ActivityBar *activity_status_bar;
 	struct render_settings render_dialog_settings;
+	ColorPalette *palette;
 };
 
 G_DEFINE_TYPE(GdsRenderGui, gds_render_gui, G_TYPE_OBJECT)
@@ -445,6 +446,7 @@ static void gds_render_gui_dispose(GObject *gobject)
 	g_clear_object(&self->cell_tree_store);
 	g_clear_object(&self->cell_search_entry);
 	g_clear_object(&self->activity_status_bar);
+	g_clear_object(&self->palette);
 
 	if (self->main_window) {
 		g_signal_handlers_destroy(self->main_window);
@@ -545,6 +547,9 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	gtk_container_add(GTK_CONTAINER(activity_bar_box), GTK_WIDGET(self->activity_status_bar));
 	gtk_widget_show(GTK_WIDGET(self->activity_status_bar));
 
+	/* Create color palette */
+	self->palette = color_palette_new_from_resource("/data/color-palette.txt");
+
 	/* Set default conversion/rendering settings */
 	self->render_dialog_settings.scale = 1000;
 	self->render_dialog_settings.renderer = RENDERER_LATEX_TIKZ;
@@ -560,6 +565,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	g_object_ref(self->layer_selector);
 	g_object_ref(self->cell_tree_store);
 	g_object_ref(self->cell_search_entry);
+	g_object_ref(self->palette);
 }
 
 GdsRenderGui *gds_render_gui_new()
