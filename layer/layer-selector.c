@@ -783,12 +783,42 @@ void layer_selector_force_sort(LayerSelector *selector, enum layer_selector_sort
 
 void layer_selector_auto_color_layers(LayerSelector *layer_selector, ColorPalette *palette, double global_alpha)
 {
+	GList *le_list;
+	GList *le_list_ptr;
+	LayerElement *le;
+	unsigned int color_index = 0;
+	unsigned int color_count;
+	GdkRGBA color;
+
 	if (GDS_RENDER_IS_COLOR_PALETTE(palette) == FALSE || LAYER_IS_SELECTOR(layer_selector) == FALSE)
 		return;
 	if (global_alpha <= 0)
 		return;
+	if (GTK_IS_LIST_BOX(layer_selector->list_box) == FALSE)
+		return;
 
+	le_list = gtk_container_get_children(GTK_CONTAINER(layer_selector->list_box));
 
+	/* iterate over layer elements and fill colors */
+	color_index = 0;
+	color_count = color_palette_get_color_count(palette);
+	if (color_count == 0)
+		goto ret_free_le_list;
+
+	for (le_list_ptr = le_list; le_list_ptr != NULL; le_list_ptr = le_list_ptr->next) {
+		le = LAYER_ELEMENT(le_list_ptr->data);
+		if (le) {
+			color_palette_get_color(palette, &color, color_index++);
+			color.alpha *= global_alpha;
+			layer_element_set_color(le, &color);
+
+			if (color_index >= color_count)
+				color_index = 0;
+		}
+	}
+
+ret_free_le_list:
+	g_list_free(le_list);
 }
 
 /** @} */
