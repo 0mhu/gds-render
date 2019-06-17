@@ -28,8 +28,8 @@
  * @{
  */
 
-#include <gds-render/tree-renderer/tree-store.h>
-#include <gds-render/tree-renderer/lib-cell-renderer.h>
+#include <gds-render/cell-selector/tree-store.h>
+#include <gds-render/cell-selector/lib-cell-renderer.h>
 #include <gds-render/gds-utils/gds-types.h>
 
 /**

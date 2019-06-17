@@ -15,7 +15,7 @@ link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
 
 aux_source_directory("widgets" LAYER_SOURCES)
-aux_source_directory("tree-renderer" RENDERER_SOURCES)
+aux_source_directory("cell-selector" CELL_SELECTOR_SOURCES)
 aux_source_directory("gds-utils" GDS_SOURCES)
 aux_source_directory("latex-renderer" LATEX_SOURCES)
 aux_source_directory("cairo-renderer" CAIRO_SOURCES)
@@ -26,7 +26,7 @@ set(SOURCE "main.c" "command-line.c" "gds-render-gui.c" "external-renderer.c")
 set(SOURCE
   ${SOURCE}
   ${LAYER_SOURCES}
-  ${RENDERER_SOURCES}
+  ${CELL_SELECTOR_SOURCES}
   ${GDS_SOURCES}
   ${LATEX_SOURCES}
   ${CAIRO_SOURCES}
