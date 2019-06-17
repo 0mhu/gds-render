@@ -29,7 +29,7 @@
 
 #include <gds-render/gds-render-gui.h>
 #include <gds-render/command-line.h>
-#include <gds-render/external-renderer.h>
+#include <gds-render/output-renderers/external-renderer.h>
 #include <gds-render/version.h>
 
 /**

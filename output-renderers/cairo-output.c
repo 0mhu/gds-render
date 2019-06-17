@@ -32,7 +32,7 @@
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
 
-#include <gds-render/cairo-renderer/cairo-output.h>
+#include <gds-render/output-renderers/cairo-output.h>
 #include <sys/wait.h>
 #include <unistd.h>
 

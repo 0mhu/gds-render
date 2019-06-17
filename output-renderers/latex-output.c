@@ -25,7 +25,7 @@
 
 #include <math.h>
 
-#include <gds-render/latex-renderer/latex-output.h>
+#include <gds-render/output-renderers/latex-output.h>
 
 /**
  * @addtogroup LaTeX-Renderer

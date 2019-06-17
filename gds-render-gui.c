@@ -37,8 +37,8 @@
 #include <gds-render/widgets/activity-bar.h>
 #include <gds-render/cell-selector/tree-store.h>
 #include <gds-render/cell-selector/lib-cell-renderer.h>
-#include <gds-render/latex-renderer/latex-output.h>
-#include <gds-render/cairo-renderer/cairo-output.h>
+#include <gds-render/output-renderers/latex-output.h>
+#include <gds-render/output-renderers/cairo-output.h>
 #include <gds-render/widgets/conv-settings-dialog.h>
 #include <gds-render/geometric/cell-geometrics.h>
 #include <gds-render/version.h>
