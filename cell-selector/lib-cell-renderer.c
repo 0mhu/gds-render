@@ -34,10 +34,10 @@
 G_DEFINE_TYPE(LibCellRenderer, lib_cell_renderer, GTK_TYPE_CELL_RENDERER_TEXT)
 
 enum {
-	PROP_LIB = 1,
-	PROP_CELL,
-	PROP_ERROR_LEVEL,
-	PROP_COUNT
+	PROP_LIB = 1, /**< @brief Library to display the name of */
+	PROP_CELL, /**< @brief Cell to display the name of */
+	PROP_ERROR_LEVEL, /**< @brief Error level of cell/library for coloring */
+	PROP_COUNT /**< @brief Sentinel */
 };
 
 void lib_cell_renderer_init(LibCellRenderer *self)
