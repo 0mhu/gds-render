@@ -24,7 +24,7 @@
  */
 
 /**
- * @addtogroup external-renderer
+ * @addtogroup ExternalRenderer
  * @{
  */
 
@@ -33,10 +33,25 @@
 
 #include <gds-render/output-renderers/external-renderer.h>
 
-int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_info_list,
-				  char *output_file, char *so_path)
+struct _ExternalRenderer {
+	GdsOutputRenderer parent;
+	const char *shared_object_path;
+};
+
+G_DEFINE_TYPE(ExternalRenderer, external_renderer, GDS_RENDER_TYPE_OUTPUT_RENDERER)
+
+/**
+ * @brief Execute render function in shared object to render the supplied cell
+ * @param toplevel_cell Cell to render
+ * @param layer_info_list Layer information (Color etc.)
+ * @param output_file Destination file
+ * @param so_path Path to shared object
+ * @return 0 if successful
+ */
+static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_info_list,
+				   const char *output_file, double scale,  const char *so_path)
 {
-	int (*so_render_func)(struct gds_cell *, GList *, char *) = NULL;
+	int (*so_render_func)(struct gds_cell *, GList *, const char *, double) = NULL;
 	void *so_handle = NULL;
 	char *error_msg;
 	int ret = 0;
@@ -48,25 +63,53 @@ int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_i
 	/* Load shared object */
 	so_handle = dlopen(so_path, RTLD_LAZY);
 	if (!so_handle) {
-		printf("Could not load external library '%s'\nDetailed error is:\n%s\n", so_path, dlerror());
+		g_error("Could not load external library '%s'\nDetailed error is:\n%s", so_path, dlerror());
 		return -2000;
 	}
 
 	/* Load symbol from library */
-	so_render_func = (int (*)(struct gds_cell *, GList *, char *))dlsym(so_handle, EXTERNAL_LIBRARY_FUNCTION);
+	so_render_func = (int (*)(struct gds_cell *, GList *, const char *, double))dlsym(so_handle, EXTERNAL_LIBRARY_FUNCTION);
 	error_msg = dlerror();
 	if (error_msg != NULL) {
-		printf("Rendering function not found in library:\n%s\n", error_msg);
+		g_error("Rendering function not found in library:\n%s\n", error_msg);
 		goto ret_close_so_handle;
 	}
 
 	/* Execute */
 	if (so_render_func)
-		so_render_func(toplevel_cell, layer_info_list, output_file);
+		ret = so_render_func(toplevel_cell, layer_info_list, output_file, scale);
 
 ret_close_so_handle:
 	dlclose(so_handle);
 	return ret;
 }
+
+static int external_renderer_render_output(GdsOutputRenderer *renderer,
+					    struct gds_cell *cell,
+					    GList *layer_infos,
+					    const char *output_file,
+					    double scale)
+{
+	ExternalRenderer *ext_renderer = GDS_RENDER_EXTERNAL_RENDERER(renderer);
+
+	return external_renderer_render_cell(cell, layer_infos, output_file, scale, ext_renderer->shared_object_path);
+}
+
+static void external_renderer_class_init(ExternalRendererClass *klass)
+{
+	GdsOutputRendererClass *inherited_parent_class;
+
+	inherited_parent_class = GDS_RENDER_OUTPUT_RENDERER_CLASS(klass);
+
+	/* Override virtual function */
+	inherited_parent_class->render_output = external_renderer_render_output;
+}
+
+static void external_renderer_init(ExternalRenderer *self)
+{
+	self->shared_object_path = NULL;
+}
+
+
 
 /** @} */

@@ -24,35 +24,46 @@
  */
 
 /**
- * @addtogroup external-renderer
+ * @addtogroup ExternalRenderer
  * @{
  */
 
 #ifndef _EXTERNAL_RENDERER_H_
 #define _EXTERNAL_RENDERER_H_
 
+#include <gds-render/output-renderers/gds-output-renderer.h>
 #include <gds-render/gds-utils/gds-types.h>
-#include <glib.h>
+
+G_BEGIN_DECLS
+
+#define GDS_RENDER_TYPE_EXTERNAL_RENDERER (external_renderer_get_type())
+
+G_DECLARE_FINAL_TYPE(ExternalRenderer, external_renderer, GDS_RENDER, EXTERNAL_RENDERER, GdsOutputRenderer)
 
 /**
  * @brief function name expected to be found in external library.
  * 
  * The function has to be defined as follows:
  * @code
- * int function_name(gds_cell *toplevel, GList *layer_info_list, char *output_file_name)
+ * int EXTERNAL_LIBRARY_FUNCTION(gds_cell *toplevel, GList *layer_info_list, const char *output_file_name, double scale)
  * @endcode
  */
 #define EXTERNAL_LIBRARY_FUNCTION "render_cell_to_file"
 
 /**
- * @brief external_renderer_render_cell
- * @param toplevel_cell The toplevel cell to render
- * @param layer_info_list The layer information. Contains #layer_info elements
- * @param output_file Output file
- * @param so_path Path to the shared object file containing #EXTERNAL_LIBRARY_FUNCTION
- * @return 0 on success
+ * @brief Create new ExternalRenderer object
+ * @return New object
  */
-int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_info_list, char *output_file, char *so_path);
+ExternalRenderer *external_renderer_new();
+
+/**
+ * @brief Create new ExternalRenderer object with specified shared object path
+ * @param so_path Path to shared object, the rendering function is searched in
+ * @return New object.
+ */
+ExternalRenderer *external_renderer_new_with_so(const char *so_path);
+
+G_END_DECLS
 
 #endif /* _EXTERNAL_RENDERER_H_ */
 
