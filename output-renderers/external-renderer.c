@@ -139,6 +139,16 @@ static void external_renderer_set_property(GObject *obj, guint property_id, cons
 	}
 }
 
+static void external_renderer_dispose(ExternalRenderer *self)
+{
+	if (self->shared_object_path) {
+		g_free(self->shared_object_path);
+		self->shared_object_path = NULL;
+	}
+
+	G_OBJECT_CLASS(external_renderer_parent_class)->dispose(G_OBJECT(self));
+}
+
 static GParamSpec *external_renderer_properties[N_PROPERTIES] = {NULL};
 
 static void external_renderer_class_init(ExternalRendererClass *klass)
@@ -152,9 +162,10 @@ static void external_renderer_class_init(ExternalRendererClass *klass)
 	/* Override virtual function */
 	inherited_parent_class->render_output = external_renderer_render_output;
 
-	/* Setup property callbacks */
+	/* Setup Gobject callbacks */
 	oclass->set_property = external_renderer_set_property;
 	oclass->get_property = external_renderer_get_property;
+	oclass->dispose = external_renderer_dispose;
 
 	/* Setup properties */
 	external_renderer_properties[PROP_SO_PATH] =
