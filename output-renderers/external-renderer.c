@@ -35,7 +35,12 @@
 
 struct _ExternalRenderer {
 	GdsOutputRenderer parent;
-	const char *shared_object_path;
+	char *shared_object_path;
+};
+
+enum {
+	PROP_SO_PATH = 1, /**< @brief Shared object path property */
+	N_PROPERTIES /**< @brief Used to get property count */
 };
 
 G_DEFINE_TYPE(ExternalRenderer, external_renderer, GDS_RENDER_TYPE_OUTPUT_RENDERER)
@@ -56,8 +61,13 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	char *error_msg;
 	int ret = 0;
 
+	if (!so_path) {
+		g_error("Path to shared object not set!");
+		return -3000;
+	}
+
 	/* Check parameter sanity */
-	if (!output_file || !so_path || !toplevel_cell || !layer_info_list)
+	if (!output_file || !toplevel_cell || !layer_info_list)
 		return -3000;
 
 	/* Load shared object */
@@ -95,14 +105,65 @@ static int external_renderer_render_output(GdsOutputRenderer *renderer,
 	return external_renderer_render_cell(cell, layer_infos, output_file, scale, ext_renderer->shared_object_path);
 }
 
+static void external_renderer_get_property(GObject *obj, guint property_id, GValue *value, GParamSpec *pspec)
+{
+	ExternalRenderer *self;
+
+	self = GDS_RENDER_EXTERNAL_RENDERER(obj);
+
+	switch (property_id) {
+	case PROP_SO_PATH:
+		g_value_set_string(value, self->shared_object_path);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (obj, property_id, pspec);
+		break;
+	}
+}
+
+static void external_renderer_set_property(GObject *obj, guint property_id, const GValue *value, GParamSpec *pspec)
+{
+	ExternalRenderer *self;
+
+	self = GDS_RENDER_EXTERNAL_RENDERER(obj);
+
+	switch (property_id) {
+	case PROP_SO_PATH:
+		if (self->shared_object_path)
+			g_free(self->shared_object_path);
+		self->shared_object_path = g_value_dup_string(value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
+		break;
+	}
+}
+
+static GParamSpec *external_renderer_properties[N_PROPERTIES] = {NULL};
+
 static void external_renderer_class_init(ExternalRendererClass *klass)
 {
 	GdsOutputRendererClass *inherited_parent_class;
+	GObjectClass *oclass;
 
 	inherited_parent_class = GDS_RENDER_OUTPUT_RENDERER_CLASS(klass);
+	oclass = G_OBJECT_CLASS(oclass);
 
 	/* Override virtual function */
 	inherited_parent_class->render_output = external_renderer_render_output;
+
+	/* Setup property callbacks */
+	oclass->set_property = external_renderer_set_property;
+	oclass->get_property = external_renderer_get_property;
+
+	/* Setup properties */
+	external_renderer_properties[PROP_SO_PATH] =
+			g_param_spec_string("shared-object-path",
+					    "Shared object file path",
+					    "Path to the shared object to search rendering function in.",
+					    NULL,
+					    G_PARAM_READWRITE);
+	g_object_class_install_properties(oclass, N_PROPERTIES, external_renderer_properties);
 }
 
 static void external_renderer_init(ExternalRenderer *self)
@@ -110,6 +171,9 @@ static void external_renderer_init(ExternalRenderer *self)
 	self->shared_object_path = NULL;
 }
 
-
+ExternalRenderer *external_renderer_new()
+{
+	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, NULL);
+}
 
 /** @} */
