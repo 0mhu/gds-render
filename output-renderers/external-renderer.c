@@ -176,4 +176,9 @@ ExternalRenderer *external_renderer_new()
 	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, NULL);
 }
 
+ExternalRenderer *external_renderer_new_with_so(const char *so_path)
+{
+	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, "shared-object-path", so_path, NULL);
+}
+
 /** @} */
