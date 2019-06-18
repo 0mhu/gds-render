@@ -23,34 +23,36 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-#ifndef __LATEX_OUTPUT_H__
-#define __LATEX_OUTPUT_H__
-
 /**
  * @addtogroup LaTeX-Renderer
  * @{
  */
 
-#include <glib.h>
-#include <stdio.h>
+#ifndef _LATEX_OUTPUT_H_
+#define _LATEX_OUTPUT_H_
 
-#include "gds-render/layer/layer-info.h"
+#include <gds-render/output-renderers/gds-output-renderer.h>
 #include <gds-render/gds-utils/gds-types.h>
 
-#define LATEX_LINE_BUFFER_KB (10) /**< @brief Buffer for LaTeX Code line in KiB */
+G_BEGIN_DECLS
+
+G_DECLARE_FINAL_TYPE(LatexRenderer, latex_renderer, GDS_RENDER, LATEX_RENDERER, GdsOutputRenderer)
+
+#define GDS_RENDERER_TYPE_LATEX_RENDERER (latex_renderer_get_type())
 
 /**
- * @brief Render \p cell to LateX/TikZ code
- * @param cell Cell to render
- * @param layer_infos Layer information
- * @param tex_file Already opened file to write data in
- * @param scale Scale image down by this value
- * @param create_pdf_layers Optional content groups used
- * @param standalone_document document can be compiled standalone
+ * @brief Buffer for LaTeX Code line in KiB
  */
-void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale,
-			       gboolean create_pdf_layers, gboolean standalone_document);
+#define LATEX_LINE_BUFFER_KB (10)
+
+/**
+ * @brief Create new LatexRenderer object
+ * @return New object
+ */
+LatexRenderer *latex_renderer_new();
+
+G_END_DECLS
+
+#endif /* _LATEX_OUTPUT_H_ */
 
 /** @} */
-
-#endif /* __LATEX_OUTPUT_H__ */
