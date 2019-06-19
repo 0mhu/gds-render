@@ -3,19 +3,25 @@
 @section cmd Command Line Interface
 To use the application on the command line check 'gds-render `--`help'.
 
+Usage:
+  gds-render [OPTION…]  FILE - Convert GDS file <FILE> to graphic
+
+Help Options:
+  -h, '--'help                          Show help options
+  '--'help-all                          Show all help options
+  '--'help-gtk                          Show GTK+ Options
+
 Application Options:
--  -t, `--`tikz                         Output TikZ code
--  -p, `--`pdf                          Output PDF document
--  -s, `--`scale=SCALE                Divide output coordinates by SCALE
--  -o, `--`tex-output=PATH              Optional path for TeX file
--  -O, `--`pdf-output=PATH              Optional path for PDF file
--  -m, `--`mapping=PATH                 Path for Layer Mapping File
--  -c, `--`cell=NAME                    Cell to render
--  -a, `--`tex-standalone               Create standalone PDF
--  -l, `--`tex-layers                   Create PDF Layers (OCG)
--  -P, `--`custom-render-lib=PATH       Path to a custom shared object, that implements the render_cell_to_file function
--  -e, `--`external-lib-output=PATH     Output path for external render library
--  `--`display=DISPLAY                  X display to use
+  -v, '--'version                       Print version
+  -r, '--'renderer=pdf|svg|tikz|ext     Renderer to use
+  -s, '--'scale=<SCALE>                 Divide output coordinates by <SCALE>
+  -o, '--'output-file=PATH              Output file path
+  -m, '--'mapping=PATH                  Path for Layer Mapping File
+  -c, '--'cell=NAME                     Cell to render
+  -a, '--'tex-standalone                Create standalone PDF
+  -l, '--'tex-layers                    Create PDF Layers (OCG)
+  -P, '--'custom-render-lib=PATH        Path to a custom shared object, that implements the render_cell_to_file function
+  '--'display=DISPLAY                   X display to use
 
 
 @section gui Graphical User Interface
@@ -27,7 +33,7 @@ It is possible to export the layer configurations so they can be used later on. 
 @image html gui.png
 @image latex gui.png
 
-The cell selector on the left shows the GDS Libraries and Cells. The cells are marked green if all references inside the cell could be found. If not all references could be found, the cell is marked orange. This doens't show if child cells have missing childs. Only one level of the hierarchy is checked in order to make it easier to spot an errorneous cell. Cells with missing child cells are still renderable but -- obviously -- faulty. If a cell or any sub-cell contains a reference loop, the cell is marked red. In this case it can't be selected for rendering.
+The cell selector on the left shows the GDS Libraries and Cells. The cells are marked green if all references inside the cell could be found. If not all references could be found, the cell is marked orange. This doens't show if child cells have missing childs. Only one level of the hierarchy is checked in order to make it easier to spot an errorneous cell. Cells with missing child cells are still renderable but '--' obviously '--' faulty. If a cell or any sub-cell contains a reference loop, the cell is marked red. In this case it can't be selected for rendering.
 
 In the above image the cell is green; so everything is okay. 
 
