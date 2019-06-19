@@ -26,23 +26,36 @@
 
 #include <gds-render/gds-utils/gds-types.h>
 #include <gds-render/layer/layer-info.h>
+#include <gds-render/output-renderers/gds-output-renderer.h>
+#include <glib-object.h>
 
-/** @addtogroup Cairo-Renderer
+G_BEGIN_DECLS
+
+/** @addtogroup CairoRenderer
  *  @{
  */
+
+G_DECLARE_FINAL_TYPE(CairoRenderer, cairo_renderer, GDS_RENDER, CAIRO_RENDERER, GdsOutputRenderer)
+
+#define GDS_RENDER_TYPE_CAIRO_RENDERER (cairo_renderer_get_type())
 
 #define MAX_LAYERS (300) /**< \brief Maximum layer count the output renderer can process. Typically GDS only specifies up to 255 layers.*/
 
 /**
- * @brief Render \p cell to a PDF file specified by \p pdf_file
- * @param cell Toplevel cell to @ref Cairo-Renderer
- * @param layer_infos List of layer information. Specifies color and layer stacking
- * @param pdf_file PDF output file. Set to NULL if no PDF file has to be generated
- * @param svg_file SVG output file. Set to NULL if no SVG file has to be generated
- * @param scale Scale the output image down by \p scale
+ * @brief Create new CairoRenderer for SVG output
+ * @return New object
  */
-void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, char *pdf_file, char *svg_file, double scale);
+CairoRenderer *cairo_renderer_new_svg();
+
+
+/**
+ * @brief Create new CairoRenderer for PDF output
+ * @return New object
+ */
+CairoRenderer *cairo_renderer_new_pdf();
 
 /** @} */
+
+G_END_DECLS
 
 #endif /* _CAIRO_OUTPUT_H_ */

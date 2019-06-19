@@ -22,7 +22,7 @@
   * @author Mario Hüttel <mario.huettel@gmx.net>
   */
 
-/** @addtogroup Cairo-Renderer
+/** @addtogroup CairoRenderer
  *  @{
  */
 
@@ -35,6 +35,13 @@
 #include <gds-render/output-renderers/cairo-renderer.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+struct _CairoRenderer {
+	GdsOutputRenderer parent;
+	gboolean svg; /**< @brief TRUE: SVG output, FALSE: PDF output */
+};
+
+G_DEFINE_TYPE(CairoRenderer, cairo_renderer, GDS_RENDER_TYPE_OUTPUT_RENDERER)
 
 /**
  * @brief The cairo_layer struct
@@ -181,7 +188,17 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 
 }
 
-void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, char *pdf_file, char *svg_file, double scale)
+/**
+ * @brief Render \p cell to a PDF file specified by \p pdf_file
+ * @param cell Toplevel cell to @ref Cairo-Renderer
+ * @param layer_infos List of layer information. Specifies color and layer stacking
+ * @param pdf_file PDF output file. Set to NULL if no PDF file has to be generated
+ * @param svg_file SVG output file. Set to NULL if no SVG file has to be generated
+ * @param scale Scale the output image down by \p scale
+ * @return Error
+ */
+static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, const char *pdf_file,
+						     const char *svg_file, double scale)
 {
 	cairo_surface_t *pdf_surface = NULL, *svg_surface = NULL;
 	cairo_t *pdf_cr = NULL, *svg_cr = NULL;
@@ -196,7 +213,7 @@ void cairo_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos,
 
 	if (pdf_file == NULL && svg_file == NULL) {
 		/* No output specified */
-		return;
+		return -1;
 	}
 
 	/* Fork to a new child process. This ensures the memory leaks (see issue #16) in Cairo don't
@@ -332,10 +349,64 @@ ret_clear_layers:
 		exit(0);
 
 	/* Fork didn't work. Just return here */
-	return;
+	return 0;
 ret_parent:
 	waitpid(process_id, NULL, 0);
-	return;
+	return 0;
+}
+
+static void cairo_renderer_init(CairoRenderer *self)
+{
+	/* PDF default */
+	self->svg = FALSE;
+}
+
+static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
+					struct gds_cell *cell,
+					GList *layer_infos,
+					const char *output_file,
+					double scale)
+{
+	CairoRenderer *c_renderer = GDS_RENDER_CAIRO_RENDERER(renderer);
+	const char *pdf_file = NULL;
+	const char *svg_file = NULL;
+
+	if (!c_renderer)
+		return -2000;
+
+	if (c_renderer->svg == TRUE)
+		svg_file = output_file;
+	else
+		pdf_file = output_file;
+
+	return cairo_renderer_render_cell_to_vector_file(cell, layer_infos, pdf_file, svg_file, scale);
+}
+
+static void cairo_renderer_class_init(CairoRendererClass *klass)
+{
+	GdsOutputRendererClass *renderer_class = GDS_RENDER_OUTPUT_RENDERER_CLASS(klass);
+
+	renderer_class->render_output = cairo_renderer_render_output;
+}
+
+CairoRenderer *cairo_renderer_new_pdf()
+{
+	CairoRenderer *renderer;
+
+	renderer = GDS_RENDER_CAIRO_RENDERER(g_object_new(GDS_RENDER_TYPE_CAIRO_RENDERER, NULL));
+	renderer->svg = FALSE;
+
+	return renderer;
+}
+
+CairoRenderer *cairo_renderer_new_svg()
+{
+	CairoRenderer *renderer;
+
+	renderer = GDS_RENDER_CAIRO_RENDERER(g_object_new(GDS_RENDER_TYPE_CAIRO_RENDERER, NULL));
+	renderer->svg = TRUE;
+
+	return renderer;
 }
 
 /** @} */
