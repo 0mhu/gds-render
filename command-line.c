@@ -34,8 +34,8 @@
 #include <gds-render/gds-utils/gds-parser.h>
 #include <gds-render/layer/mapping-parser.h>
 #include <gds-render/layer/layer-info.h>
-#include <gds-render/output-renderers/cairo-output.h>
-#include <gds-render/output-renderers/latex-output.h>
+#include <gds-render/output-renderers/cairo-renderer.h>
+#include <gds-render/output-renderers/latex-renderer.h>
 #include <gds-render/output-renderers/external-renderer.h>
 #include <gds-render/gds-utils/gds-tree-checker.h>
 
@@ -55,12 +55,10 @@ static void delete_layer_info_with_name(struct layer_info *info)
 	}
 }
 
-void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
-			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers,
-			      gboolean pdf_standalone, gboolean svg, char *svg_name, char *so_name, char *so_out_file)
+void command_line_convert_gds(const char *gds_name, const char *cell_name, const char *output_file_name,  const char *layer_file, const char *so_path,
+			       enum command_line_renderer renderer, enum cmd_options options, double scale)
 {
 	GList *libs = NULL;
-	FILE *tex_file;
 	int res;
 	GFile *file;
 	int i;
@@ -75,10 +73,11 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	struct layer_info *linfo_temp;
 	struct gds_library *first_lib;
 	struct gds_cell *toplevel_cell = NULL, *temp_cell;
-
+	GdsOutputRenderer *output_renderer;
+	gboolean tex_layers = FALSE, tex_standalone = FALSE;
 
 	/* Check if parameters are valid */
-	if (!gds_name || (!pdf_name && pdf)  || (!tex_name && tex) || !layer_file || !cell_name) {
+	if (!gds_name || !cell_name || !output_file_name || !layer_file) {
 		printf("Probably missing argument. Check --help option\n");
 		return;
 	}
@@ -165,30 +164,43 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	 * Deal with it.
 	 */
 
-	/* Render outputs */
-	if (pdf == TRUE || svg == TRUE) {
-		cairo_render_cell_to_vector_file(toplevel_cell, layer_info_list, (pdf == TRUE ? pdf_name : NULL),
-						 (svg == TRUE ? svg_name : NULL), scale);
+
+	/* Render */
+
+	if (options & CMD_OPT_LATEX_LAYERS)
+		tex_layers = TRUE;
+	if (options & CMD_OPT_LATEX_STANDALONE)
+		tex_standalone = TRUE;
+
+	switch (renderer) {
+	case CMD_CAIRO_SVG:
+		output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_svg());
+		break;
+	case CMD_LATEX:
+		output_renderer = GDS_RENDER_OUTPUT_RENDERER(latex_renderer_new_with_options(tex_layers, tex_standalone));
+		break;
+	case CMD_CAIRO_PDF:
+		output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_pdf());
+		break;
+	case CMD_EXTERNAL:
+		output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(so_path));
+		break;
+	case CMD_NONE:
+		/* Do nothing */
+		output_renderer = NULL;
+		break;
+	default:
+		output_renderer = NULL;
+		fprintf(stderr, "Invalid renderer supplied");
+		break;
+
 	}
 
-	if (tex == TRUE) {
-		tex_file = fopen(tex_name, "w");
-		if (!tex_file)
-			goto ret_clear_layer_list;
-		latex_render_cell_to_code(toplevel_cell, layer_info_list, tex_file, scale, pdf_layers, pdf_standalone);
-		fclose(tex_file);
+	if (output_renderer) {
+		gds_output_renderer_render_output(output_renderer, toplevel_cell, layer_info_list, output_file_name, scale);
+		g_object_unref(output_renderer);
 	}
-
-	if (so_name && so_out_file) {
-		if (strlen(so_name) == 0 || strlen(so_out_file) == 0)
-			goto ret_clear_layer_list;
-
-		/* Render output using external renderer */
-		printf("Invoking external renderer!\n");
-		external_renderer_render_cell(toplevel_cell, layer_info_list, so_out_file, so_name);
-		printf("External renderer finished!\n");
-	}
-
+	/* Render end */
 ret_clear_layer_list:
 	g_list_free_full(layer_info_list, (GDestroyNotify)delete_layer_info_with_name);
 

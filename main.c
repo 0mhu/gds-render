@@ -241,29 +241,25 @@ int main(int argc, char **argv)
 	GOptionContext *context;
 	gchar *gds_name;
 	gchar *basename;
-	gchar *pdfname = NULL, *texname = NULL, *mappingname = NULL, *cellname = NULL, *svgname = NULL;
-	gboolean tikz = FALSE, pdf = FALSE, pdf_layers = FALSE, pdf_standalone = FALSE, svg = FALSE;
-	gboolean version = FALSE;
+	gchar *output_path = NULL, *mappingname = NULL, *cellname = NULL;
+	gchar *renderer_arg = NULL;
+	gboolean version = FALSE, pdf_standalone = FALSE, pdf_layers = FALSE;
 	gchar *custom_library_path = NULL;
-	gchar *custom_library_file_name = NULL;
 	int scale = 1000;
 	int app_status = 0;
+	enum command_line_renderer renderer = CMD_NONE;
+	enum cmd_options opt = CMD_OPT_NONE;
 
 	GOptionEntry entries[] = {
 		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
-		{"tikz", 't', 0, G_OPTION_ARG_NONE, &tikz, "Output TikZ code", NULL },
-		{"pdf", 'p', 0, G_OPTION_ARG_NONE, &pdf, "Output PDF document", NULL },
-		//{"svg", 'S', 0, G_OPTION_ARG_NONE, &svg, "Output SVG image", NULL },
+		{"renderer", 'r', 0, G_OPTION_ARG_STRING, &renderer_arg, "Renderer to use", "pdf|svg|tikz|ext"},
 		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
-		{"tex-output", 'o', 0, G_OPTION_ARG_FILENAME, &texname, "Optional path for TeX file", "PATH" },
-		{"pdf-output", 'O', 0, G_OPTION_ARG_FILENAME, &pdfname, "Optional path for PDF file", "PATH" },
-		//{"svg-output", 0, 0, G_OPTION_ARG_FILENAME, &svgname, "Optional path for PDF file", "PATH"},
+		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME, &output_path, "Output file path", "PATH" },
 		{"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
 		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
 		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
 		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
 		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
-		{"external-lib-output", 'e', 0, G_OPTION_ARG_FILENAME, &custom_library_file_name, "Output path for external render library", "PATH"},
 		{NULL}
 	};
 
@@ -287,9 +283,6 @@ int main(int argc, char **argv)
 			scale = 1;
 		}
 
-		/* No format selected */
-		if (!(tikz || pdf || svg))
-			tikz = TRUE;
 
 		/* Get gds name */
 		gds_name = argv[1];
@@ -302,29 +295,50 @@ int main(int argc, char **argv)
 		/* Check if PDF/TeX names are supplied. if not generate */
 		basename = g_path_get_basename(gds_name);
 
-		if (!texname)
-			texname = g_strdup_printf("./%s.tex", basename);
+		if (!strcmp(renderer_arg, "pdf")) {
+			renderer = CMD_CAIRO_PDF;
+			if (!output_path)
+				output_path = g_strdup_printf("./%s.pdf", basename);
+		}
+		else if (!strcmp(renderer_arg, "svg")) {
+			renderer = CMD_NONE; // To buggy atm CMD_CAIRO_SVG;
+			if (!output_path)
+				output_path = g_strdup_printf("./%s.svg", basename);
+		} else if (!strcmp(renderer_arg, "tikz")) {
+			renderer = CMD_LATEX;
+			if (pdf_layers)
+				opt |= CMD_OPT_LATEX_LAYERS;
+			if (pdf_standalone)
+				opt |= CMD_OPT_LATEX_STANDALONE;
+			if (!output_path)
+				output_path = g_strdup_printf("./%s.tex", basename);
+		} else if (!strcmp(renderer_arg, "ext")) {
+			renderer = CMD_EXTERNAL;
+		} else {
+			fprintf(stderr, "No valid renderer specified\n");
+		}
 
-		if (!pdfname)
-			pdfname = g_strdup_printf("./%s.pdf", basename);
+		if (basename)
+			g_free(basename);
 
-		if (!svgname)
-			svgname = g_strdup_printf("./%s.svg", basename);
+		if (!output_path || strlen(output_path) == 0) {
+			app_status = -2;
+			goto ret_free_renderer;
+		}
 
-		command_line_convert_gds(gds_name, pdfname, texname, pdf, tikz,
-					 mappingname, cellname, (double)scale,
-					 pdf_layers, pdf_standalone, svg, svgname,
-					 custom_library_path, custom_library_file_name);
+		command_line_convert_gds(gds_name, cellname, output_path, mappingname, custom_library_path, renderer, opt, scale);
 		/* Clean up */
-		g_free(pdfname);
-		g_free(texname);
-		g_free(svgname);
-		g_free(basename);
+		app_status = 0;
+
+ret_free_renderer:
+		if (output_path)
+			g_free(output_path);
+		if (renderer_arg)
+			g_free(renderer_arg);
 		if (mappingname)
 			g_free(mappingname);
 		if (cellname)
 			g_free(cellname);
-		app_status = 0;
 	} else {
 		app_status = start_gui(argc, argv);
 	}

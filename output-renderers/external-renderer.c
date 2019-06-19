@@ -86,8 +86,11 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	}
 
 	/* Execute */
-	if (so_render_func)
+	if (so_render_func) {
+		g_message("Calling external renderer.");
 		ret = so_render_func(toplevel_cell, layer_info_list, output_file, scale);
+		g_message("External renderer finished.");
+	}
 
 ret_close_so_handle:
 	dlclose(so_handle);
@@ -139,8 +142,10 @@ static void external_renderer_set_property(GObject *obj, guint property_id, cons
 	}
 }
 
-static void external_renderer_dispose(ExternalRenderer *self)
+static void external_renderer_dispose(GObject *self_obj)
 {
+	ExternalRenderer *self = GDS_RENDER_EXTERNAL_RENDERER(self_obj);
+
 	if (self->shared_object_path) {
 		g_free(self->shared_object_path);
 		self->shared_object_path = NULL;
@@ -157,7 +162,7 @@ static void external_renderer_class_init(ExternalRendererClass *klass)
 	GObjectClass *oclass;
 
 	inherited_parent_class = GDS_RENDER_OUTPUT_RENDERER_CLASS(klass);
-	oclass = G_OBJECT_CLASS(oclass);
+	oclass = G_OBJECT_CLASS(klass);
 
 	/* Override virtual function */
 	inherited_parent_class->render_output = external_renderer_render_output;
