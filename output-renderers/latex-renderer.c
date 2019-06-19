@@ -25,7 +25,7 @@
 
 #include <math.h>
 #include <stdio.h>
-#include <gds-render/output-renderers/latex-output.h>
+#include <gds-render/output-renderers/latex-renderer.h>
 #include <gdk/gdk.h>
 #include <gds-render/layer/layer-info.h>
 /**
@@ -408,6 +408,19 @@ static void latex_renderer_class_init(LatexRendererClass *klass)
 					     G_PARAM_READWRITE);
 
 	g_object_class_install_properties(oclass, N_PROPERTIES, latex_renderer_properties);
+}
+
+LatexRenderer *latex_renderer_new()
+{
+	return GDS_RENDER_LATEX_RENDERER(g_object_new(GDS_RENDER_TYPE_LATEX_RENDERER, NULL));
+}
+
+LatexRenderer *latex_renderer_new_with_options(gboolean pdf_layers, gboolean standalone)
+{
+	GObject *obj;
+
+	obj = g_object_new(GDS_RENDER_TYPE_LATEX_RENDERER, "standalone", standalone, "pdf-layers", pdf_layers, NULL);
+	return GDS_RENDER_LATEX_RENDERER(obj);
 }
 
 /** @} */

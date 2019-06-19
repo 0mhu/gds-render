@@ -38,7 +38,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE(LatexRenderer, latex_renderer, GDS_RENDER, LATEX_RENDERER, GdsOutputRenderer)
 
-#define GDS_RENDERER_TYPE_LATEX_RENDERER (latex_renderer_get_type())
+#define GDS_RENDER_TYPE_LATEX_RENDERER (latex_renderer_get_type())
 
 /**
  * @brief Buffer for LaTeX Code line in KiB
@@ -50,6 +50,22 @@ G_DECLARE_FINAL_TYPE(LatexRenderer, latex_renderer, GDS_RENDER, LATEX_RENDERER, 
  * @return New object
  */
 LatexRenderer *latex_renderer_new();
+
+/**
+ * @brief Create new LatexRenderer object
+ *
+ * This function sets the 'pdf-layers' and 'standalone'
+ * properties for the newly created object.
+ *
+ * They can later be changes by modifying the properties again.
+ * On top of that, The options can be changed in the resulting
+ * LaTeX output file if needed.
+ *
+ * @param pdf_layers If PDF OCR layers should be enabled
+ * @param standalone If output TeX file should be standalone compilable
+ * @return New object
+ */
+LatexRenderer *latex_renderer_new_with_options(gboolean pdf_layers, gboolean standalone);
 
 G_END_DECLS
 
