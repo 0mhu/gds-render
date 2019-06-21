@@ -40,14 +40,21 @@
  * @param renderers Renderer ids
  * @param output_file_names Output file names
  * @param layer_file Layer mapping file
- * @param so_path Shared object path
+ * @param so_path Shared object
+ * @param tex_standalone Standalone TeX
+ * @param tec_layers TeX OCR layers
+ * @param scale Scale value
+ * @return Error code, 0 if successful
  */
-void command_line_convert_gds(const char *gds_name,
+int command_line_convert_gds(const char *gds_name,
 			      const char *cell_name,
-			      const char * const *renderers,
-			      const char * const *output_file_names,
+			      char **renderers,
+			      char **output_file_names,
 			      const char *layer_file,
-			      const char *so_path);
+			      const char *so_path,
+			     gboolean tex_standalone,
+			     gboolean tex_layers,
+			     double scale);
 
 #endif /* _COMMAND_LINE_H_ */
 

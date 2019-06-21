@@ -240,7 +240,6 @@ int main(int argc, char **argv)
 	GError *error = NULL;
 	GOptionContext *context;
 	gchar *gds_name;
-	gchar *basename;
 	gchar **output_paths = NULL;
 	gchar *mappingname = NULL;
 	gchar *cellname = NULL;
@@ -292,14 +291,15 @@ int main(int argc, char **argv)
 			printf("Ignored argument: %s", argv[i]);
 		}
 
-
+		app_status =
+			command_line_convert_gds(gds_name, cellname, renderer_args, output_paths, mappingname,
+						 custom_library_path, pdf_standalone, pdf_layers, scale);
 
 	} else {
 		app_status = start_gui(argc, argv);
 	}
 
 ret_status:
-
 	/* If necessary, free command line parameters */
 	if (output_paths)
 		g_strfreev(output_paths);
@@ -309,7 +309,7 @@ ret_status:
 		g_free(mappingname);
 	if (cellname)
 		free(cellname);
-	if (custom_library_path);
+	if (custom_library_path)
 		free(custom_library_path);
 
 	return app_status;
