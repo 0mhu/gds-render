@@ -574,7 +574,7 @@ static void convert_aref_to_sref(struct gds_cell_array_instance *aref, struct gd
 	struct gds_point origin;
 	struct gds_point row_shift_vector;
 	struct gds_point col_shift_vector;
-	struct gds_cell_instance *sref_inst;
+	struct gds_cell_instance *sref_inst = NULL;
 	int col;
 	int row;
 
