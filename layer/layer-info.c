@@ -179,7 +179,6 @@ static void layer_settings_gen_csv_line(GString *string, struct layer_info *linf
 int layer_settings_to_csv(LayerSettings *settings, const char *path)
 {
 	GFile *file;
-	int i;
 	GOutputStream *w_fstream;
 	GString *string;
 	GList *info_iter;
