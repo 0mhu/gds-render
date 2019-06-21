@@ -240,7 +240,7 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 	/* Create recording surface for each layer */
 	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
 		linfo = (struct layer_info *)info_list->data;
-		if (linfo->layer < MAX_LAYERS) {
+		if (linfo->layer < MAX_LAYERS && linfo->render) {
 			lay = &(layers[(unsigned int)linfo->layer]);
 			lay->linfo = linfo;
 			lay->rec = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA,
@@ -265,6 +265,9 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 			printf("Layer outside of Spec.\n");
 			continue;
 		}
+
+		if (!linfo->render)
+			continue;
 
 		/* Print size */
 		cairo_recording_surface_ink_extents(layers[linfo->layer].rec, &rec_x0, &rec_y0,
@@ -308,6 +311,9 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 			printf("Layer outside of Spec.\n");
 			continue;
 		}
+
+		if (!linfo->render)
+			continue;
 
 		if (pdf_file && pdf_cr) {
 			cairo_set_source_surface(pdf_cr, layers[linfo->layer].rec, -xmin, -ymin);
@@ -363,16 +369,24 @@ static void cairo_renderer_init(CairoRenderer *self)
 
 static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
 					struct gds_cell *cell,
-					GList *layer_infos,
-					const char *output_file,
 					double scale)
 {
 	CairoRenderer *c_renderer = GDS_RENDER_CAIRO_RENDERER(renderer);
 	const char *pdf_file = NULL;
 	const char *svg_file = NULL;
+	LayerSettings *settings;
+	GList *layer_infos = NULL;
+	const char *output_file;
 
 	if (!c_renderer)
 		return -2000;
+
+	output_file = gds_output_renderer_get_output_file(renderer);
+	settings = gds_output_renderer_get_layer_settings(renderer);
+
+	/* Set layer info list. In case of failure it remains NULL */
+	if (settings)
+		layer_infos = layer_settings_get_layer_info_list(settings);
 
 	if (c_renderer->svg == TRUE)
 		svg_file = output_file;

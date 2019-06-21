@@ -34,6 +34,7 @@
 #include <gds-render/gds-utils/gds-types.h>
 #include <glib-object.h>
 #include <glib.h>
+#include <gds-render/layer/layer-info.h>
 
 G_BEGIN_DECLS
 
@@ -52,9 +53,7 @@ struct _GdsOutputRendererClass {
 	 * @brief Virtual render output function. Overwritten by final class implementation
 	 */
 	int (*render_output)(GdsOutputRenderer *renderer,
-	                        struct gds_cell *cell,
-	                        GList *layer_infos,
-	                        const char *output_file,
+				struct gds_cell *cell,
 	                        double scale);
 	gpointer padding[4];
 };
@@ -71,19 +70,62 @@ enum {
 GdsOutputRenderer *gds_output_renderer_new();
 
 /**
+ * @brief Create a new GdsOutputRenderer GObject with its properties
+ * @param output_file Output file of the renderer
+ * @param layer_settings Layer settings object
+ * @return New object
+ */
+GdsOutputRenderer *gds_output_renderer_new_with_props(const char *output_file, LayerSettings *layer_settings);
+
+/**
  * @brief gds_output_renderer_render_output
  * @param renderer Renderer object
  * @param cell Cell to render
- * @param layer_infos List of Layer information (@ref layer_info)
- * @param output_file Output file name
  * @param scale scale value. The output is scaled *down* by this value
  * @return 0 if successful
  */
 int gds_output_renderer_render_output(GdsOutputRenderer *renderer,
                                         struct gds_cell *cell,
-                                        GList *layer_infos,
-                                        const char *output_file,
                                         double scale);
+
+/**
+ * @brief Convenience function for setting the "output-file" property
+ * @param renderer Renderer object
+ * @param file_name Output file path
+ */
+void gds_output_renderer_set_output_file(GdsOutputRenderer *renderer, const gchar *file_name);
+
+/**
+ * @brief Convenience function for getting the "output-file" property
+ * @param renderer
+ * @return Output file path. This must not be freed
+ */
+const char *gds_output_renderer_get_output_file(GdsOutputRenderer *renderer);
+
+/**
+ * @brief Get layer settings
+ *
+ * This is a convenience function for getting the
+ * "layer-settings" property
+ *
+ * @param renderer Renderer
+ * @return Layer settings object
+ */
+LayerSettings *gds_output_renderer_get_layer_settings(GdsOutputRenderer *renderer);
+
+/**
+ * @brief Set layer settings
+ *
+ * This is a convenience function for setting the
+ * "layer-settings" property.
+ *
+ * If another Layer settings has previously been supplied,
+ * it is unref'd.
+ *
+ * @param renderer Renderer
+ * @param settings LayerSettings object
+ */
+void gds_output_renderer_set_layer_settings(GdsOutputRenderer *renderer, LayerSettings *settings);
 
 G_END_DECLS
 

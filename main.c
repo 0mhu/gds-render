@@ -241,20 +241,20 @@ int main(int argc, char **argv)
 	GOptionContext *context;
 	gchar *gds_name;
 	gchar *basename;
-	gchar *output_path = NULL, *mappingname = NULL, *cellname = NULL;
-	gchar *renderer_arg = NULL;
+	gchar **output_paths = NULL;
+	gchar *mappingname = NULL;
+	gchar *cellname = NULL;
+	gchar **renderer_args = NULL;
 	gboolean version = FALSE, pdf_standalone = FALSE, pdf_layers = FALSE;
 	gchar *custom_library_path = NULL;
 	int scale = 1000;
 	int app_status = 0;
-	enum command_line_renderer renderer = CMD_NONE;
-	enum cmd_options opt = CMD_OPT_NONE;
 
 	GOptionEntry entries[] = {
 		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
-		{"renderer", 'r', 0, G_OPTION_ARG_STRING, &renderer_arg, "Renderer to use", "pdf|svg|tikz|ext"},
+		{"renderer", 'r', 0, G_OPTION_ARG_STRING_ARRAY, &renderer_args, "Renderer to use. Can be used multiple times.", "pdf|svg|tikz|ext"},
 		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
-		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME, &output_path, "Output file path", "PATH" },
+		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME_ARRAY, &output_paths, "Output file path. Can be used multiple times.", "PATH" },
 		{"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
 		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
 		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
@@ -292,57 +292,25 @@ int main(int argc, char **argv)
 			printf("Ignored argument: %s", argv[i]);
 		}
 
-		/* Check if PDF/TeX names are supplied. if not generate */
-		basename = g_path_get_basename(gds_name);
 
-		if (!strcmp(renderer_arg, "pdf")) {
-			renderer = CMD_CAIRO_PDF;
-			if (!output_path)
-				output_path = g_strdup_printf("./%s.pdf", basename);
-		}
-		else if (!strcmp(renderer_arg, "svg")) {
-			renderer = CMD_NONE; // To buggy atm CMD_CAIRO_SVG;
-			if (!output_path)
-				output_path = g_strdup_printf("./%s.svg", basename);
-		} else if (!strcmp(renderer_arg, "tikz")) {
-			renderer = CMD_LATEX;
-			if (pdf_layers)
-				opt |= CMD_OPT_LATEX_LAYERS;
-			if (pdf_standalone)
-				opt |= CMD_OPT_LATEX_STANDALONE;
-			if (!output_path)
-				output_path = g_strdup_printf("./%s.tex", basename);
-		} else if (!strcmp(renderer_arg, "ext")) {
-			renderer = CMD_EXTERNAL;
-		} else {
-			fprintf(stderr, "No valid renderer specified\n");
-		}
 
-		if (basename)
-			g_free(basename);
-
-		if (!output_path || strlen(output_path) == 0) {
-			app_status = -2;
-			goto ret_free_renderer;
-		}
-
-		command_line_convert_gds(gds_name, cellname, output_path, mappingname, custom_library_path, renderer, opt, scale);
-		/* Clean up */
-		app_status = 0;
-
-ret_free_renderer:
-		if (output_path)
-			g_free(output_path);
-		if (renderer_arg)
-			g_free(renderer_arg);
-		if (mappingname)
-			g_free(mappingname);
-		if (cellname)
-			g_free(cellname);
 	} else {
 		app_status = start_gui(argc, argv);
 	}
 
 ret_status:
+
+	/* If necessary, free command line parameters */
+	if (output_paths)
+		g_strfreev(output_paths);
+	if (renderer_args)
+		g_strfreev(renderer_args);
+	if (mappingname)
+		g_free(mappingname);
+	if (cellname)
+		free(cellname);
+	if (custom_library_path);
+		free(custom_library_path);
+
 	return app_status;
 }

@@ -19,7 +19,7 @@
 
 /**
  * @file layer-info.h
- * @brief Helper functions and definition of layer info struct
+ * @brief LayerSettings class heade file
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
@@ -28,24 +28,92 @@
 
 #include <gtk/gtk.h>
 
+G_BEGIN_DECLS
+
 /**
  * @brief Layer information.
  *
  * This structs contains information on how to render a layer
+ * @note You probably don't want to use this struct standalone but in combination
+ * with a LayerSettings object.
  */
 struct layer_info
 {
 	int layer; /**< @brief Layer number */
-	char *name; /**< @brief Layer name */
+	char *name; /**< @brief Layer name. */
 	int stacked_position; ///< @brief Position of layer in output @warning This parameter is not used by any renderer so far @note Lower is bottom, higher is top
 	GdkRGBA color; /**< @brief RGBA color used to render this layer */
+	int render; /**< @brief true: Render to output */
 };
 
+G_DECLARE_FINAL_TYPE(LayerSettings, layer_settings, GDS_RENDER, LAYER_SETTINGS, GObject)
+
+#define GDS_RENDER_TYPE_LAYER_SETTINGS (layer_settings_get_type())
+
 /**
- * @brief Delete a layer_info struct
- * @param info Struct to be deleted.
- * @note The layer_info::name Element has to be freed manually
+ * @brief Maximum length of a layer mapping CSV line
  */
-void layer_info_delete_struct(struct layer_info *info);
+#define CSV_LINE_MAX_LEN (1024)
+
+/**
+ * @brief New LayerSettings object
+ * @return New object
+ */
+LayerSettings *layer_settings_new();
+
+/**
+ * @brief layer_settings_append_layer_info
+ * @param settings LayerSettings object.
+ * @param info Info to append
+ * @return Error code. 0 if successful
+ * @note \p info is copied internally. You can free this struct afterwards.
+ */
+int layer_settings_append_layer_info(LayerSettings *settings, struct layer_info *info);
+
+/**
+ * @brief Clear all layers in this settings object
+ * @param settings LayerSettings object
+ */
+void layer_settings_clear(LayerSettings *settings);
+
+/**
+ * @brief Remove a specific layer number from the layer settings.
+ * @param settings LayerSettings object
+ * @param layer Layer number
+ * @return Error code. 0 if successful
+ */
+int layer_settings_remove_layer(LayerSettings *settings, int layer);
+
+/**
+ * @brief Get a GList with layer_info structs
+ *
+ * This function returns a GList with all layer_info structs in rendering order
+ * (bottom to top) that shall be rendered.
+ *
+ * @param settings LayerSettings object
+ * @return GList with struct layer_info elements.
+ */
+GList *layer_settings_get_layer_info_list(LayerSettings *settings);
+
+/**
+ * @brief Write layer settings to a CSV file
+ * @param path
+ * @return 0 if successful
+ */
+int layer_settings_to_csv(LayerSettings *settings, const char *path);
+
+/**
+ * @brief Load new layer Settings from CSV
+ *
+ * This function loads the layer information from a CSV file.
+ * All data inside the \p settings is cleared beforehand.
+ *
+ * @param settings Settings to write to.
+ * @param path CSV file path
+ * @return 0 if successful
+ */
+int layer_settings_load_from_csv(LayerSettings *settings, const char *path);
+
+G_END_DECLS
 
 #endif // _LAYER_INFO_H_

@@ -99,11 +99,19 @@ ret_close_so_handle:
 
 static int external_renderer_render_output(GdsOutputRenderer *renderer,
 					    struct gds_cell *cell,
-					    GList *layer_infos,
-					    const char *output_file,
 					    double scale)
 {
 	ExternalRenderer *ext_renderer = GDS_RENDER_EXTERNAL_RENDERER(renderer);
+	LayerSettings *settings;
+	GList *layer_infos = NULL;
+	const char *output_file;
+
+	output_file = gds_output_renderer_get_output_file(renderer);
+	settings = gds_output_renderer_get_layer_settings(renderer);
+
+	/* Set layer info list. In case of failure it remains NULL */
+	if (settings)
+		layer_infos = layer_settings_get_layer_info_list(settings);
 
 	return external_renderer_render_cell(cell, layer_infos, output_file, scale, ext_renderer->shared_object_path);
 }
@@ -151,7 +159,7 @@ static void external_renderer_dispose(GObject *self_obj)
 		self->shared_object_path = NULL;
 	}
 
-	G_OBJECT_CLASS(external_renderer_parent_class)->dispose(G_OBJECT(self));
+	G_OBJECT_CLASS(external_renderer_parent_class)->dispose(self_obj);
 }
 
 static GParamSpec *external_renderer_properties[N_PROPERTIES] = {NULL};

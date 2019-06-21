@@ -395,7 +395,6 @@ GList *layer_selector_export_rendered_layer_info(LayerSelector *selector)
 			linfo = (struct layer_info *)malloc(sizeof(struct layer_info));
 			layer_element_get_color(le, &linfo->color);
 			linfo->layer = layer_element_get_layer(le);
-			linfo->stacked_position = i;
 			linfo->name = (char *)layer_element_get_name(le);
 
 			/* Append to list */

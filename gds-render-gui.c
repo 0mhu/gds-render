@@ -37,8 +37,8 @@
 #include <gds-render/widgets/activity-bar.h>
 #include <gds-render/cell-selector/tree-store.h>
 #include <gds-render/cell-selector/lib-cell-renderer.h>
-#include <gds-render/output-renderers/latex-output.h>
-#include <gds-render/output-renderers/cairo-output.h>
+//#include <gds-render/output-renderers/latex-output.h>
+//#include <gds-render/output-renderers/cairo-output.h>
 #include <gds-render/widgets/conv-settings-dialog.h>
 #include <gds-render/geometric/cell-geometrics.h>
 #include <gds-render/version.h>
@@ -296,7 +296,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		return;
 
 	/* Get layers that are rendered */
-	layer_list = layer_selector_export_rendered_layer_info(self->layer_selector);
+	//layer_list = layer_selector_export_rendered_layer_info(self->layer_selector);
 
 	/* Calculate cell size in DB units */
 	bounding_box_prepare_empty(&cell_box);
@@ -360,13 +360,13 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		switch (sett->renderer) {
 		case RENDERER_LATEX_TIKZ:
 			output_file = fopen(file_name, "w");
-			latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett->scale,
+			/*latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett->scale,
 						  sett->tex_pdf_layers, sett->tex_standalone);
-			fclose(output_file);
+			*/fclose(output_file);
 			break;
 		case RENDERER_CAIROGRAPHICS_SVG:
 		case RENDERER_CAIROGRAPHICS_PDF:
-			cairo_render_cell_to_vector_file(cell_to_render, layer_list,
+			/*cairo_render_cell_to_vector_file(cell_to_render, layer_list,
 							 (sett->renderer == RENDERER_CAIROGRAPHICS_PDF
 							  ? file_name
 							  : NULL),
@@ -374,7 +374,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 							  ? file_name
 							  : NULL),
 							 sett->scale);
-			break;
+			*/break;
 		}
 		g_free(file_name);
 
@@ -382,7 +382,8 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		gtk_widget_destroy(dialog);
 	}
 ret_layer_destroy:
-	g_list_free_full(layer_list, (GDestroyNotify)layer_info_delete_struct);
+	;
+//	g_list_free_full(layer_list, (GDestroyNotify)layer_info_delete_struct);
 }
 
 /**

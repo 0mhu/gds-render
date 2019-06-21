@@ -69,10 +69,13 @@ static void write_layer_definitions(FILE *tex_file, GList *layer_infos, GString 
 {
 	GList *list;
 	struct layer_info *lifo;
-	char *end_str;
 
 	for (list = layer_infos; list != NULL; list = list->next) {
 		lifo = (struct layer_info *)list->data;
+
+		if (!lifo->render)
+			continue;
+
 		g_string_printf(buffer, "\\pgfdeclarelayer{l%d}\n\\definecolor{c%d}{rgb}{%lf,%lf,%lf}\n",
 				lifo->layer, lifo->layer,
 				lifo->color.red, lifo->color.green, lifo->color.blue);
@@ -85,14 +88,13 @@ static void write_layer_definitions(FILE *tex_file, GList *layer_infos, GString 
 	for (list = layer_infos; list != NULL; list = list->next) {
 		lifo = (struct layer_info *)list->data;
 
-		if (list->next == NULL)
-			end_str = ",main}";
-		else
-			end_str = ",";
-		g_string_printf(buffer, "l%d%s", lifo->layer, end_str);
+		if (!lifo->render)
+			continue;
+
+		g_string_printf(buffer, "l%d,", lifo->layer);
 		WRITEOUT_BUFFER(buffer);
 	}
-	fwrite("\n", sizeof(char), 1, tex_file);
+	fwrite("main}\n", sizeof(char), 1, tex_file);
 }
 
 /**
@@ -128,7 +130,7 @@ static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList
 
 	for (temp = linfo; temp != NULL; temp = temp->next) {
 		inf = (struct layer_info *)temp->data;
-		if (inf->layer == layer) {
+		if (inf->layer == layer && inf->render) {
 			color->alpha = inf->color.alpha;
 			color->red = inf->color.red;
 			color->green = inf->color.green;
@@ -322,19 +324,29 @@ static int latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, 
 
 static int latex_renderer_render_output(GdsOutputRenderer *renderer,
 					  struct gds_cell *cell,
-					  GList *layer_infos,
-					  const char *output_file,
 					  double scale)
 {
 	LatexRenderer *l_renderer = GDS_RENDER_LATEX_RENDERER(renderer);
 	FILE *tex_file;
 	int ret = -2;
+	LayerSettings *settings;
+	GList *layer_infos = NULL;
+	const char *output_file;
+
+	output_file = gds_output_renderer_get_output_file(renderer);
+	settings = gds_output_renderer_get_layer_settings(renderer);
+
+	/* Set layer info list. In case of failure it remains NULL */
+	if (settings)
+		layer_infos = layer_settings_get_layer_info_list(settings);
 
 	tex_file = fopen(output_file, "w");
 	if (tex_file) {
 		ret = latex_render_cell_to_code(cell, layer_infos, tex_file, scale,
 						l_renderer->pdf_layers, l_renderer->tex_standalone);
 		fclose(tex_file);
+	} else {
+		g_error("Could not open LaTeX outpur file");
 	}
 
 	return ret;

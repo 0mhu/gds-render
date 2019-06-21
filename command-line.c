@@ -55,8 +55,17 @@ static void delete_layer_info_with_name(struct layer_info *info)
 	}
 }
 
-void command_line_convert_gds(const char *gds_name, const char *cell_name, const char *output_file_name,  const char *layer_file, const char *so_path,
-			       enum command_line_renderer renderer, enum cmd_options options, double scale)
+static void check_renderers_and_output_files()
+{
+
+}
+
+void command_line_convert_gds(const char *gds_name,
+			      const char *cell_name,
+			      const char * const *renderers,
+			      const char * const *output_file_names,
+			      const char *layer_file,
+			      const char *so_path)
 {
 	GList *libs = NULL;
 	int res;
@@ -77,10 +86,12 @@ void command_line_convert_gds(const char *gds_name, const char *cell_name, const
 	gboolean tex_layers = FALSE, tex_standalone = FALSE;
 
 	/* Check if parameters are valid */
-	if (!gds_name || !cell_name || !output_file_name || !layer_file) {
+	if (!gds_name || !cell_name || !output_file_names || !layer_file || !renderers) {
 		printf("Probably missing argument. Check --help option\n");
 		return;
 	}
+
+
 
 	/* Load GDS */
 	clear_lib_list(&libs);
@@ -167,39 +178,8 @@ void command_line_convert_gds(const char *gds_name, const char *cell_name, const
 
 	/* Render */
 
-	if (options & CMD_OPT_LATEX_LAYERS)
-		tex_layers = TRUE;
-	if (options & CMD_OPT_LATEX_STANDALONE)
-		tex_standalone = TRUE;
 
-	switch (renderer) {
-	case CMD_CAIRO_SVG:
-		output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_svg());
-		break;
-	case CMD_LATEX:
-		output_renderer = GDS_RENDER_OUTPUT_RENDERER(latex_renderer_new_with_options(tex_layers, tex_standalone));
-		break;
-	case CMD_CAIRO_PDF:
-		output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_pdf());
-		break;
-	case CMD_EXTERNAL:
-		output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(so_path));
-		break;
-	case CMD_NONE:
-		/* Do nothing */
-		output_renderer = NULL;
-		break;
-	default:
-		output_renderer = NULL;
-		fprintf(stderr, "Invalid renderer supplied");
-		break;
 
-	}
-
-	if (output_renderer) {
-		gds_output_renderer_render_output(output_renderer, toplevel_cell, layer_info_list, output_file_name, scale);
-		g_object_unref(output_renderer);
-	}
 	/* Render end */
 ret_clear_layer_list:
 	g_list_free_full(layer_info_list, (GDestroyNotify)delete_layer_info_with_name);

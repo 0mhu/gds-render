@@ -33,32 +33,21 @@
 
 #include <glib.h>
 
-enum command_line_renderer {
-	CMD_NONE = 0,
-	CMD_EXTERNAL,
-	CMD_CAIRO_SVG,
-	CMD_CAIRO_PDF,
-	CMD_LATEX,
-};
-
-enum cmd_options {
-	CMD_OPT_NONE = 0U,
-	CMD_OPT_LATEX_STANDALONE = (1U<<0),
-	CMD_OPT_LATEX_LAYERS = (1U<<1),
-};
-
 /**
- * @brief render output file according to command line parameters
- * @param gds_name Name of GDS file
- * @param cell_name Name of cell to render
- * @param output_file_name Output file name
- * @param so_file Shared object file to search external rendering function
- * @param renderer Type of output renderer
- * @param options Additional options for output renderer
- * @param scale Scale value
+ * @brief Convert GDS according to command line parameters
+ * @param gds_name Path to GDS File
+ * @param cell_name Cell name
+ * @param renderers Renderer ids
+ * @param output_file_names Output file names
+ * @param layer_file Layer mapping file
+ * @param so_path Shared object path
  */
-void command_line_convert_gds(const char *gds_name, const char *cell_name, const char *output_file_name, const char *layer_file,
-			      const char *so_file, enum command_line_renderer renderer, enum cmd_options options, double scale);
+void command_line_convert_gds(const char *gds_name,
+			      const char *cell_name,
+			      const char * const *renderers,
+			      const char * const *output_file_names,
+			      const char *layer_file,
+			      const char *so_path);
 
 #endif /* _COMMAND_LINE_H_ */
 
