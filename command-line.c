@@ -118,6 +118,22 @@ static int create_renderers(char **renderers,
 	return 0;
 }
 
+static struct gds_cell *find_gds_cell_in_lib(struct gds_library *lib, const char *cell_name)
+{
+	GList *cell_list;
+	struct gds_cell *return_cell = NULL;
+	struct gds_cell *temp_cell;
+
+	for (cell_list = lib->cells; cell_list; cell_list = g_list_next(cell_list)) {
+		temp_cell = (struct gds_cell *)cell_list->data;
+		if (!strncmp(temp_cell->name, cell_name, CELL_NAME_MAX)) {
+			return_cell = temp_cell;
+			break;
+		}
+	}
+	return return_cell;
+}
+
 int command_line_convert_gds(const char *gds_name,
 			      const char *cell_name,
 			      char **renderers,
@@ -131,11 +147,10 @@ int command_line_convert_gds(const char *gds_name,
 	int ret = -1;
 	GList *libs = NULL;
 	int res;
-	GList *cell_list;
 	GList *renderer_list = NULL;
 	GList *list_iter;
 	struct gds_library *first_lib;
-	struct gds_cell *toplevel_cell = NULL, *temp_cell;
+	struct gds_cell *toplevel_cell = NULL;
 	LayerSettings *layer_sett;
 	GdsOutputRenderer *current_renderer;
 
@@ -172,13 +187,8 @@ int command_line_convert_gds(const char *gds_name,
 		goto ret_destroy_library_list;
 	}
 
-	for (cell_list = first_lib->cells; cell_list != NULL; cell_list = g_list_next(cell_list)) {
-		temp_cell = (struct gds_cell *)cell_list->data;
-		if (!strcmp(temp_cell->name, cell_name)) {
-			toplevel_cell = temp_cell;
-			break;
-		}
-	}
+	/* Find cell in first library */
+	toplevel_cell = find_gds_cell_in_lib(first_lib, cell_name);
 
 	if (!toplevel_cell) {
 		printf("Couldn't find cell in first library!\n");
