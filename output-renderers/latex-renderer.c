@@ -347,7 +347,7 @@ static int latex_renderer_render_output(GdsOutputRenderer *renderer,
 						l_renderer->pdf_layers, l_renderer->tex_standalone);
 		fclose(tex_file);
 	} else {
-		g_error("Could not open LaTeX outpur file");
+		g_error("Could not open LaTeX output file");
 	}
 
 	return ret;
