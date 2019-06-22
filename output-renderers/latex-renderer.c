@@ -94,7 +94,8 @@ static void write_layer_definitions(FILE *tex_file, GList *layer_infos, GString 
 		g_string_printf(buffer, "l%d,", lifo->layer);
 		WRITEOUT_BUFFER(buffer);
 	}
-	fwrite("main}\n", sizeof(char), 1, tex_file);
+	g_string_printf(buffer, "main}\n");
+	WRITEOUT_BUFFER(buffer);
 }
 
 /**
