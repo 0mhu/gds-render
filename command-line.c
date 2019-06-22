@@ -101,8 +101,10 @@ static int create_renderers(char **renderers,
 		} else if (!strcmp(current_renderer, "svg")) {
 			output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_svg());
 		} else if (!strcmp(current_renderer, "ext")) {
-			if (!so_path)
+			if (!so_path) {
+				fprintf(stderr, "Please specify shared object for external renderer. Will ignore this renderer.\n");
 				continue;
+			}
 			output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(so_path));
 		} else {
 			continue;
@@ -148,7 +150,8 @@ int command_line_convert_gds(const char *gds_name,
 	layer_settings_load_from_csv(layer_sett, layer_file);
 
 	/* Create renderers */
-	if (create_renderers(renderers, output_file_names, tex_layers, tex_standalone, so_path, &renderer_list, layer_sett))
+	if (create_renderers(renderers, output_file_names, tex_layers, tex_standalone,
+			     so_path, &renderer_list, layer_sett))
 		goto ret_destroy_layer_mapping;
 
 

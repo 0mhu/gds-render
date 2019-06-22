@@ -62,7 +62,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	int ret = 0;
 
 	if (!so_path) {
-		g_error("Path to shared object not set!");
+		fprintf(stderr, "Path to shared object not set!\n");
 		return -3000;
 	}
 
@@ -73,7 +73,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	/* Load shared object */
 	so_handle = dlopen(so_path, RTLD_LAZY);
 	if (!so_handle) {
-		g_error("Could not load external library '%s'\nDetailed error is:\n%s", so_path, dlerror());
+		fprintf(stderr, "Could not load external library '%s'\nDetailed error is:\n%s\n", so_path, dlerror());
 		return -2000;
 	}
 
@@ -81,7 +81,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	so_render_func = (int (*)(struct gds_cell *, GList *, const char *, double))dlsym(so_handle, EXTERNAL_LIBRARY_FUNCTION);
 	error_msg = dlerror();
 	if (error_msg != NULL) {
-		g_error("Rendering function not found in library:\n%s\n", error_msg);
+		fprintf(stderr, "Rendering function not found in library:\n%s\n", error_msg);
 		goto ret_close_so_handle;
 	}
 
