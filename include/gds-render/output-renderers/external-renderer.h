@@ -45,7 +45,7 @@ G_DECLARE_FINAL_TYPE(ExternalRenderer, external_renderer, GDS_RENDER, EXTERNAL_R
  * 
  * The function has to be defined as follows:
  * @code
- * int EXTERNAL_LIBRARY_FUNCTION(gds_cell *toplevel, GList *layer_info_list, const char *output_file_name, double scale)
+ * int EXTERNAL_LIBRARY_FUNCTION(struct gds_cell *toplevel, GList *layer_info_list, const char *output_file_name, double scale)
  * @endcode
  */
 #define EXTERNAL_LIBRARY_FUNCTION "render_cell_to_file"
