@@ -57,11 +57,32 @@ in order to build the program and
 
 The subfolder 'AUR' contains a PKGBUILD file to build an Archlinux/Pacman package.
 
-@subsection Compiler Warnings
+@subsection comp-warnings Compiler Warnings
 
 The compiler will throw the following warnings. Compiled with GCC 8.2.1.
 
 | Warning | Assessment |
 | ------- | ---------- |
 | warning: ‘calculate_path_miter_points’ defined but not used [-Wunused-function] | Ignore. Function will be used in later versions. |
+
+
+@subsection windows-compilation Compilation for Windows
+
+@warning Windows is not a target system for this application, considering that this program converts GDS files which are most likely generated under a Linux system. The tips shown in this section are a guidance for anyone trying to build this application for Windows.
+
+@warning Note that the Windows compatibility may decrease in future releases and a simple compilation like with this version might not be possible anymore.
+
+The current release of 'gds-render' does not compile under a windows system, due to incompatibilities in the external library renderer.
+It is possible to comment out the code that causes the incompatibility. The external renderer will not be usable after this.
+
+Steps:
+
+ - Go to file external-renderer.c
+ - Remove `#include` <dlfcn.h>
+ - comment out all code in #external_renderer_render_cell
+
+The program should now compile.
+
+@note In versions currently in development, the cairo renderer will be unusable under Windows due to Issue `#16`. So you might want to stick with this version.
+
 */
