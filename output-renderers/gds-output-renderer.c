@@ -43,7 +43,7 @@ typedef struct {
 	LayerSettings *layer_settings;
 	GMutex settings_lock;
 	gboolean mutex_init_status;
-	GThread *thread;
+	GTask *task;
 	struct renderer_params async_params;
 	gpointer padding[11];
 } GdsOutputRendererPrivate;
@@ -56,7 +56,7 @@ enum {
 
 G_DEFINE_TYPE_WITH_PRIVATE(GdsOutputRenderer, gds_output_renderer, G_TYPE_OBJECT)
 
-enum gds_output_renderer_signal_ids {THREAD_JOINED = 0, GDS_OUTPUT_RENDERER_SIGNAL_COUNT};
+enum gds_output_renderer_signal_ids {ASYNC_FINISHED = 0, ASYNC_PROGRESS_UPDATE, GDS_OUTPUT_RENDERER_SIGNAL_COUNT};
 static guint gds_output_renderer_signals[GDS_OUTPUT_RENDERER_SIGNAL_COUNT];
 
 static int gds_output_renderer_render_dummy(GdsOutputRenderer *renderer,
@@ -85,6 +85,8 @@ static void gds_output_renderer_dispose(GObject *self_obj)
 		g_mutex_clear(&priv->settings_lock);
 		priv->mutex_init_status = FALSE;
 	}
+
+	g_clear_object(&priv->task);
 
 	if (priv->output_file)
 		g_free(priv->output_file);
@@ -166,8 +168,18 @@ static void gds_output_renderer_class_init(GdsOutputRendererClass *klass)
 	g_object_class_install_properties(oclass, N_PROPERTIES, gds_output_renderer_properties);
 
 	/* Setup output signals */
-	gds_output_renderer_signals[THREAD_JOINED] =
-			g_signal_newv("thread-joined", GDS_RENDER_TYPE_OUTPUT_RENDERER,
+	gds_output_renderer_signals[ASYNC_FINISHED] =
+			g_signal_newv("async-finished", GDS_RENDER_TYPE_OUTPUT_RENDERER,
+				      G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
+				      NULL,
+				      NULL,
+				      NULL,
+				      NULL,
+				      G_TYPE_NONE,
+				      0,
+				      NULL);
+	gds_output_renderer_signals[ASYNC_PROGRESS_UPDATE] =
+			g_signal_newv("progress-update", GDS_RENDER_TYPE_OUTPUT_RENDERER,
 				      G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
 				      NULL,
 				      NULL,
@@ -186,7 +198,7 @@ void gds_output_renderer_init(GdsOutputRenderer *self)
 
 	priv->layer_settings = NULL;
 	priv->output_file = NULL;
-	priv->thread = NULL;
+	priv->task = NULL;
 	priv->mutex_init_status = TRUE;
 	g_mutex_init(&priv->settings_lock);
 
@@ -288,25 +300,44 @@ int gds_output_renderer_render_output(GdsOutputRenderer *renderer, struct gds_ce
 	return ret;
 }
 
-static int gds_output_renderer_async_wrapper(gpointer data)
+static void gds_output_renderer_async_wrapper(GTask *task,
+					     gpointer source_object,
+					     gpointer task_data,
+					     GCancellable *cancellable)
 {
 	GdsOutputRenderer *renderer;
 	GdsOutputRendererPrivate *priv;
 	int ret;
 
-	renderer = GDS_RENDER_OUTPUT_RENDERER(data);
+	renderer = GDS_RENDER_OUTPUT_RENDERER(source_object);
 	priv = gds_output_renderer_get_instance_private(renderer);
-	if (!priv)
-		return -1000;
-
-	if(!priv->mutex_init_status)
-		return -1001;
+	if (!priv) {
+		ret = -1000;
+		goto ret_from_task;
+	}
+	if(!priv->mutex_init_status) {
+		ret = -1001;
+		goto ret_from_task;
+	}
 
 	g_mutex_lock(&priv->settings_lock);
 	ret = gds_output_renderer_render_output(renderer, priv->async_params.cell, priv->async_params.scale);
 	g_mutex_unlock(&priv->settings_lock);
 
-	return ret;
+ret_from_task:
+	g_task_return_int(task, ret);
+}
+
+static void gds_output_renderer_async_finished(GObject *src_obj, GAsyncResult *res, gpointer user_data)
+{
+	GdsOutputRendererPrivate *priv;
+	(void)user_data;
+	(void)res; /* Will hopefully be destroyed later */
+
+	priv = gds_output_renderer_get_instance_private(GDS_RENDER_OUTPUT_RENDERER(src_obj));
+
+	g_signal_emit(src_obj, gds_output_renderer_signals[ASYNC_FINISHED], 0);
+	g_clear_object(&priv->task);
 }
 
 int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale)
@@ -315,6 +346,18 @@ int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct 
 	int ret = -1;
 
 	priv = gds_output_renderer_get_instance_private(renderer);
+	if (priv->task) {
+		g_warning("renderer already started asynchronously");
+		return -2000;
+	}
+
+	priv->task = g_task_new(renderer, NULL, gds_output_renderer_async_finished, NULL);
+	g_mutex_lock(&priv->settings_lock);
+	priv->async_params.cell = cell;
+	priv->async_params.scale = scale;
+	g_mutex_unlock(&priv->settings_lock);
+
+	g_task_run_in_thread(priv->task, gds_output_renderer_async_wrapper);
 
 	return ret;
 }
