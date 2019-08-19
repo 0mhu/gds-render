@@ -21,7 +21,7 @@
  * @file gds-tree-checker.c
  * @brief Checking functions of a cell tree
  *
- * This file contains cehcking functions for the GDS cell tree.
+ * This file contains checking functions for the GDS cell tree.
  * These functions include checks if all child references could be resolved,
  * and if the cell tree contains loops.
  *
