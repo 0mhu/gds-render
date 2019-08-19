@@ -335,7 +335,7 @@ static int latex_renderer_render_output(GdsOutputRenderer *renderer,
 	const char *output_file;
 
 	output_file = gds_output_renderer_get_output_file(renderer);
-	settings = gds_output_renderer_get_layer_settings(renderer);
+	settings = gds_output_renderer_get_and_ref_layer_settings(renderer);
 
 	/* Set layer info list. In case of failure it remains NULL */
 	if (settings)
@@ -348,6 +348,10 @@ static int latex_renderer_render_output(GdsOutputRenderer *renderer,
 		fclose(tex_file);
 	} else {
 		g_error("Could not open LaTeX output file");
+	}
+
+	if (settings) {
+		g_object_unref(settings);
 	}
 
 	return ret;

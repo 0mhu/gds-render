@@ -74,7 +74,7 @@ static void revert_inherited_transform(struct cairo_layer *layers)
  * @param origin Origin translation
  * @param magnification Scaling
  * @param flipping Mirror image on x-axis before rotating
- * @param rotation Rotattion in degrees
+ * @param rotation Rotation in degrees
  * @param scale Scale the image down by. Only used for sclaing origin coordinates. Not applied to layer.
  */
 static void apply_inherited_transform_to_all_layers(struct cairo_layer *layers,
@@ -140,7 +140,9 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 		/* Get layer renderer */
 		if (gfx->layer >= MAX_LAYERS)
 			continue;
-		if ((cr = layers[gfx->layer].cr) == NULL)
+
+		cr = layers[gfx->layer].cr;
+		if (cr == NULL)
 			continue;
 
 		/* Apply settings */
@@ -167,7 +169,6 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 				cairo_move_to(cr, vertex->x/scale, vertex->y/scale);
 			else
 				cairo_line_to(cr, vertex->x/scale, vertex->y/scale);
-
 		}
 
 		/* Create graphics object */
@@ -183,9 +184,7 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 			cairo_fill(cr);
 			break;
 		}
-
-	}
-
+	} /* for gfx list */
 }
 
 /**
@@ -377,12 +376,13 @@ static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
 	LayerSettings *settings;
 	GList *layer_infos = NULL;
 	const char *output_file;
+	int ret;
 
 	if (!c_renderer)
 		return -2000;
 
 	output_file = gds_output_renderer_get_output_file(renderer);
-	settings = gds_output_renderer_get_layer_settings(renderer);
+	settings = gds_output_renderer_get_and_ref_layer_settings(renderer);
 
 	/* Set layer info list. In case of failure it remains NULL */
 	if (settings)
@@ -393,7 +393,12 @@ static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
 	else
 		pdf_file = output_file;
 
-	return cairo_renderer_render_cell_to_vector_file(cell, layer_infos, pdf_file, svg_file, scale);
+	ret = cairo_renderer_render_cell_to_vector_file(cell, layer_infos, pdf_file, svg_file, scale);
+
+	if (settings)
+		g_object_unref(settings);
+
+	return ret;
 }
 
 static void cairo_renderer_class_init(CairoRendererClass *klass)

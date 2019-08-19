@@ -106,12 +106,14 @@ const char *gds_output_renderer_get_output_file(GdsOutputRenderer *renderer);
  * @brief Get layer settings
  *
  * This is a convenience function for getting the
- * "layer-settings" property
+ * "layer-settings" property. This also references it.
+ * This is to prevent race conditions with another thread that might
+ * alter the layer settings before they are read out.
  *
  * @param renderer Renderer
  * @return Layer settings object
  */
-LayerSettings *gds_output_renderer_get_layer_settings(GdsOutputRenderer *renderer);
+LayerSettings *gds_output_renderer_get_and_ref_layer_settings(GdsOutputRenderer *renderer);
 
 /**
  * @brief Set layer settings
@@ -126,6 +128,21 @@ LayerSettings *gds_output_renderer_get_layer_settings(GdsOutputRenderer *rendere
  * @param settings LayerSettings object
  */
 void gds_output_renderer_set_layer_settings(GdsOutputRenderer *renderer, LayerSettings *settings);
+
+/**
+ * @brief Render output asynchronously
+ *
+ * This function will render in a separate thread.
+ * To wait for the completion of the rendering process.
+ *
+ * @note A second async thread cannot be spawned.
+ *
+ * @param renderer Output renderer
+ * @param cell Cell to render
+ * @param scale Scale
+ * @return 0 if successful. In case no thread can be spawned < 0
+ */
+int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale);
 
 G_END_DECLS
 

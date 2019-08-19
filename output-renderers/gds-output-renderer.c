@@ -33,9 +33,18 @@
 #include <gds-render/output-renderers/gds-output-renderer.h>
 #include <gds-render/layer/layer-info.h>
 
+struct renderer_params {
+		struct gds_cell *cell;
+		double scale;
+};
+
 typedef struct {
 	gchar *output_file;
 	LayerSettings *layer_settings;
+	GMutex settings_lock;
+	gboolean mutex_init_status;
+	GThread *thread;
+	struct renderer_params async_params;
 	gpointer padding[11];
 } GdsOutputRendererPrivate;
 
@@ -46,6 +55,9 @@ enum {
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(GdsOutputRenderer, gds_output_renderer, G_TYPE_OBJECT)
+
+enum gds_output_renderer_signal_ids {THREAD_JOINED = 0, GDS_OUTPUT_RENDERER_SIGNAL_COUNT};
+static guint gds_output_renderer_signals[GDS_OUTPUT_RENDERER_SIGNAL_COUNT];
 
 static int gds_output_renderer_render_dummy(GdsOutputRenderer *renderer,
 						struct gds_cell *cell,
@@ -65,6 +77,15 @@ static void gds_output_renderer_dispose(GObject *self_obj)
 	GdsOutputRendererPrivate *priv;
 
 	priv = gds_output_renderer_get_instance_private(renderer);
+
+	if (priv->mutex_init_status) {
+		/* Try locking the mutex, to test if it's free */
+		g_mutex_lock(&priv->settings_lock);
+		g_mutex_unlock(&priv->settings_lock);
+		g_mutex_clear(&priv->settings_lock);
+		priv->mutex_init_status = FALSE;
+	}
+
 	if (priv->output_file)
 		g_free(priv->output_file);
 
@@ -103,14 +124,18 @@ static void gds_output_renderer_set_property(GObject *obj, guint property_id, co
 
 	switch (property_id) {
 	case PROP_OUTPUT_FILE:
+		g_mutex_lock(&priv->settings_lock);
 		if (priv->output_file)
 			g_free(priv->output_file);
 		priv->output_file = g_strdup(g_value_get_string(value));
+		g_mutex_unlock(&priv->settings_lock);
 		break;
 	case PROP_LAYER_SETTINGS:
+		g_mutex_lock(&priv->settings_lock);
 		g_clear_object(&priv->layer_settings);
 		priv->layer_settings = g_value_get_object(value);
 		g_object_ref(priv->layer_settings);
+		g_mutex_unlock(&priv->settings_lock);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
@@ -139,6 +164,18 @@ static void gds_output_renderer_class_init(GdsOutputRendererClass *klass)
 					    "Object containing the layer rendering information",
 					    GDS_RENDER_TYPE_LAYER_SETTINGS, G_PARAM_READWRITE);
 	g_object_class_install_properties(oclass, N_PROPERTIES, gds_output_renderer_properties);
+
+	/* Setup output signals */
+	gds_output_renderer_signals[THREAD_JOINED] =
+			g_signal_newv("thread-joined", GDS_RENDER_TYPE_OUTPUT_RENDERER,
+				      G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
+				      NULL,
+				      NULL,
+				      NULL,
+				      NULL,
+				      G_TYPE_NONE,
+				      0,
+				      NULL);
 }
 
 void gds_output_renderer_init(GdsOutputRenderer *self)
@@ -147,7 +184,12 @@ void gds_output_renderer_init(GdsOutputRenderer *self)
 
 	priv = gds_output_renderer_get_instance_private(self);
 
+	priv->layer_settings = NULL;
 	priv->output_file = NULL;
+	priv->thread = NULL;
+	priv->mutex_init_status = TRUE;
+	g_mutex_init(&priv->settings_lock);
+
 	return;
 }
 
@@ -182,11 +224,23 @@ const char *gds_output_renderer_get_output_file(GdsOutputRenderer *renderer)
 	return file;
 }
 
-LayerSettings *gds_output_renderer_get_layer_settings(GdsOutputRenderer *renderer)
+LayerSettings *gds_output_renderer_get_and_ref_layer_settings(GdsOutputRenderer *renderer)
 {
 	LayerSettings *ret = NULL;
+	GdsOutputRendererPrivate *priv;
+
+	priv = gds_output_renderer_get_instance_private(renderer);
+
+	/* Acquire settings lock */
+	g_mutex_lock(&priv->settings_lock);
 
 	g_object_get(renderer, "layer-settings", &ret, NULL);
+	/* Reference it, so it is not cleared by another thread overwriting the property */
+	g_object_ref(ret);
+
+	/* It is now safe to clear the lock */
+	g_mutex_unlock(&priv->settings_lock);
+
 	return ret;
 }
 
@@ -199,6 +253,7 @@ void gds_output_renderer_set_layer_settings(GdsOutputRenderer *renderer, LayerSe
 
 int gds_output_renderer_render_output(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale)
 {
+	int ret;
 	GdsOutputRendererClass *klass;
 	GdsOutputRendererPrivate *priv = gds_output_renderer_get_instance_private(renderer);
 
@@ -228,8 +283,40 @@ int gds_output_renderer_render_output(GdsOutputRenderer *renderer, struct gds_ce
 		return GDS_OUTPUT_RENDERER_GEN_ERR;
 	}
 
-	return klass->render_output(renderer, cell, scale);
+	ret = klass->render_output(renderer, cell, scale);
+
+	return ret;
 }
 
+static int gds_output_renderer_async_wrapper(gpointer data)
+{
+	GdsOutputRenderer *renderer;
+	GdsOutputRendererPrivate *priv;
+	int ret;
+
+	renderer = GDS_RENDER_OUTPUT_RENDERER(data);
+	priv = gds_output_renderer_get_instance_private(renderer);
+	if (!priv)
+		return -1000;
+
+	if(!priv->mutex_init_status)
+		return -1001;
+
+	g_mutex_lock(&priv->settings_lock);
+	ret = gds_output_renderer_render_output(renderer, priv->async_params.cell, priv->async_params.scale);
+	g_mutex_unlock(&priv->settings_lock);
+
+	return ret;
+}
+
+int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale)
+{
+	GdsOutputRendererPrivate *priv;
+	int ret = -1;
+
+	priv = gds_output_renderer_get_instance_private(renderer);
+
+	return ret;
+}
 
 /** @} */

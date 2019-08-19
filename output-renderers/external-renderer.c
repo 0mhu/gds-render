@@ -105,15 +105,20 @@ static int external_renderer_render_output(GdsOutputRenderer *renderer,
 	LayerSettings *settings;
 	GList *layer_infos = NULL;
 	const char *output_file;
+	int ret;
 
 	output_file = gds_output_renderer_get_output_file(renderer);
-	settings = gds_output_renderer_get_layer_settings(renderer);
+	settings = gds_output_renderer_get_and_ref_layer_settings(renderer);
 
 	/* Set layer info list. In case of failure it remains NULL */
 	if (settings)
 		layer_infos = layer_settings_get_layer_info_list(settings);
 
-	return external_renderer_render_cell(cell, layer_infos, output_file, scale, ext_renderer->shared_object_path);
+	ret = external_renderer_render_cell(cell, layer_infos, output_file, scale, ext_renderer->shared_object_path);
+	if (settings)
+		g_object_unref(settings);
+
+	return ret;
 }
 
 static void external_renderer_get_property(GObject *obj, guint property_id, GValue *value, GParamSpec *pspec)
