@@ -37,8 +37,8 @@
 #include <gds-render/widgets/activity-bar.h>
 #include <gds-render/cell-selector/tree-store.h>
 #include <gds-render/cell-selector/lib-cell-renderer.h>
-//#include <gds-render/output-renderers/latex-output.h>
-//#include <gds-render/output-renderers/cairo-output.h>
+#include <gds-render/output-renderers/latex-renderer.h>
+#include <gds-render/output-renderers/cairo-renderer.h>
 #include <gds-render/widgets/conv-settings-dialog.h>
 #include <gds-render/geometric/cell-geometrics.h>
 #include <gds-render/version.h>
@@ -267,7 +267,6 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	GtkTreeIter iter;
 	GtkTreeModel *model;
 	struct gds_cell *cell_to_render;
-	FILE *output_file;
 	GtkWidget *dialog;
 	RendererSettingsDialog *settings;
 	GtkFileFilter *filter;
@@ -276,6 +275,8 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	union bounding_box cell_box;
 	unsigned int height, width;
 	struct render_settings *sett;
+	LayerSettings *layer_settings;
+	GdsOutputRenderer *render_engine;
 
 	self = RENDERER_GUI(user);
 
@@ -295,7 +296,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		return;
 
 	/* Get layers that are rendered */
-	//layer_list = layer_selector_export_rendered_layer_info(self->layer_selector);
+	layer_settings = layer_selector_export_rendered_layer_info(self->layer_selector);
 
 	/* Calculate cell size in DB units */
 	bounding_box_prepare_empty(&cell_box);
@@ -358,31 +359,35 @@ static void on_convert_clicked(gpointer button, gpointer user)
 
 		switch (sett->renderer) {
 		case RENDERER_LATEX_TIKZ:
-			output_file = fopen(file_name, "w");
-			/*latex_render_cell_to_code(cell_to_render, layer_list, output_file, sett->scale,
-						  sett->tex_pdf_layers, sett->tex_standalone);
-			*/fclose(output_file);
+			render_engine =
+				GDS_RENDER_OUTPUT_RENDERER(latex_renderer_new_with_options(sett->tex_pdf_layers,
+											   sett->tex_standalone));
 			break;
 		case RENDERER_CAIROGRAPHICS_SVG:
+			render_engine = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_svg());
+			break;
 		case RENDERER_CAIROGRAPHICS_PDF:
-			/*cairo_render_cell_to_vector_file(cell_to_render, layer_list,
-							 (sett->renderer == RENDERER_CAIROGRAPHICS_PDF
-							  ? file_name
-							  : NULL),
-							 (sett->renderer == RENDERER_CAIROGRAPHICS_SVG
-							  ? file_name
-							  : NULL),
-							 sett->scale);
-			*/break;
+			render_engine = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_pdf());
+			break;
 		}
+
+		if (render_engine) {
+			gds_output_renderer_set_output_file(render_engine, file_name);
+			gds_output_renderer_set_layer_settings(render_engine, layer_settings);
+
+			/* TODO: Replace this with asynchronous rendering. However, this fixes issue #19 */
+			gds_output_renderer_render_output(render_engine, cell_to_render, sett->scale);
+
+			g_object_unref(render_engine);
+		}
+
 		g_free(file_name);
 
 	} else {
 		gtk_widget_destroy(dialog);
 	}
 ret_layer_destroy:
-	;
-//	g_list_free_full(layer_list, (GDestroyNotify)layer_info_delete_struct);
+	g_object_unref(layer_settings);
 }
 
 /**
