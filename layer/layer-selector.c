@@ -371,38 +371,39 @@ LayerSelector *layer_selector_new(GtkListBox *list_box)
 	return selector;
 }
 
-GList *layer_selector_export_rendered_layer_info(LayerSelector *selector)
+LayerSettings *layer_selector_export_rendered_layer_info(LayerSelector *selector)
 {
-	GList *info_list = NULL;
-	LayerElement *le;
-	struct layer_info *linfo;
+	LayerSettings *layer_settings;
+	struct layer_info linfo;
 	GList *row_list;
-	GList *temp;
+	GList *iterator;
+	LayerElement *le;
 	int i;
 
-	if (!selector)
+	layer_settings = layer_settings_new();
+	if (!layer_settings)
 		return NULL;
 
 	row_list = gtk_container_get_children(GTK_CONTAINER(selector->list_box));
 
-	/* Iterate through  widgets and add layers that shall be exported */
-	for (i = 0, temp = row_list; temp != NULL; temp = temp->next, i++) {
+	for (i = 0,iterator = row_list; iterator != NULL; iterator = g_list_next(iterator), i++) {
+		le = LAYER_ELEMENT(iterator->data);
 
-		le = LAYER_ELEMENT(temp->data);
+		/* Get name from layer element. This must not be freed */
+		linfo.name =(char *)layer_element_get_name(le);
 
-		if (layer_element_get_export(le) == TRUE) {
-			/* Allocate new info and fill with info */
-			linfo = (struct layer_info *)malloc(sizeof(struct layer_info));
-			layer_element_get_color(le, &linfo->color);
-			linfo->layer = layer_element_get_layer(le);
-			linfo->name = (char *)layer_element_get_name(le);
+		layer_element_get_color(le, &linfo.color);
+		linfo.render = (layer_element_get_export(le) ? 1 : 0);
+		linfo.stacked_position = i;
+		linfo.layer = layer_element_get_layer(le);
 
-			/* Append to list */
-			info_list = g_list_append(info_list, (gpointer)linfo);
-		}
+		/* This function copies the entire layer info struct including the name string.
+		 * Therefore, using the same layer_info struct over and over is safe.
+		 */
+		layer_settings_append_layer_info(layer_settings, &linfo);
 	}
 
-	return info_list;
+	return layer_settings;
 }
 
 static void layer_selector_clear_widgets(LayerSelector *self)
