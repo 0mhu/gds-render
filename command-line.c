@@ -41,14 +41,13 @@
 
 static int string_array_count(char **string_array)
 {
-	int count = 0;
+	int count;
 
 	if (!string_array)
 		return 0;
 
-	for (; *string_array; string_array++) {
+	for (count = 0; *string_array; string_array++)
 		count++;
-	}
 
 	return count;
 }
