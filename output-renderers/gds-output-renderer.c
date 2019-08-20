@@ -260,7 +260,7 @@ void gds_output_renderer_set_layer_settings(GdsOutputRenderer *renderer, LayerSe
 {
 	g_return_if_fail(GDS_RENDER_IS_LAYER_SETTINGS(settings));
 
-	g_object_set(renderer, "layer_settings", settings, NULL);
+	g_object_set(renderer, "layer-settings", settings, NULL);
 }
 
 int gds_output_renderer_render_output(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale)
