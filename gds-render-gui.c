@@ -266,7 +266,6 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	GtkTreeSelection *selection;
 	GtkTreeIter iter;
 	GtkTreeModel *model;
-	GList *layer_list;
 	struct gds_cell *cell_to_render;
 	FILE *output_file;
 	GtkWidget *dialog;
