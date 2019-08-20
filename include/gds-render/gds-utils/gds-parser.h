@@ -61,4 +61,4 @@ int clear_lib_list(GList **library_list);
 
 /** @} */
 
-#endif /* _GDSPARSE_H_ */
+#endif /* _GDSPARSER_H_ */
