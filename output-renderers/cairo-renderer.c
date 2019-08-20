@@ -220,7 +220,10 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 	 *
 	 * And by the way: This now bricks all Windows compatibility. Deal with it.
 	 */
+
+	/* Use fork for production code and -1 as value for debugging */
 	process_id = fork();
+	//process_id = -1;
 	if (process_id < 0) {
 		/* Well... shit... We have to run it in our process. */
 	} else if (process_id > 0) {
@@ -239,7 +242,11 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 	/* Create recording surface for each layer */
 	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
 		linfo = (struct layer_info *)info_list->data;
-		if (linfo->layer < MAX_LAYERS && linfo->render) {
+		if (linfo->layer < MAX_LAYERS) {
+			/* Layer shall not be rendered */
+			if (!linfo->render)
+				continue;
+
 			lay = &(layers[(unsigned int)linfo->layer]);
 			lay->linfo = linfo;
 			lay->rec = cairo_recording_surface_create(CAIRO_CONTENT_COLOR_ALPHA,
