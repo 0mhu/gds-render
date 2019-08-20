@@ -17,19 +17,17 @@ add_definitions(${GLIB2_CFLAGS_OTHER})
 aux_source_directory("widgets" LAYER_SOURCES)
 aux_source_directory("cell-selector" CELL_SELECTOR_SOURCES)
 aux_source_directory("gds-utils" GDS_SOURCES)
-aux_source_directory("latex-renderer" LATEX_SOURCES)
-aux_source_directory("cairo-renderer" CAIRO_SOURCES)
+aux_source_directory("output-renderers" OUTPUT_RENDERER_SOURCES)
 aux_source_directory("geometric" GEOMETRIC_SOURCES)
 aux_source_directory("layer" LAYER_SELECTOR_SOURCES)
-set(SOURCE "main.c" "command-line.c" "gds-render-gui.c" "external-renderer.c")
+set(SOURCE "main.c" "command-line.c" "gds-render-gui.c")
 
 set(SOURCE
   ${SOURCE}
   ${LAYER_SOURCES}
   ${CELL_SELECTOR_SOURCES}
   ${GDS_SOURCES}
-  ${LATEX_SOURCES}
-  ${CAIRO_SOURCES}
+  ${OUTPUT_RENDERER_SOURCES}
   ${GEOMETRIC_SOURCES}
   ${LAYER_SELECTOR_SOURCES}
 )

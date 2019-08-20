@@ -34,27 +34,27 @@
 #include <glib.h>
 
 /**
- * @brief Convert GDS according to supplied parameters
- * @param gds_name GDS File path
- * @param pdf_name Cairo-PDF path
- * @param tex_name TeX/TikZ path
- * @param pdf Render Cairo
- * @param tex Render LaTeX
+ * @brief Convert GDS according to command line parameters
+ * @param gds_name Path to GDS File
+ * @param cell_name Cell name
+ * @param renderers Renderer ids
+ * @param output_file_names Output file names
  * @param layer_file Layer mapping file
- * @param cell_name Cell name to render
- * @param scale Scale image down by this value
- * @param pdf_layers TikZ creates OCG layers
- * @param pdf_standalone LaTeX document is standalone7
- * @param svg Render to SVG file
- * @param so_name Path to shared object of custom renderer
- * @param so_out_file Output file path for custom renderer
- * @param svg_name SVG file name
- *
- * @note This function is pretty damn retarded (Lots of parameters). Will be reworked when generating GObjects for renderers.
+ * @param so_path Shared object
+ * @param tex_standalone Standalone TeX
+ * @param tec_layers TeX OCR layers
+ * @param scale Scale value
+ * @return Error code, 0 if successful
  */
-void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
-			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers,
-			      gboolean pdf_standalone, gboolean svg, char *svg_name, char *so_name, char *so_out_file);
+int command_line_convert_gds(const char *gds_name,
+			      const char *cell_name,
+			      char **renderers,
+			      char **output_file_names,
+			      const char *layer_file,
+			      const char *so_path,
+			     gboolean tex_standalone,
+			     gboolean tex_layers,
+			     double scale);
 
 #endif /* _COMMAND_LINE_H_ */
 

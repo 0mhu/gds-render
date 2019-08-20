@@ -34,6 +34,7 @@
 #include <glib.h>
 
 #include <gds-render/widgets/layer-element.h>
+#include <gds-render/layer/layer-info.h>
 
 /**
  * @brief Load a line from \p stream and parse try to parse it as layer information

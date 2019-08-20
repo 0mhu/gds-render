@@ -34,6 +34,7 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <gds-render/layer/color-palette.h>
+#include <gds-render/layer/layer-info.h>
 
 G_BEGIN_DECLS
 
@@ -80,9 +81,9 @@ void layer_selector_set_save_mapping_button(LayerSelector *selector, GtkWidget *
 /**
  * @brief Get a list of all layers that shall be exported when rendering the cells
  * @param selector Layer selector instance
- * @return List of layer_info structures containing the layer information
+ * @return LayerSettings containing the layer information
  */
-GList *layer_selector_export_rendered_layer_info(LayerSelector *selector);
+LayerSettings *layer_selector_export_rendered_layer_info(LayerSelector *selector);
 
 /**
  * @brief Force the layer selector list to be sorted according to \p sort_function

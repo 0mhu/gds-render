@@ -23,13 +23,13 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+#ifndef _GDSPARSER_H_
+#define _GDSPARSER_H_
+
 /**
  * @addtogroup GDS-Utilities
  * @{
  */
-
-#ifndef _GDSPARSER_H_
-#define _GDSPARSER_H_
 
 #include <glib.h>
 
@@ -61,4 +61,4 @@ int clear_lib_list(GList **library_list);
 
 /** @} */
 
-#endif /* _GDSPARSE_H_ */
+#endif /* _GDSPARSER_H_ */

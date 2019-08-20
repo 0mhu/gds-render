@@ -34,54 +34,140 @@
 #include <gds-render/gds-utils/gds-parser.h>
 #include <gds-render/layer/mapping-parser.h>
 #include <gds-render/layer/layer-info.h>
-#include <gds-render/cairo-renderer/cairo-output.h>
-#include <gds-render/latex-renderer/latex-output.h>
-#include <gds-render/external-renderer.h>
+#include <gds-render/output-renderers/cairo-renderer.h>
+#include <gds-render/output-renderers/latex-renderer.h>
+#include <gds-render/output-renderers/external-renderer.h>
 #include <gds-render/gds-utils/gds-tree-checker.h>
 
-/**
- * @brief Delete layer_info and free nem element.
- *
- * Like delete_layer_info_struct() but also frees layer_info::name
- * @param info
- * @warning This function must not be used if the layer_info::name field references the internal storage strings if e.g. an entry field
- */
-static void delete_layer_info_with_name(struct layer_info *info)
+static int string_array_count(char **string_array)
 {
-	if (info) {
-		if (info->name)
-			g_free(info->name);
-		free(info);
-	}
+	int count;
+
+	if (!string_array)
+		return 0;
+
+	for (count = 0; *string_array; string_array++)
+		count++;
+
+	return count;
 }
 
-void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gboolean pdf, gboolean tex,
-			      char *layer_file, char *cell_name, double scale, gboolean pdf_layers,
-			      gboolean pdf_standalone, gboolean svg, char *svg_name, char *so_name, char *so_out_file)
+static int create_renderers(char **renderers,
+			    char **output_file_names,
+			    gboolean tex_layers,
+			    gboolean tex_standalone,
+			    const char *so_path,
+			    GList **renderer_list,
+			    LayerSettings *layer_settings)
 {
-	GList *libs = NULL;
-	FILE *tex_file;
-	int res;
-	GFile *file;
-	int i;
-	GFileInputStream *stream;
-	GDataInputStream *dstream;
-	gboolean layer_export;
-	GdkRGBA layer_color;
-	int layer;
-	char *layer_name;
-	GList *layer_info_list = NULL;
-	GList *cell_list;
-	struct layer_info *linfo_temp;
-	struct gds_library *first_lib;
-	struct gds_cell *toplevel_cell = NULL, *temp_cell;
+	char **renderer_iter;
+	char *current_renderer;
+	int idx;
+	char *current_out_file;
+	int count_render, count_out;
+	GdsOutputRenderer *output_renderer;
 
+	if (!renderer_list)
+		return -1;
+
+	if (!renderers || !output_file_names) {
+		fprintf(stderr, "Please specify renderers and file names\n");
+		return -1;
+	}
+
+	count_render = string_array_count(renderers);
+	count_out = string_array_count(output_file_names);
+	if (count_render != count_out) {
+		fprintf(stderr, "Count of renderers %d does not match count of output file names %d\n",
+			count_render, count_out);
+		return -1;
+	}
+
+	/* Parse cmd line parameters */
+	for (renderer_iter = renderers, idx = 0; *renderer_iter; renderer_iter++, idx++) {
+		current_renderer = *renderer_iter;
+		current_out_file = output_file_names[idx];
+
+		/* File valid ? */
+		if (!current_out_file || !current_out_file[0])
+			continue;
+
+		if (!strcmp(current_renderer, "tikz")) {
+			output_renderer = GDS_RENDER_OUTPUT_RENDERER(latex_renderer_new_with_options(tex_layers,
+												     tex_standalone));
+		} else if (!strcmp(current_renderer, "pdf")) {
+			output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_pdf());
+		} else if (!strcmp(current_renderer, "svg")) {
+			output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_svg());
+		} else if (!strcmp(current_renderer, "ext")) {
+			if (!so_path) {
+				fprintf(stderr, "Please specify shared object for external renderer. Will ignore this renderer.\n");
+				continue;
+			}
+			output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(so_path));
+		} else {
+			continue;
+		}
+
+		gds_output_renderer_set_output_file(output_renderer, current_out_file);
+		gds_output_renderer_set_layer_settings(output_renderer, layer_settings);
+		*renderer_list = g_list_append(*renderer_list, output_renderer);
+	}
+
+	return 0;
+}
+
+static struct gds_cell *find_gds_cell_in_lib(struct gds_library *lib, const char *cell_name)
+{
+	GList *cell_list;
+	struct gds_cell *return_cell = NULL;
+	struct gds_cell *temp_cell;
+
+	for (cell_list = lib->cells; cell_list; cell_list = g_list_next(cell_list)) {
+		temp_cell = (struct gds_cell *)cell_list->data;
+		if (!strncmp(temp_cell->name, cell_name, CELL_NAME_MAX)) {
+			return_cell = temp_cell;
+			break;
+		}
+	}
+	return return_cell;
+}
+
+int command_line_convert_gds(const char *gds_name,
+			      const char *cell_name,
+			      char **renderers,
+			      char **output_file_names,
+			      const char *layer_file,
+			      const char *so_path,
+			      gboolean tex_standalone,
+			      gboolean tex_layers,
+			      double scale)
+{
+	int ret = -1;
+	GList *libs = NULL;
+	int res;
+	GList *renderer_list = NULL;
+	GList *list_iter;
+	struct gds_library *first_lib;
+	struct gds_cell *toplevel_cell = NULL;
+	LayerSettings *layer_sett;
+	GdsOutputRenderer *current_renderer;
 
 	/* Check if parameters are valid */
-	if (!gds_name || (!pdf_name && pdf)  || (!tex_name && tex) || !layer_file || !cell_name) {
+	if (!gds_name || !cell_name || !output_file_names || !layer_file || !renderers) {
 		printf("Probably missing argument. Check --help option\n");
-		return;
+		return -2;
 	}
+
+	/* Load layer_settings */
+	layer_sett = layer_settings_new();
+	layer_settings_load_from_csv(layer_sett, layer_file);
+
+	/* Create renderers */
+	if (create_renderers(renderers, output_file_names, tex_layers, tex_standalone,
+			     so_path, &renderer_list, layer_sett))
+		goto ret_destroy_layer_mapping;
+
 
 	/* Load GDS */
 	clear_lib_list(&libs);
@@ -89,72 +175,37 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	if (res)
 		goto ret_destroy_library_list;
 
-	file = g_file_new_for_path(layer_file);
-	stream = g_file_read(file, NULL, NULL);
-
-	if (!stream) {
-		printf("Layer mapping not readable!\n");
-		goto ret_destroy_file;
-	}
-	dstream = g_data_input_stream_new(G_INPUT_STREAM(stream));
-	i = 0;
-	do {
-		res = mapping_parser_load_line(dstream, &layer_export, &layer_name, &layer, &layer_color);
-		if (res == 0) {
-			if (!layer_export)
-				continue;
-			linfo_temp = (struct layer_info *)malloc(sizeof(struct layer_info));
-			if (!linfo_temp) {
-				printf("Out of memory\n");
-				goto ret_clear_layer_list;
-			}
-			linfo_temp->color.alpha = layer_color.alpha;
-			linfo_temp->color.red = layer_color.red;
-			linfo_temp->color.green = layer_color.green;
-			linfo_temp->color.blue = layer_color.blue;
-			linfo_temp->name = layer_name;
-			linfo_temp->stacked_position = i++;
-			linfo_temp->layer = layer;
-			layer_info_list = g_list_append(layer_info_list, (gpointer)linfo_temp);
-		}
-	} while(res >= 0);
-
-
 	/* find_cell in first library. */
 	if (!libs)
-		goto ret_clear_layer_list;
+		goto ret_clear_renderers;
 
 	first_lib = (struct gds_library *)libs->data;
 	if (!first_lib) {
 		fprintf(stderr, "No library in library list. This should not happen.\n");
-		goto ret_clear_layer_list;
+		/* This is safe. Library destruction can handle an empty list element */
+		goto ret_destroy_library_list;
 	}
 
-	for (cell_list = first_lib->cells; cell_list != NULL; cell_list = g_list_next(cell_list)) {
-		temp_cell = (struct gds_cell *)cell_list->data;
-		if (!strcmp(temp_cell->name, cell_name)) {
-			toplevel_cell = temp_cell;
-			break;
-		}
-	}
+	/* Find cell in first library */
+	toplevel_cell = find_gds_cell_in_lib(first_lib, cell_name);
 
 	if (!toplevel_cell) {
 		printf("Couldn't find cell in first library!\n");
-		goto ret_clear_layer_list;
+		goto ret_destroy_library_list;
 	}
 
 	/* Check if cell passes vital checks */
 	res = gds_tree_check_reference_loops(toplevel_cell->parent_library);
 	if (res < 0) {
 		fprintf(stderr, "Checking library %s failed.\n", first_lib->name);
-		goto ret_clear_layer_list;
+		goto ret_destroy_library_list;
 	} else if (res > 0) {
 		fprintf(stderr, "%d reference loops found.\n", res);
 
 		/* do further checking if the specified cell and/or its subcells are affected */
 		if (toplevel_cell->checks.affected_by_reference_loop == 1) {
 			fprintf(stderr, "Cell is affected by reference loop. Abort!\n");
-			goto ret_clear_layer_list;
+			goto ret_destroy_library_list;
 		}
 	}
 
@@ -165,40 +216,21 @@ void command_line_convert_gds(char *gds_name, char *pdf_name, char *tex_name, gb
 	 * Deal with it.
 	 */
 
-	/* Render outputs */
-	if (pdf == TRUE || svg == TRUE) {
-		cairo_render_cell_to_vector_file(toplevel_cell, layer_info_list, (pdf == TRUE ? pdf_name : NULL),
-						 (svg == TRUE ? svg_name : NULL), scale);
+	/* Execute all rendererer instances */
+	for (list_iter = renderer_list; list_iter; list_iter = list_iter->next) {
+		current_renderer = GDS_RENDER_OUTPUT_RENDERER(list_iter->data);
+		gds_output_renderer_render_output(current_renderer, toplevel_cell, scale);
 	}
 
-	if (tex == TRUE) {
-		tex_file = fopen(tex_name, "w");
-		if (!tex_file)
-			goto ret_clear_layer_list;
-		latex_render_cell_to_code(toplevel_cell, layer_info_list, tex_file, scale, pdf_layers, pdf_standalone);
-		fclose(tex_file);
-	}
-
-	if (so_name && so_out_file) {
-		if (strlen(so_name) == 0 || strlen(so_out_file) == 0)
-			goto ret_clear_layer_list;
-
-		/* Render output using external renderer */
-		printf("Invoking external renderer!\n");
-		external_renderer_render_cell(toplevel_cell, layer_info_list, so_out_file, so_name);
-		printf("External renderer finished!\n");
-	}
-
-ret_clear_layer_list:
-	g_list_free_full(layer_info_list, (GDestroyNotify)delete_layer_info_with_name);
-
-	g_object_unref(dstream);
-	g_object_unref(stream);
-ret_destroy_file:
-	g_object_unref(file);
-	/* Delete all allocated libraries */
 ret_destroy_library_list:
 	clear_lib_list(&libs);
+ret_clear_renderers:
+	for (list_iter = renderer_list; list_iter; list_iter = list_iter->next) {
+		g_object_unref(list_iter->data);
+	}
+ret_destroy_layer_mapping:
+	g_object_unref(layer_sett);
+	return ret;
 }
 
 /** @} */

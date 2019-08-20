@@ -35,6 +35,7 @@ struct _ColorPalette {
 	/** @brief The length of the _ColorPalette::color_array array */
 	unsigned int color_array_length;
 
+	/* Dummy bytes to ensure ABI compatibility in future versions */
 	gpointer dummy[4];
 };
 
@@ -116,8 +117,8 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 	palette->color_array = (GdkRGBA *)malloc(sizeof(GdkRGBA) * (unsigned int)lines);
 
 	/* Setup regex for hexadecimal RGB colors like 'A0CB3F' */
-	regex = g_regex_new("^(?<red>[0-9A-Fa-f][0-9A-Fa-f])(?<green>[0-9A-Fa-f][0-9A-Fa-f])(?<blue>[0-9A-Fa-f][0-9A-Fa-f])$", 0, 0, NULL);
-
+	regex = g_regex_new("^(?<red>[0-9A-Fa-f][0-9A-Fa-f])(?<green>[0-9A-Fa-f][0-9A-Fa-f])(?<blue>[0-9A-Fa-f][0-9A-Fa-f])$",
+			    0, 0, NULL);
 
 	/* Reset line */
 	line_idx = 0;
@@ -227,11 +228,27 @@ unsigned int color_palette_get_color_count(ColorPalette *palette)
 	return return_val;
 }
 
+static void color_palette_dispose(GObject *gobj)
+{
+	ColorPalette *palette;
+
+	palette = GDS_RENDER_COLOR_PALETTE(gobj);
+	if (palette->color_array)
+	{
+		palette->color_array_length = 0;
+		free(palette->color_array);
+	}
+
+	/* Chain up to parent class */
+	G_OBJECT_CLASS(color_palette_parent_class)->dispose(gobj);
+}
+
 static void color_palette_class_init(ColorPaletteClass *klass)
 {
-	(void)klass;
-	/* Nothing to do for now */
-	return;
+	GObjectClass *gclass;
+
+	gclass = G_OBJECT_CLASS(klass);
+	gclass->dispose = color_palette_dispose;
 }
 
 static void color_palette_init(ColorPalette *self)

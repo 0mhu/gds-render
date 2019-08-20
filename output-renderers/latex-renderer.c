@@ -24,15 +24,33 @@
  */
 
 #include <math.h>
-
-#include <gds-render/latex-renderer/latex-output.h>
-
+#include <stdio.h>
+#include <gds-render/output-renderers/latex-renderer.h>
+#include <gdk/gdk.h>
+#include <gds-render/layer/layer-info.h>
 /**
- * @addtogroup LaTeX-Renderer
+ * @addtogroup LatexRenderer
  * @{
  */
 
-/** @brief Writes a GString \p buffer to the fixed file tex_file */
+struct _LatexRenderer {
+	GdsOutputRenderer parent;
+	gboolean tex_standalone;
+	gboolean pdf_layers;
+};
+
+G_DEFINE_TYPE(LatexRenderer, latex_renderer, GDS_RENDER_TYPE_OUTPUT_RENDERER)
+
+enum {
+	PROP_STANDALONE = 1,
+	PROP_PDF_LAYERS,
+	N_PROPERTIES
+};
+
+/**
+ * @brief Writes a GString \p buffer to the fixed file tex_file
+ * @note This is a convinience macro. Do not use this anywhere else. It might change behavior in futurtre releases
+ */
 #define WRITEOUT_BUFFER(buff) fwrite((buff)->str, sizeof(char), (buff)->len, tex_file)
 
 /**
@@ -51,10 +69,13 @@ static void write_layer_definitions(FILE *tex_file, GList *layer_infos, GString 
 {
 	GList *list;
 	struct layer_info *lifo;
-	char *end_str;
 
 	for (list = layer_infos; list != NULL; list = list->next) {
 		lifo = (struct layer_info *)list->data;
+
+		if (!lifo->render)
+			continue;
+
 		g_string_printf(buffer, "\\pgfdeclarelayer{l%d}\n\\definecolor{c%d}{rgb}{%lf,%lf,%lf}\n",
 				lifo->layer, lifo->layer,
 				lifo->color.red, lifo->color.green, lifo->color.blue);
@@ -67,14 +88,14 @@ static void write_layer_definitions(FILE *tex_file, GList *layer_infos, GString 
 	for (list = layer_infos; list != NULL; list = list->next) {
 		lifo = (struct layer_info *)list->data;
 
-		if (list->next == NULL)
-			end_str = ",main}";
-		else
-			end_str = ",";
-		g_string_printf(buffer, "l%d%s", lifo->layer, end_str);
+		if (!lifo->render)
+			continue;
+
+		g_string_printf(buffer, "l%d,", lifo->layer);
 		WRITEOUT_BUFFER(buffer);
 	}
-	fwrite("\n", sizeof(char), 1, tex_file);
+	g_string_printf(buffer, "main}\n");
+	WRITEOUT_BUFFER(buffer);
 }
 
 /**
@@ -110,7 +131,7 @@ static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList
 
 	for (temp = linfo; temp != NULL; temp = temp->next) {
 		inf = (struct layer_info *)temp->data;
-		if (inf->layer == layer) {
+		if (inf->layer == layer && inf->render) {
 			color->alpha = inf->color.alpha;
 			color->red = inf->color.red;
 			color->green = inf->color.green;
@@ -249,14 +270,14 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 }
 
-void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale,
+static int latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale,
 			       gboolean create_pdf_layers, gboolean standalone_document)
 {
 	GString *working_line;
 
 
 	if (!tex_file || !layer_infos || !cell)
-		return;
+		return -1;
 
 	/* 10 kB Line working buffer should be enough */
 	working_line = g_string_new_len(NULL, LATEX_LINE_BUFFER_KB*1024);
@@ -298,6 +319,125 @@ void latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *
 
 	fflush(tex_file);
 	g_string_free(working_line, TRUE);
+
+	return 0;
+}
+
+static int latex_renderer_render_output(GdsOutputRenderer *renderer,
+					  struct gds_cell *cell,
+					  double scale)
+{
+	LatexRenderer *l_renderer = GDS_RENDER_LATEX_RENDERER(renderer);
+	FILE *tex_file;
+	int ret = -2;
+	LayerSettings *settings;
+	GList *layer_infos = NULL;
+	const char *output_file;
+
+	output_file = gds_output_renderer_get_output_file(renderer);
+	settings = gds_output_renderer_get_and_ref_layer_settings(renderer);
+
+	/* Set layer info list. In case of failure it remains NULL */
+	if (settings)
+		layer_infos = layer_settings_get_layer_info_list(settings);
+
+	tex_file = fopen(output_file, "w");
+	if (tex_file) {
+		ret = latex_render_cell_to_code(cell, layer_infos, tex_file, scale,
+						l_renderer->pdf_layers, l_renderer->tex_standalone);
+		fclose(tex_file);
+	} else {
+		g_error("Could not open LaTeX output file");
+	}
+
+	if (settings) {
+		g_object_unref(settings);
+	}
+
+	return ret;
+}
+
+static void latex_renderer_init(LatexRenderer *self)
+{
+	self->pdf_layers = FALSE;
+	self->tex_standalone = FALSE;
+}
+
+static void latex_renderer_get_property(GObject *obj, guint property_id, GValue *value, GParamSpec *pspec)
+{
+	LatexRenderer *self = GDS_RENDER_LATEX_RENDERER(obj);
+
+	switch (property_id) {
+	case PROP_STANDALONE:
+		g_value_set_boolean(value, self->tex_standalone);
+		break;
+	case PROP_PDF_LAYERS:
+		g_value_set_boolean(value, self->pdf_layers);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
+		break;
+	}
+}
+
+static void latex_renderer_set_property(GObject *obj, guint property_id, const GValue *value, GParamSpec *pspec)
+{
+	LatexRenderer *self = GDS_RENDER_LATEX_RENDERER(obj);
+
+	switch (property_id) {
+	case PROP_STANDALONE:
+		self->tex_standalone = g_value_get_boolean(value);
+		break;
+	case PROP_PDF_LAYERS:
+		self->pdf_layers = g_value_get_boolean(value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
+		break;
+	}
+}
+
+static GParamSpec *latex_renderer_properties[N_PROPERTIES] = {NULL};
+
+static void latex_renderer_class_init(LatexRendererClass *klass)
+{
+	GdsOutputRendererClass *render_class = GDS_RENDER_OUTPUT_RENDERER_CLASS(klass);
+	GObjectClass *oclass = G_OBJECT_CLASS(klass);
+
+	/* Overwrite virtual function */
+	render_class->render_output = latex_renderer_render_output;
+
+	/* Property stuff */
+	oclass->get_property = latex_renderer_get_property;
+	oclass->set_property = latex_renderer_set_property;
+
+	latex_renderer_properties[PROP_STANDALONE] =
+			g_param_spec_boolean("standalone",
+					     "Standalone TeX file",
+					     "Generate a standalone LaTeX file.",
+					     FALSE,
+					     G_PARAM_READWRITE);
+	latex_renderer_properties[PROP_PDF_LAYERS] =
+			g_param_spec_boolean("pdf-layers",
+					     "PDF OCR layers",
+					     "Generate OCR layers",
+					     FALSE,
+					     G_PARAM_READWRITE);
+
+	g_object_class_install_properties(oclass, N_PROPERTIES, latex_renderer_properties);
+}
+
+LatexRenderer *latex_renderer_new()
+{
+	return GDS_RENDER_LATEX_RENDERER(g_object_new(GDS_RENDER_TYPE_LATEX_RENDERER, NULL));
+}
+
+LatexRenderer *latex_renderer_new_with_options(gboolean pdf_layers, gboolean standalone)
+{
+	GObject *obj;
+
+	obj = g_object_new(GDS_RENDER_TYPE_LATEX_RENDERER, "standalone", standalone, "pdf-layers", pdf_layers, NULL);
+	return GDS_RENDER_LATEX_RENDERER(obj);
 }
 
 /** @} */
