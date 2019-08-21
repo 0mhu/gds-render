@@ -320,9 +320,7 @@ static void gds_output_renderer_async_wrapper(GTask *task,
 		goto ret_from_task;
 	}
 
-	g_mutex_lock(&priv->settings_lock);
 	ret = gds_output_renderer_render_output(renderer, priv->async_params.cell, priv->async_params.scale);
-	g_mutex_unlock(&priv->settings_lock);
 
 ret_from_task:
 	g_task_return_int(task, ret);
