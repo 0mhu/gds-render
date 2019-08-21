@@ -249,6 +249,23 @@ end_destroy:
 	gtk_widget_destroy(open_dialog);
 }
 
+static void process_button_state_changes(GdsRenderGui *self)
+{
+	gboolean convert_button_state = FALSE;
+	gboolean open_gds_button_state = FALSE;
+
+	/* Calculate states */
+	if (!self->button_state_data.rendering_active) {
+		open_gds_button_state = TRUE;
+		if (self->button_state_data.valid_cell_selected)
+			convert_button_state = TRUE;
+	}
+
+	/* Apply states */
+	gtk_widget_set_sensitive(self->convert_button, convert_button_state);
+	gtk_widget_set_sensitive(self->open_button, open_gds_button_state);
+}
+
 /**
  * @brief Callback for auto coloring button
  * @param button
@@ -261,6 +278,19 @@ static void on_auto_color_clicked(gpointer button, gpointer user)
 
 	self = RENDERER_GUI(user);
 	layer_selector_auto_color_layers(self->layer_selector, self->palette, 1.0);
+}
+
+static void async_rendering_finished_callback(GdsOutputRenderer *renderer, gpointer gui)
+{
+	GdsRenderGui *self;
+
+	self = RENDERER_GUI(gui);
+
+	self->button_state_data.rendering_active = FALSE;
+	process_button_state_changes(self);
+	activity_bar_set_ready(self->activity_status_bar);
+
+	g_object_unref(renderer);
 }
 
 /**
@@ -389,13 +419,19 @@ static void on_convert_clicked(gpointer button, gpointer user)
 			gds_output_renderer_set_layer_settings(render_engine, layer_settings);
 			/* Prevent user from overwriting library or triggering additional conversion */
 			self->button_state_data.rendering_active = TRUE;
+			process_button_state_changes(self);
 
+			g_signal_connect(render_engine, "async-finished", G_CALLBACK(async_rendering_finished_callback),
+					 self);
+
+			activity_bar_set_busy(self->activity_status_bar, "Rendering cell...");
 			/* TODO: Replace this with asynchronous rendering. However, this fixes issue #19 */
-			gds_output_renderer_render_output(render_engine, cell_to_render, sett->scale);
+			gds_output_renderer_render_output_async(render_engine, cell_to_render, sett->scale);
 
-			self->button_state_data.rendering_active = FALSE;
 
-			g_object_unref(render_engine);
+			//self->button_state_data.rendering_active = FALSE;
+
+			//g_object_unref(render_engine);
 		}
 
 		g_free(file_name);
@@ -422,23 +458,6 @@ static void cell_tree_view_activated(gpointer tree_view, GtkTreePath *path,
 	(void)column;
 
 	on_convert_clicked(NULL, user);
-}
-
-static void process_button_state_changes(GdsRenderGui *self)
-{
-	gboolean convert_button_state = FALSE;
-	gboolean open_gds_button_state = FALSE;
-
-	/* Calculate states */
-	if (!self->button_state_data.rendering_active) {
-		open_gds_button_state = TRUE;
-		if (self->button_state_data.valid_cell_selected)
-			convert_button_state = TRUE;
-	}
-
-	/* Apply states */
-	gtk_widget_set_sensitive(self->convert_button, convert_button_state);
-	gtk_widget_set_sensitive(self->open_button, open_gds_button_state);
 }
 
 /**
