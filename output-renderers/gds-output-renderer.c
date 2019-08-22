@@ -402,7 +402,7 @@ static gboolean idle_event_processor_callback(gpointer user_data)
 	priv = gds_output_renderer_get_instance_private(renderer);
 
 	if (g_mutex_trylock(&priv->idle_function_parameters.message_lock)) {
-		status_message = priv->idle_function_parameters.status_message;
+		status_message = g_strdup(priv->idle_function_parameters.status_message);
 		g_signal_emit(renderer, gds_output_renderer_signals[ASYNC_PROGRESS_CHANGED], 0, status_message);
 		g_free(priv->idle_function_parameters.status_message);
 		priv->idle_function_parameters.status_message = NULL;
@@ -418,6 +418,7 @@ void gds_output_renderer_update_gui_status_from_async(GdsOutputRenderer *rendere
 {
 	GSource *idle_event_processor;
 	GdsOutputRendererPrivate *priv;
+	gboolean skip_source = FALSE;
 
 	g_return_if_fail(GDS_RENDER_IS_OUTPUT_RENDERER(renderer));
 	if (!status)
@@ -430,17 +431,20 @@ void gds_output_renderer_update_gui_status_from_async(GdsOutputRenderer *rendere
 		return;
 
 	g_mutex_lock(&priv->idle_function_parameters.message_lock);
-
-	if (priv->idle_function_parameters.status_message)
+	if (priv->idle_function_parameters.status_message) {
 		g_free(priv->idle_function_parameters.status_message);
 
+		/* Skip adding new idle source because there's already an active one */
+		skip_source = TRUE;
+	}
 	priv->idle_function_parameters.status_message = g_strdup(status);
-
 	g_mutex_unlock(&priv->idle_function_parameters.message_lock);
 
-	idle_event_processor = g_idle_source_new();
-	g_source_set_callback(idle_event_processor, idle_event_processor_callback, (gpointer)renderer, NULL);
-	g_source_attach(idle_event_processor, priv->main_context);
+	if (!skip_source) {
+		idle_event_processor = g_idle_source_new();
+		g_source_set_callback(idle_event_processor, idle_event_processor_callback, (gpointer)renderer, NULL);
+		g_source_attach(idle_event_processor, priv->main_context);
+	}
 }
 
 /** @} */
