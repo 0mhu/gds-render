@@ -423,6 +423,10 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		case RENDERER_CAIROGRAPHICS_PDF:
 			render_engine = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_pdf());
 			break;
+		default:
+			/* Abort rendering */
+			render_engine = NULL;
+			break;
 		}
 
 		if (render_engine) {
