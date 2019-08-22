@@ -170,7 +170,6 @@ static void gds_output_renderer_class_init(GdsOutputRendererClass *klass)
 	oclass->set_property = gds_output_renderer_set_property;
 	oclass->get_property = gds_output_renderer_get_property;
 
-
 	/* Setup properties */
 	gds_output_renderer_properties[PROP_OUTPUT_FILE] =
 			g_param_spec_string("output-file", "output file", "Output file for renderer",
