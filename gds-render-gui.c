@@ -293,6 +293,15 @@ static void async_rendering_finished_callback(GdsOutputRenderer *renderer, gpoin
 	g_object_unref(renderer);
 }
 
+static void async_rendering_status_update_callback(GdsOutputRenderer *renderer, const char *status_message, gpointer data)
+{
+	GdsRenderGui *gui;
+	(void)renderer;
+
+	gui = RENDERER_GUI(data);
+	activity_bar_set_busy(gui->activity_status_bar, status_message);
+}
+
 /**
  * @brief Convert button callback
  * @param button
@@ -426,6 +435,9 @@ static void on_convert_clicked(gpointer button, gpointer user)
 
 			activity_bar_set_busy(self->activity_status_bar, "Rendering cell...");
 			/* TODO: Replace this with asynchronous rendering. However, this fixes issue #19 */
+
+			g_signal_connect(render_engine, "progress-changed",
+					 G_CALLBACK(async_rendering_status_update_callback), self);
 			gds_output_renderer_render_output_async(render_engine, cell_to_render, sett->scale);
 
 
