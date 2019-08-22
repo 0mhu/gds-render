@@ -38,13 +38,20 @@ struct renderer_params {
 		double scale;
 };
 
+struct idle_function_params {
+	GMutex message_lock;
+	char *status_message;
+};
+
 typedef struct {
 	gchar *output_file;
 	LayerSettings *layer_settings;
 	GMutex settings_lock;
 	gboolean mutex_init_status;
 	GTask *task;
+	GMainContext *main_context;
 	struct renderer_params async_params;
+	struct idle_function_params idle_function_parameters;
 	gpointer padding[11];
 } GdsOutputRendererPrivate;
 
@@ -56,7 +63,7 @@ enum {
 
 G_DEFINE_TYPE_WITH_PRIVATE(GdsOutputRenderer, gds_output_renderer, G_TYPE_OBJECT)
 
-enum gds_output_renderer_signal_ids {ASYNC_FINISHED = 0, ASYNC_PROGRESS_UPDATE, GDS_OUTPUT_RENDERER_SIGNAL_COUNT};
+enum gds_output_renderer_signal_ids {ASYNC_FINISHED = 0, ASYNC_PROGRESS_CHANGED, GDS_OUTPUT_RENDERER_SIGNAL_COUNT};
 static guint gds_output_renderer_signals[GDS_OUTPUT_RENDERER_SIGNAL_COUNT];
 
 static int gds_output_renderer_render_dummy(GdsOutputRenderer *renderer,
@@ -83,6 +90,11 @@ static void gds_output_renderer_dispose(GObject *self_obj)
 		g_mutex_lock(&priv->settings_lock);
 		g_mutex_unlock(&priv->settings_lock);
 		g_mutex_clear(&priv->settings_lock);
+
+		g_mutex_lock(&priv->idle_function_parameters.message_lock);
+		g_mutex_unlock(&priv->idle_function_parameters.message_lock);
+		g_mutex_clear(&priv->idle_function_parameters.message_lock);
+
 		priv->mutex_init_status = FALSE;
 	}
 
@@ -150,12 +162,14 @@ static GParamSpec *gds_output_renderer_properties[N_PROPERTIES] = {NULL};
 static void gds_output_renderer_class_init(GdsOutputRendererClass *klass)
 {
 	GObjectClass *oclass = G_OBJECT_CLASS(klass);
+	GType progress_changed_param_types[1] = {G_TYPE_POINTER};
 
 	klass->render_output = gds_output_renderer_render_dummy;
 
 	oclass->dispose = gds_output_renderer_dispose;
 	oclass->set_property = gds_output_renderer_set_property;
 	oclass->get_property = gds_output_renderer_get_property;
+
 
 	/* Setup properties */
 	gds_output_renderer_properties[PROP_OUTPUT_FILE] =
@@ -178,16 +192,16 @@ static void gds_output_renderer_class_init(GdsOutputRendererClass *klass)
 				      G_TYPE_NONE,
 				      0,
 				      NULL);
-	gds_output_renderer_signals[ASYNC_PROGRESS_UPDATE] =
-			g_signal_newv("progress-update", GDS_RENDER_TYPE_OUTPUT_RENDERER,
+	gds_output_renderer_signals[ASYNC_PROGRESS_CHANGED] =
+			g_signal_newv("progress-changed", GDS_RENDER_TYPE_OUTPUT_RENDERER,
 				      G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
 				      NULL,
 				      NULL,
 				      NULL,
 				      NULL,
 				      G_TYPE_NONE,
-				      0,
-				      NULL);
+				      1,
+				      progress_changed_param_types);
 }
 
 void gds_output_renderer_init(GdsOutputRenderer *self)
@@ -200,7 +214,10 @@ void gds_output_renderer_init(GdsOutputRenderer *self)
 	priv->output_file = NULL;
 	priv->task = NULL;
 	priv->mutex_init_status = TRUE;
+	priv->main_context = NULL;
+	priv->idle_function_parameters.status_message = NULL;
 	g_mutex_init(&priv->settings_lock);
+	g_mutex_init(&priv->idle_function_parameters.message_lock);
 
 	return;
 }
@@ -334,8 +351,13 @@ static void gds_output_renderer_async_finished(GObject *src_obj, GAsyncResult *r
 
 	priv = gds_output_renderer_get_instance_private(GDS_RENDER_OUTPUT_RENDERER(src_obj));
 
+	priv->main_context = NULL;
+
 	g_signal_emit(src_obj, gds_output_renderer_signals[ASYNC_FINISHED], 0);
 	g_clear_object(&priv->task);
+
+	/* Clear reference set in gds_output_renderer_render_output_async() */
+	g_object_unref(src_obj);
 }
 
 int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale)
@@ -353,11 +375,73 @@ int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct 
 	g_mutex_lock(&priv->settings_lock);
 	priv->async_params.cell = cell;
 	priv->async_params.scale = scale;
+	priv->main_context = g_main_context_default();
 	g_mutex_unlock(&priv->settings_lock);
 
+	/* Self reference. This could end up being nasty... */
+	g_object_ref(renderer);
+
+	/* Do the magic */
 	g_task_run_in_thread(priv->task, gds_output_renderer_async_wrapper);
 
 	return ret;
+}
+
+static gboolean idle_event_processor_callback(gpointer user_data)
+{
+	GdsOutputRenderer *renderer;
+	GdsOutputRendererPrivate *priv;
+	char *status_message;
+
+	/* If the rendering is finished before the mainloop gets to this point
+	 * the renderer is already disposed. Catch this!
+	 */
+	if (!GDS_RENDER_IS_OUTPUT_RENDERER(user_data))
+		return FALSE;
+
+	renderer = GDS_RENDER_OUTPUT_RENDERER(user_data);
+	priv = gds_output_renderer_get_instance_private(renderer);
+
+	if (g_mutex_trylock(&priv->idle_function_parameters.message_lock)) {
+		status_message = priv->idle_function_parameters.status_message;
+		g_signal_emit(renderer, gds_output_renderer_signals[ASYNC_PROGRESS_CHANGED], 0, status_message);
+		g_free(priv->idle_function_parameters.status_message);
+		priv->idle_function_parameters.status_message = NULL;
+		g_mutex_unlock(&priv->idle_function_parameters.message_lock);
+	} else {
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+void gds_output_renderer_update_gui_status_from_async(GdsOutputRenderer *renderer, const char *status)
+{
+	GSource *idle_event_processor;
+	GdsOutputRendererPrivate *priv;
+
+	g_return_if_fail(GDS_RENDER_IS_OUTPUT_RENDERER(renderer));
+	if (!status)
+		return;
+
+	priv = gds_output_renderer_get_instance_private(renderer);
+
+	/* If rendering is not async */
+	if (!priv->main_context)
+		return;
+
+	g_mutex_lock(&priv->idle_function_parameters.message_lock);
+
+	if (priv->idle_function_parameters.status_message)
+		g_free(priv->idle_function_parameters.status_message);
+
+	priv->idle_function_parameters.status_message = g_strdup(status);
+
+	g_mutex_unlock(&priv->idle_function_parameters.message_lock);
+
+	idle_event_processor = g_idle_source_new();
+	g_source_set_callback(idle_event_processor, idle_event_processor_callback, (gpointer)renderer, NULL);
+	g_source_attach(idle_event_processor, priv->main_context);
 }
 
 /** @} */

@@ -144,6 +144,16 @@ void gds_output_renderer_set_layer_settings(GdsOutputRenderer *renderer, LayerSe
  */
 int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale);
 
+/**
+ * @brief This function emits the 'progress-changed' in the thread/context that triggered an asynchronous rendering
+ *
+ * If the rendering is not asynchronous, this function has no effect.
+ *
+ * @param renderer GdsOutputrenderer object
+ * @param status Status to supply to signal emission
+ */
+void gds_output_renderer_update_gui_status_from_async(GdsOutputRenderer *renderer, const char *status);
+
 G_END_DECLS
 
 #endif /* _GDS_OUTPUT_RENDERER_H_ */
