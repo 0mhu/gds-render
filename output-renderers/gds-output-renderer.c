@@ -372,6 +372,8 @@ int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct 
 	}
 
 	priv->task = g_task_new(renderer, NULL, gds_output_renderer_async_finished, NULL);
+	g_task_set_name(priv->task, "Rendering Thread");
+
 	g_mutex_lock(&priv->settings_lock);
 	priv->async_params.cell = cell;
 	priv->async_params.scale = scale;
