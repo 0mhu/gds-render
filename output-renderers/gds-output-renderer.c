@@ -405,7 +405,7 @@ static gboolean idle_event_processor_callback(gpointer user_data)
 	priv = gds_output_renderer_get_instance_private(renderer);
 
 	if (g_mutex_trylock(&priv->idle_function_parameters.message_lock)) {
-		status_message = g_strdup(priv->idle_function_parameters.status_message);
+		status_message = priv->idle_function_parameters.status_message;
 		g_signal_emit(renderer, gds_output_renderer_signals[ASYNC_PROGRESS_CHANGED], 0, status_message);
 		g_free(priv->idle_function_parameters.status_message);
 		priv->idle_function_parameters.status_message = NULL;

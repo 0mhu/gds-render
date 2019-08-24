@@ -293,7 +293,7 @@ static void async_rendering_finished_callback(GdsOutputRenderer *renderer, gpoin
 	g_object_unref(renderer);
 }
 
-static void async_rendering_status_update_callback(GdsOutputRenderer *renderer, char *status_message, gpointer data)
+static void async_rendering_status_update_callback(GdsOutputRenderer *renderer, const char *status_message, gpointer data)
 {
 	GdsRenderGui *gui;
 	(void)renderer;
@@ -301,7 +301,6 @@ static void async_rendering_status_update_callback(GdsOutputRenderer *renderer, 
 	gui = RENDERER_GUI(data);
 
 	activity_bar_set_busy(gui->activity_status_bar, status_message);
-	g_free(status_message);
 }
 
 /**
