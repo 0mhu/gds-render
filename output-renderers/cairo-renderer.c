@@ -400,6 +400,7 @@ static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
 	else
 		pdf_file = output_file;
 
+	gds_output_renderer_update_gui_status_from_async(renderer, "Rendering Cairo Output...");
 	ret = cairo_renderer_render_cell_to_vector_file(cell, layer_infos, pdf_file, svg_file, scale);
 
 	if (settings)

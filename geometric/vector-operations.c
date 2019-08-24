@@ -33,7 +33,7 @@
 
 #include <gds-render/geometric/vector-operations.h>
 
-#define ABS_DBL(a) ((a) < 0 ? -(a) : (a))
+#define ABS_DBL(a) ((a) < 0.0 ? -(a) : (a))
 
 double vector_2d_scalar_multipy(struct vector_2d *a, struct vector_2d *b)
 {

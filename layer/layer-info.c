@@ -39,9 +39,36 @@ static void layer_settings_init(LayerSettings *self)
 	self->layer_infos = NULL;
 }
 
+static void layer_info_delete_with_name(struct layer_info *const info)
+{
+	if (!info)
+		return;
+
+	if (info->name)
+		free(info->name);
+	free(info);
+}
+
+static void layer_settings_dispose(GObject *obj)
+{
+	LayerSettings *self;
+
+	self = GDS_RENDER_LAYER_SETTINGS(obj);
+
+	if (self->layer_infos) {
+		g_list_free_full(self->layer_infos, (GDestroyNotify)layer_info_delete_with_name);
+		self->layer_infos = NULL;
+	}
+
+	G_OBJECT_CLASS(layer_settings_parent_class)->dispose(obj);
+}
+
 static void layer_settings_class_init(LayerSettingsClass *klass)
 {
-	(void)klass;
+	GObjectClass *oclass;
+
+	oclass = G_OBJECT_CLASS(klass);
+	oclass->dispose = layer_settings_dispose;
 
 	return;
 }
@@ -74,16 +101,6 @@ static struct layer_info *layer_info_copy(const struct layer_info * const info)
 		copy->name = strdup(info->name);
 
 	return copy;
-}
-
-static void layer_info_delete_with_name(struct layer_info *const info)
-{
-	if (!info)
-		return;
-
-	if (info->name)
-		free(info->name);
-	free(info);
 }
 
 LayerSettings *layer_settings_new()

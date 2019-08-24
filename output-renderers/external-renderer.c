@@ -50,6 +50,7 @@ G_DEFINE_TYPE(ExternalRenderer, external_renderer, GDS_RENDER_TYPE_OUTPUT_RENDER
  * @param toplevel_cell Cell to render
  * @param layer_info_list Layer information (Color etc.)
  * @param output_file Destination file
+ * @param scale the scaling value to scale the output cell down by.
  * @param so_path Path to shared object
  * @return 0 if successful
  */

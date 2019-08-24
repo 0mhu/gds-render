@@ -1,9 +1,0 @@
-/**
- * @defgroup renderers Output Renderers
- * 
- * The renderers are used to convert the cell structures read from the GDS layout file
- * into different output formats.
- * 
- * Currently the renders are statically implemented without the use of GObjects.
- * This will probably change in future releases in order to make it easier to integrate new rendering methods.
- */

@@ -53,6 +53,14 @@ ActivityBar *activity_bar_new();
  */
 void activity_bar_set_ready(ActivityBar *bar);
 
+/**
+ * @brief Enable spinner and set \p text. If text is NULL, 'Working...' is displayed
+ * @param bar Activity bar object
+ * @param text Text to display, may be NULL
+
+ */
+void activity_bar_set_busy(ActivityBar *bar, const char *text);
+
 G_END_DECLS
 
 #endif /* __LAYER_ELEMENT_H__ */

@@ -105,5 +105,11 @@ void activity_bar_set_ready(ActivityBar *bar)
 	gtk_spinner_stop(GTK_SPINNER(bar->spinner));
 }
 
+void activity_bar_set_busy(ActivityBar *bar, const char *text)
+{
+	gtk_label_set_text(GTK_LABEL(bar->label), (text ? text : "Working..."));
+	gtk_spinner_start(GTK_SPINNER(bar->spinner));
+}
+
 
 /** @} */

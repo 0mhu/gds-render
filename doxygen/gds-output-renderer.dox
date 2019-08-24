@@ -1,0 +1,34 @@
+/**
+ * @defgroup GdsOutputRenderer GDS Output Renderer base class
+ * 
+ * The renderers are used to convert the cell structures read from the GDS layout file
+ * into different output formats.
+ * 
+ * The GdsOutputRenderer base class is used to derive all renderers from.
+ *
+ * @warning Although the GdsOutputRenderer class provides compatibility for asynchronous rendering,
+ * the class is not thread safe / re-entrant. Only use it from a signle context. Not even the rendering function called is allowed to modifiy this object.
+ * 
+ * A allowed function to be called from the async rendering thread is #gds_output_renderer_update_gui_status_from_async and the get functions for the properties.
+ *  
+ * @note The context that owned the renderer has to ensure that only one rendering is active at a time for a single instance of a renderer.
+ *
+ * By default this class implements the following features:
+ * 
+ * @subsection GdsOutputRendererProps Properties
+ * Property Name    | Description
+ * -----------------|----------------------------------------------------------------
+ * layer-settings   | LayerSettings object containing the layer rendering information
+ * output-file      | Output file name for rendering
+ *
+ * All these properties have to be set for rendering.
+ *
+ * @subsection GdsOutputRendererSignals Signals / Events
+ * Signal Name      | Description                                     | Callback prototype
+ * -----------------|-------------------------------------------------|-----------------------------------------------------------
+ * async-finished   | The asynchronous rendering is finished          | void callback(GdsOutputRenderer *src, gpointer user_data)
+ * progress-changed | The asynchronous rendering progress changed     | void callback(GdsOutputRenderer *src, const char *progress, gpointer user_data)
+ *
+ * @note The `char *progress` supplied to the callback function must not be modified or freed.
+ *
+ */

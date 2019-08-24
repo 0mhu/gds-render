@@ -47,6 +47,11 @@ enum gds_render_gui_signal_sig_ids {SIGNAL_WINDOW_CLOSED = 0, SIGNAL_COUNT};
 
 static guint gds_render_gui_signals[SIGNAL_COUNT];
 
+struct gui_button_states {
+	gboolean rendering_active;
+	gboolean valid_cell_selected;
+};
+
 struct _GdsRenderGui {
 	/* Parent GObject */
 	GObject parent;
@@ -54,6 +59,9 @@ struct _GdsRenderGui {
 	/* Custom fields */
 	GtkWindow *main_window;
 	GtkWidget *convert_button;
+	GtkWidget *open_button;
+	GtkWidget *load_layer_button;
+	GtkWidget *save_layer_button;
 	GtkTreeStore *cell_tree_store;
 	GtkWidget *cell_search_entry;
 	LayerSelector *layer_selector;
@@ -62,6 +70,7 @@ struct _GdsRenderGui {
 	ActivityBar *activity_status_bar;
 	struct render_settings render_dialog_settings;
 	ColorPalette *palette;
+	struct gui_button_states button_state_data;
 };
 
 G_DEFINE_TYPE(GdsRenderGui, gds_render_gui, G_TYPE_OBJECT)
@@ -240,6 +249,23 @@ end_destroy:
 	gtk_widget_destroy(open_dialog);
 }
 
+static void process_button_state_changes(GdsRenderGui *self)
+{
+	gboolean convert_button_state = FALSE;
+	gboolean open_gds_button_state = FALSE;
+
+	/* Calculate states */
+	if (!self->button_state_data.rendering_active) {
+		open_gds_button_state = TRUE;
+		if (self->button_state_data.valid_cell_selected)
+			convert_button_state = TRUE;
+	}
+
+	/* Apply states */
+	gtk_widget_set_sensitive(self->convert_button, convert_button_state);
+	gtk_widget_set_sensitive(self->open_button, open_gds_button_state);
+}
+
 /**
  * @brief Callback for auto coloring button
  * @param button
@@ -252,6 +278,29 @@ static void on_auto_color_clicked(gpointer button, gpointer user)
 
 	self = RENDERER_GUI(user);
 	layer_selector_auto_color_layers(self->layer_selector, self->palette, 1.0);
+}
+
+static void async_rendering_finished_callback(GdsOutputRenderer *renderer, gpointer gui)
+{
+	GdsRenderGui *self;
+
+	self = RENDERER_GUI(gui);
+
+	self->button_state_data.rendering_active = FALSE;
+	process_button_state_changes(self);
+	activity_bar_set_ready(self->activity_status_bar);
+
+	g_object_unref(renderer);
+}
+
+static void async_rendering_status_update_callback(GdsOutputRenderer *renderer, const char *status_message, gpointer data)
+{
+	GdsRenderGui *gui;
+	(void)renderer;
+
+	gui = RENDERER_GUI(data);
+
+	activity_bar_set_busy(gui->activity_status_bar, status_message);
 }
 
 /**
@@ -281,6 +330,10 @@ static void on_convert_clicked(gpointer button, gpointer user)
 	self = RENDERER_GUI(user);
 
 	if (!self)
+		return;
+
+	/* Abort if rendering is already active */
+	if (self->button_state_data.rendering_active == TRUE)
 		return;
 
 	sett = &self->render_dialog_settings;
@@ -369,16 +422,33 @@ static void on_convert_clicked(gpointer button, gpointer user)
 		case RENDERER_CAIROGRAPHICS_PDF:
 			render_engine = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_pdf());
 			break;
+		default:
+			/* Abort rendering */
+			render_engine = NULL;
+			break;
 		}
 
 		if (render_engine) {
 			gds_output_renderer_set_output_file(render_engine, file_name);
 			gds_output_renderer_set_layer_settings(render_engine, layer_settings);
+			/* Prevent user from overwriting library or triggering additional conversion */
+			self->button_state_data.rendering_active = TRUE;
+			process_button_state_changes(self);
 
+			g_signal_connect(render_engine, "async-finished", G_CALLBACK(async_rendering_finished_callback),
+					 self);
+
+			activity_bar_set_busy(self->activity_status_bar, "Rendering cell...");
 			/* TODO: Replace this with asynchronous rendering. However, this fixes issue #19 */
-			gds_output_renderer_render_output(render_engine, cell_to_render, sett->scale);
 
-			g_object_unref(render_engine);
+			g_signal_connect(render_engine, "progress-changed",
+					 G_CALLBACK(async_rendering_status_update_callback), self);
+			gds_output_renderer_render_output_async(render_engine, cell_to_render, sett->scale);
+
+
+			//self->button_state_data.rendering_active = FALSE;
+
+			//g_object_unref(render_engine);
 		}
 
 		g_free(file_name);
@@ -407,7 +477,6 @@ static void cell_tree_view_activated(gpointer tree_view, GtkTreePath *path,
 	on_convert_clicked(NULL, user);
 }
 
-
 /**
  * @brief Callback for cell-selection change event
  *
@@ -423,10 +492,12 @@ static void cell_selection_changed(GtkTreeSelection *sel, GdsRenderGui *self)
 
 	if (gtk_tree_selection_get_selected(sel, &model, &iter)) {
 		/* Node selected. Show button */
-		gtk_widget_set_sensitive(self->convert_button, TRUE);
+		self->button_state_data.valid_cell_selected = TRUE;
 	} else {
-		gtk_widget_set_sensitive(self->convert_button, FALSE);
+		self->button_state_data.valid_cell_selected = FALSE;
 	}
+
+	process_button_state_changes(self);
 }
 
 static void sort_up_callback(GtkWidget *widget, gpointer user)
@@ -466,6 +537,9 @@ static void gds_render_gui_dispose(GObject *gobject)
 	g_clear_object(&self->cell_search_entry);
 	g_clear_object(&self->activity_status_bar);
 	g_clear_object(&self->palette);
+	g_clear_object(&self->load_layer_button);
+	g_clear_object(&self->save_layer_button);
+	g_clear_object(&self->open_button);
 
 	if (self->main_window) {
 		g_signal_handlers_destroy(self->main_window);
@@ -521,7 +595,8 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	self->cell_tree_store = cell_selector_stores->base_store;
 
 	self->main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
-	g_signal_connect(GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds")),
+	self->open_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds"));
+	g_signal_connect(self->open_button,
 			 "clicked", G_CALLBACK(on_load_gds), (gpointer)self);
 
 	self->convert_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "convert-button"));
@@ -550,11 +625,10 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	g_signal_connect(sort_down_button, "clicked", G_CALLBACK(sort_down_callback), self);
 
 	/* Set buttons for loading and saving */
-	layer_selector_set_load_mapping_button(self->layer_selector,
-					       GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping")),
-					       self->main_window);
-	layer_selector_set_save_mapping_button(self->layer_selector, GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping")),
-					       self->main_window);
+	self->load_layer_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-mapping"));
+	self->save_layer_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-save-mapping"));
+	layer_selector_set_load_mapping_button(self->layer_selector, self->load_layer_button, self->main_window);
+	layer_selector_set_save_mapping_button(self->layer_selector, self->save_layer_button, self->main_window);
 
 	/* Connect delete-event */
 	g_signal_connect(GTK_WIDGET(self->main_window), "delete-event",
@@ -579,6 +653,10 @@ static void gds_render_gui_init(GdsRenderGui *self)
 
 	g_object_unref(main_builder);
 
+	/* Setup default button sensibility data */
+	self->button_state_data.rendering_active = FALSE;
+	self->button_state_data.valid_cell_selected = FALSE;
+
 	/* Reference all objects referenced by this object */
 	g_object_ref(self->activity_status_bar);
 	g_object_ref(self->main_window);
@@ -588,6 +666,9 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	g_object_ref(self->cell_tree_store);
 	g_object_ref(self->cell_search_entry);
 	g_object_ref(self->palette);
+	g_object_ref(self->open_button);
+	g_object_ref(self->load_layer_button);
+	g_object_ref(self->save_layer_button);
 }
 
 GdsRenderGui *gds_render_gui_new()

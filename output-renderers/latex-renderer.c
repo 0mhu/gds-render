@@ -29,10 +29,15 @@
 #include <gdk/gdk.h>
 #include <gds-render/layer/layer-info.h>
 /**
- * @addtogroup LatexRenderer
+ * @addtogroup LaTeX-Renderer
  * @{
  */
 
+/**
+ * @brief Struct representing the LaTeX-Renderer object.
+ *
+ * This struct holds the LaTeX renderer internal data. It is only used inside the @ref LatexRenderer class.
+ */
 struct _LatexRenderer {
 	GdsOutputRenderer parent;
 	gboolean tex_standalone;
@@ -226,12 +231,19 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
  * @param tex_file File to write to
  * @param buffer Working buffer
  * @param scale Scale output down by this value
+ * @param renderer The current renderer as GdsOutputRenderer. This is used to emit the status updates to the GUI
  */
-static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, GString *buffer, double scale)
+static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, GString *buffer, double scale,
+			GdsOutputRenderer *renderer)
 {
-
+	GString *status;
 	GList *list_child;
 	struct gds_cell_instance *inst;
+
+	status = g_string_new(NULL);
+	g_string_printf(status, "Generating cell %s", cell->name);
+	gds_output_renderer_update_gui_status_from_async(renderer, status->str);
+	g_string_free(status, TRUE);
 
 	/* Draw polygons of current cell */
 	generate_graphics(tex_file, cell->graphic_objs, layer_infos, buffer, scale);
@@ -256,7 +268,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 				inst->magnification);
 		WRITEOUT_BUFFER(buffer);
 
-		render_cell(inst->cell_ref, layer_infos, tex_file, buffer, scale);
+		render_cell(inst->cell_ref, layer_infos, tex_file, buffer, scale, renderer);
 
 		g_string_printf(buffer, "\\end{scope}\n");
 		WRITEOUT_BUFFER(buffer);
@@ -271,7 +283,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 }
 
 static int latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, double scale,
-			       gboolean create_pdf_layers, gboolean standalone_document)
+			       gboolean create_pdf_layers, gboolean standalone_document, GdsOutputRenderer *renderer)
 {
 	GString *working_line;
 
@@ -304,7 +316,7 @@ static int latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, 
 	WRITEOUT_BUFFER(working_line);
 
 	/* Generate graphics output */
-	render_cell(cell, layer_infos, tex_file, working_line, scale);
+	render_cell(cell, layer_infos, tex_file, working_line, scale, renderer);
 
 
 	g_string_printf(working_line, "\\end{tikzpicture}\n");
@@ -344,7 +356,7 @@ static int latex_renderer_render_output(GdsOutputRenderer *renderer,
 	tex_file = fopen(output_file, "w");
 	if (tex_file) {
 		ret = latex_render_cell_to_code(cell, layer_infos, tex_file, scale,
-						l_renderer->pdf_layers, l_renderer->tex_standalone);
+						l_renderer->pdf_layers, l_renderer->tex_standalone, renderer);
 		fclose(tex_file);
 	} else {
 		g_error("Could not open LaTeX output file");
