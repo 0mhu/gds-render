@@ -34,7 +34,7 @@
 #include <gds-render/gds-utils/gds-types.h>
 #include <glib-object.h>
 #include <glib.h>
-#include <gds-render/layer/layer-info.h>
+#include <gds-render/layer/layer-settings.h>
 
 G_BEGIN_DECLS
 

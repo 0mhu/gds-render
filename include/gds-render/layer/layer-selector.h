@@ -34,7 +34,7 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <gds-render/layer/color-palette.h>
-#include <gds-render/layer/layer-info.h>
+#include <gds-render/layer/layer-settings.h>
 
 G_BEGIN_DECLS
 

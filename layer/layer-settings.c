@@ -23,7 +23,7 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-#include <gds-render/layer/layer-info.h>
+#include <gds-render/layer/layer-settings.h>
 #include <stdlib.h>
 
 struct _LayerSettings {

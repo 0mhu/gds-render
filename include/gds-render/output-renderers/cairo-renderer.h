@@ -25,7 +25,6 @@
 #define _CAIRO_OUTPUT_H_
 
 #include <gds-render/gds-utils/gds-types.h>
-#include <gds-render/layer/layer-info.h>
 #include <gds-render/output-renderers/gds-output-renderer.h>
 #include <glib-object.h>
 

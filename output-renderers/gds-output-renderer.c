@@ -28,7 +28,6 @@
  */
 
 #include <gds-render/output-renderers/gds-output-renderer.h>
-#include <gds-render/layer/layer-info.h>
 
 struct renderer_params {
 		struct gds_cell *cell;

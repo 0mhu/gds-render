@@ -33,7 +33,7 @@
 #include <gds-render/command-line.h>
 #include <gds-render/gds-utils/gds-parser.h>
 #include <gds-render/layer/mapping-parser.h>
-#include <gds-render/layer/layer-info.h>
+#include <gds-render/layer/layer-settings.h>
 #include <gds-render/output-renderers/cairo-renderer.h>
 #include <gds-render/output-renderers/latex-renderer.h>
 #include <gds-render/output-renderers/external-renderer.h>

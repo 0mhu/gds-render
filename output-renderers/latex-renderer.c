@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include <gds-render/output-renderers/latex-renderer.h>
 #include <gdk/gdk.h>
-#include <gds-render/layer/layer-info.h>
 /**
  * @addtogroup LaTeX-Renderer
  * @{
