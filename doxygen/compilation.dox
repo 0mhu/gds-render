@@ -37,21 +37,21 @@ Development is done with the following library versions:
 Go to the build directory you want to compile in. This may be the gds-render project root.
 Execute
 @code
- cmake <Path to gds-render root>
+ cmake -DCMAKE_BUILD_TYPE=Release <Path to gds-render root>
 @endcode
 
-Cmake will check the dependencies. Once cmake has finished. Type
+for a build in release configuartion. Use `-DCMAKE_BUILD_TYPE=Debug` for debugging. Cmake will check the dependencies.
 
+Once cmake has finished, type
 @code
  make
 @endcode
-
-in order to build the program and 
+to build the program and 
 
 @code
  make documentation
 @endcode
- to build the doxygen documentation.
+to build the doxygen documentation.
 
 @subsection arch-makepkg Archlinux Package
 
