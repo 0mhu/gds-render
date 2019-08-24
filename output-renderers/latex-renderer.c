@@ -29,10 +29,15 @@
 #include <gdk/gdk.h>
 #include <gds-render/layer/layer-info.h>
 /**
- * @addtogroup LatexRenderer
+ * @addtogroup LaTeX-Renderer
  * @{
  */
 
+/**
+ * @brief Struct representing the LaTeX-Renderer object.
+ *
+ * This struct holds the LaTeX renderer internal data. It is only used inside the @ref LatexRenderer class.
+ */
 struct _LatexRenderer {
 	GdsOutputRenderer parent;
 	gboolean tex_standalone;
@@ -226,6 +231,7 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
  * @param tex_file File to write to
  * @param buffer Working buffer
  * @param scale Scale output down by this value
+ * @param renderer The current renderer as GdsOutputRenderer. This is used to emit the status updates to the GUI
  */
 static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_file, GString *buffer, double scale,
 			GdsOutputRenderer *renderer)

@@ -20,9 +20,6 @@
 /**
   * @file gds-output-renderer.c
   * @brief Base GObject class for output renderers
-  *
-  * All output renderers are derived from this class
-  *
   * @author Mario Hüttel <mario.huettel@gmx.net>
   */
 
