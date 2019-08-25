@@ -1,1 +1,1 @@
-git describe --tags --dirty
+git describe --tags --dirty | tr -d '\n'

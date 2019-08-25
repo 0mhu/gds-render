@@ -33,4 +33,12 @@ const char *_app_version_string = xstr(PROJECT_GIT_VERSION);
 const char *_app_version_string = "! version not set !";
 #endif
 
+#ifdef PROJECT_GIT_COMMIT
+#define xstr(a) str(a)
+#define str(a) #a
+const char *_app_git_commit = xstr(PROJECT_GIT_COMMIT);
+#else
+const char *_app_git_commit = "! Commit hash not available !";
+#endif
+
 /** @} */

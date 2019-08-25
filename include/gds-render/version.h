@@ -25,4 +25,6 @@
 /** @brief This string holds the @ref git-version-num of the app */
 extern const char *_app_version_string;
 
+/** @brief This string holds the git commit hash of the current HEAD revision */
+extern const char *_app_git_commit;
 /** @} */

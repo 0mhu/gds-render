@@ -6,7 +6,8 @@
     <property name="can_focus">False</property>
     <property name="type_hint">dialog</property>
     <property name="program_name">GDS-Render Tool </property>
-    <property name="comments" translatable="yes">Tool for rendering GDS(II) layout files into LaTeX/TikZ code or directly into a PDF file</property>
+    <property name="version">!! Replaced during runtime !!</property>
+    <property name="comments" translatable="yes">!! Replaced during runtime !!</property>
     <property name="website">https://git.shimatta.de/mhu/gds-render</property>
     <property name="website_label" translatable="yes">Git Repository</property>
     <property name="authors">Mario Hüttel &lt;mario.huettel@gmx.net&gt;</property>

@@ -89,11 +89,18 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	(void)user_data;
 	(void)action;
 	(void)parameter;
+	GString *comment_text;
+
+	comment_text = g_string_new("gds-render is a tool fo rendering GDS2 layout files into vector graphics.");
+	g_string_append_printf(comment_text, "\n\n Full git commit: %s", _app_git_commit);
 
 	builder = gtk_builder_new_from_resource("/gui/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
 	gtk_window_set_transient_for(GTK_WINDOW(dialog), NULL);
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), _app_version_string);
+	gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), comment_text->str);
+
+	g_string_free(comment_text, TRUE);
 
 	/* Load icon from resource */
 	logo_buf = gdk_pixbuf_new_from_resource_at_scale("/images/logo.svg", 100, 100, TRUE, &error);
