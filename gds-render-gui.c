@@ -571,6 +571,11 @@ static void gds_render_gui_class_init(GdsRenderGuiClass *klass)
 	gobject_class->dispose = gds_render_gui_dispose;
 }
 
+/**
+ * @brief Callback for the 'select all layers'-button
+ * @param button Button that triggered the event
+ * @param user_data the GdsrenderGui object containing the main-window the button is placed in
+ */
 static void on_select_all_layers_clicked(GtkWidget *button, gpointer user_data)
 {
 	GdsRenderGui *gui;
