@@ -62,6 +62,7 @@ struct _GdsRenderGui {
 	GtkWidget *open_button;
 	GtkWidget *load_layer_button;
 	GtkWidget *save_layer_button;
+	GtkWidget *select_all_button;
 	GtkTreeStore *cell_tree_store;
 	GtkWidget *cell_search_entry;
 	LayerSelector *layer_selector;
@@ -540,6 +541,7 @@ static void gds_render_gui_dispose(GObject *gobject)
 	g_clear_object(&self->load_layer_button);
 	g_clear_object(&self->save_layer_button);
 	g_clear_object(&self->open_button);
+	g_clear_object(&self->select_all_button);
 
 	if (self->main_window) {
 		g_signal_handlers_destroy(self->main_window);
@@ -567,6 +569,13 @@ static void gds_render_gui_class_init(GdsRenderGuiClass *klass)
 				      NULL);
 
 	gobject_class->dispose = gds_render_gui_dispose;
+}
+
+static void on_select_all_layers_clicked(GtkWidget *button, gpointer user_data)
+{
+	GdsRenderGui *gui;
+
+	gui = RENDERER_GUI(user_data);
 }
 
 GtkWindow *gds_render_gui_get_main_window(GdsRenderGui *gui)
@@ -651,6 +660,10 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	self->render_dialog_settings.tex_pdf_layers = FALSE;
 	self->render_dialog_settings.tex_standalone = FALSE;
 
+	/* Get select all button and connect callback */
+	self->select_all_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-select-all"));
+	g_signal_connect(self->select_all_button, "clicked", G_CALLBACK(on_select_all_layers_clicked), self);
+
 	g_object_unref(main_builder);
 
 	/* Setup default button sensibility data */
@@ -669,6 +682,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	g_object_ref(self->open_button);
 	g_object_ref(self->load_layer_button);
 	g_object_ref(self->save_layer_button);
+	g_object_ref(self->select_all_button);
 }
 
 GdsRenderGui *gds_render_gui_new()

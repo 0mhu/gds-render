@@ -17,6 +17,21 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-save-as</property>
   </object>
+  <object class="GtkImage" id="select-all-img">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-apply</property>
+  </object>
+  <object class="GtkImage" id="sort-down-img">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-sort-ascending</property>
+  </object>
+  <object class="GtkImage" id="sort-up-img">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-sort-descending</property>
+  </object>
   <object class="GtkWindow" id="main-window">
     <property name="height_request">250</property>
     <property name="can_focus">False</property>
@@ -205,6 +220,20 @@
                         <property name="position">2</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkButton" id="button-select-all">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="image">select-all-img</property>
+                        <property name="always_show_image">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -269,15 +298,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkImage" id="sort-down-img">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-sort-ascending</property>
-  </object>
-  <object class="GtkImage" id="sort-up-img">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-sort-descending</property>
   </object>
 </interface>
