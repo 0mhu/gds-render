@@ -32,7 +32,7 @@ set(SOURCE
   ${LAYER_SELECTOR_SOURCES}
 )
 
-add_compile_options(-Wall)
+add_compile_options(-Wall -Wold-style-declaration)
 
 add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c)
 add_dependencies(${PROJECT_NAME} glib-resources)

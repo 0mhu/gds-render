@@ -117,7 +117,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 /**
  * @brief Contains the application menu entries
  */
-const static GActionEntry app_actions[] = {
+static const GActionEntry app_actions[] = {
 	{"quit", app_quit, NULL, NULL, NULL, {0}},
 	{"about", app_about, NULL, NULL, NULL, {0}}
 };

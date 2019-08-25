@@ -183,10 +183,10 @@ static double convert_number_to_engineering(double input, const char **out_prefi
 	const char *selected_prefix = NULL;
 	double return_val = 0.0;
 	int idx;
-	const static char * prefixes[] = {"y", "z", "a", "f", "p", "n", "u", "m", "c", "d", /* < 1 */
+	static const char * prefixes[] = {"y", "z", "a", "f", "p", "n", "u", "m", "c", "d", /* < 1 */
 				 "", /* 1 */
 				 "h", "k", "M", "G", "T", "P", "E", "Z", "Y"}; /* > 1 */
-	const static double scale[] = {1E-24, 1E-21, 1E-18, 1E-15, 1E-12, 1E-9, 1E-6, 1E-3, 1E-2, 1E-1,
+	static const double scale[] = {1E-24, 1E-21, 1E-18, 1E-15, 1E-12, 1E-9, 1E-6, 1E-3, 1E-2, 1E-1,
 					1,
 					1E2, 1E3, 1E6, 1E9, 1E12, 1E15, 1E18, 1E21, 1E24};
 	const int prefix_count = (int)(sizeof(prefixes)/sizeof(char *));
