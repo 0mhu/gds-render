@@ -574,8 +574,10 @@ static void gds_render_gui_class_init(GdsRenderGuiClass *klass)
 static void on_select_all_layers_clicked(GtkWidget *button, gpointer user_data)
 {
 	GdsRenderGui *gui;
+	(void)button;
 
 	gui = RENDERER_GUI(user_data);
+	layer_selector_select_all_layers(gui->layer_selector, TRUE);
 }
 
 GtkWindow *gds_render_gui_get_main_window(GdsRenderGui *gui)
