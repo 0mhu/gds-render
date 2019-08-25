@@ -55,7 +55,7 @@ G_DEFINE_TYPE(ColorPalette, color_palette, G_TYPE_OBJECT)
 static int count_non_empty_lines_in_array(const char *data, size_t length)
 {
 	unsigned int idx;
-	int non_empty_lines;
+	int non_empty_lines = 0;
 	char last_char = '\n';
 
 	if (!data)
