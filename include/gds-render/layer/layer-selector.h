@@ -93,6 +93,13 @@ LayerSettings *layer_selector_export_rendered_layer_info(LayerSelector *selector
 void layer_selector_force_sort(LayerSelector *selector, enum layer_selector_sort_algo sort_function);
 
 /**
+ * @brief Set 'export' value of all layers in the LayerSelector to the supplied select value
+ * @param layer_selector LayerSelector object
+ * @param select
+ */
+void layer_selector_select_all_layers(LayerSelector *layer_selector, gboolean select);
+
+/**
  * @brief Apply colors from palette to all layers. Aditionally set alpha
  * @param layer_selector LayerSelector object
  * @param palette Color palette to use

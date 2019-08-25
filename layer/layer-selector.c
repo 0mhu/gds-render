@@ -780,6 +780,27 @@ void layer_selector_force_sort(LayerSelector *selector, enum layer_selector_sort
 	gtk_list_box_set_sort_func(box, NULL, NULL, NULL);
 }
 
+void layer_selector_select_all_layers(LayerSelector *layer_selector, gboolean select)
+{
+	GList *le_list;
+	GList *iter;
+	LayerElement *le;
+
+	g_return_if_fail(LAYER_IS_SELECTOR(layer_selector));
+	g_return_if_fail(GTK_IS_LIST_BOX(layer_selector->list_box));
+
+	le_list = gtk_container_get_children(GTK_CONTAINER(layer_selector->list_box));
+
+	for (iter = le_list; iter != NULL; iter = g_list_next(iter)) {
+		le = LAYER_ELEMENT(iter->data);
+		if (LAYER_IS_ELEMENT(le)) {
+			layer_element_set_export(le, select);
+		}
+	}
+
+	g_list_free(le_list);
+}
+
 void layer_selector_auto_color_layers(LayerSelector *layer_selector, ColorPalette *palette, double global_alpha)
 {
 	GList *le_list;
