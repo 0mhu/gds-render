@@ -1,8 +1,8 @@
 /**
- * @defgroup LaTeX-Renderer LaTeX/TikZ Renderer 
+ * @defgroup LaTeX-Renderer LaTeX / TikZ Renderer 
  * @ingroup GdsOutputRenderer
  *
- * This is the class implementing the Latex / tikz output rendering
+ * This is the class implementing the \f$\mbox{\LaTeX}\f$ / TikZ output rendering
 
  * @subsection LaTeXRendererProps Properties
  * This class inherits all properties from its parent @ref GdsOutputRenderer.

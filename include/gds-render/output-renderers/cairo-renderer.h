@@ -30,7 +30,7 @@
 
 G_BEGIN_DECLS
 
-/** @addtogroup CairoRenderer
+/** @addtogroup Cairo-Renderer
  *  @{
  */
 

@@ -22,7 +22,7 @@
   * @author Mario Hüttel <mario.huettel@gmx.net>
   */
 
-/** @addtogroup CairoRenderer
+/** @addtogroup Cairo-Renderer
  *  @{
  */
 
