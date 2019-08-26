@@ -86,6 +86,7 @@ G_DEFINE_TYPE(GdsRenderGui, gds_render_gui, G_TYPE_OBJECT)
 static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 {
 	GdsRenderGui *self;
+	(void)event;
 
 	self = RENDERER_GUI(user);
 	/* Don't close window in case of error */

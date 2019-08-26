@@ -42,6 +42,7 @@ enum {
 
 void lib_cell_renderer_init(LibCellRenderer *self)
 {
+	(void)self;
 	/* Nothing to do */
 }
 
@@ -111,6 +112,8 @@ static void lib_cell_renderer_get_property(GObject      *object,
 					   GValue	*value,
 					   GParamSpec   *pspec)
 {
+	(void)value;
+
 	switch (param_id) {
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, param_id, pspec);

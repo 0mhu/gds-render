@@ -158,6 +158,14 @@ static void layer_selector_drag_data_received(GtkWidget *widget, GdkDragContext 
 	GtkWidget *source;
 	int pos;
 
+	/* Handle unused parameters */
+	(void)context;
+	(void)x;
+	(void)y;
+	(void)info;
+	(void)time;
+	(void)data;
+
 	row_before = GTK_WIDGET(g_object_get_data(G_OBJECT(widget), "row-before"));
 	row_after = GTK_WIDGET(g_object_get_data(G_OBJECT(widget), "row-after"));
 
@@ -196,6 +204,10 @@ static gboolean layer_selector_drag_motion(GtkWidget *widget, GdkDragContext *co
 	GtkWidget *drag_row;
 	GtkWidget *row_before;
 	GtkWidget *row_after;
+	(void)context;
+	(void)x;
+	(void)y;
+	(void)time;
 
 	row = GTK_WIDGET(gtk_list_box_get_row_at_y(GTK_LIST_BOX(widget), y));
 
@@ -249,6 +261,8 @@ static void layer_selector_drag_leave(GtkWidget *widget, GdkDragContext *context
 	GtkWidget *drag_row;
 	GtkWidget *row_before;
 	GtkWidget *row_after;
+	(void)context;
+	(void)time;
 
 	drag_row = GTK_WIDGET(g_object_get_data(G_OBJECT(widget), "drag-row"));
 	row_before = GTK_WIDGET(g_object_get_data(G_OBJECT(widget), "row-before"));
@@ -664,6 +678,7 @@ static void layer_selector_load_mapping_clicked(GtkWidget *button, gpointer user
 	GtkWidget *dialog;
 	gint res;
 	gchar *file_name;
+	(void)button;
 
 	sel = LAYER_SELECTOR(user_data);
 
@@ -723,6 +738,7 @@ static void layer_selector_save_mapping_clicked(GtkWidget *button, gpointer user
 	gint res;
 	gchar *file_name;
 	LayerSelector *sel;
+	(void)button;
 
 	sel = LAYER_SELECTOR(user_data);
 

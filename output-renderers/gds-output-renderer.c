@@ -321,6 +321,8 @@ static void gds_output_renderer_async_wrapper(GTask *task,
 	GdsOutputRenderer *renderer;
 	GdsOutputRendererPrivate *priv;
 	int ret;
+	(void)task_data;
+	(void)cancellable;
 
 	renderer = GDS_RENDER_OUTPUT_RENDERER(source_object);
 	priv = gds_output_renderer_get_instance_private(renderer);

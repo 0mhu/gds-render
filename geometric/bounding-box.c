@@ -91,6 +91,17 @@ void bounding_box_prepare_empty(union bounding_box *box)
 	box->vectors.upper_right.y = -DBL_MAX;
 }
 
+/**
+ * @brief Calculate path miter points for a pathwith a \p width and the anchors \p a \p b \p c.
+ * @param[in] a
+ * @param[in] b
+ * @param[in] c
+ * @param[out] m1
+ * @param[out] m2
+ * @param[in] width
+ * @return Miter points in \p m1 and \p m2
+ * @note This function is currently unused (and untested). Ignore any compiler warning regarding this function.
+ */
 static void calculate_path_miter_points(struct vector_2d *a, struct vector_2d *b, struct vector_2d *c,
 					struct vector_2d *m1, struct vector_2d *m2, double width)
 {
