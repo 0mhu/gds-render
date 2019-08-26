@@ -28,9 +28,9 @@ The dependency list of GTK3 already includes Cairographics and GLib2. You should
 
 Development is done with the following library versions:
 
-| Cairographics | GLib2      | GTK3   |
-| ------------- | ---------- | ------ |
-| 1.16.0-2      | 2.60.0-1   | 3.24.7 |
+| Cairographics | GLib2      | GTK3      |
+| ------------- | ---------- | --------- |
+| 1.17.3        | 2.60.6-1   | 3.24.10-1 |
 
 @section comp-instr Compilation Instructions
 @subsection linux-build General Linux Build Instruction
@@ -83,6 +83,6 @@ Steps:
 
 The program should now compile.
 
-@note In versions currently in development, the cairo renderer will be unusable under Windows due to Issue `#16`. So you might want to stick with this version.
+@warning This guide is out of date. The Cairo renderer doesn't compile under windows anymore due to the usage of the fork() system call. It is possible to patch this out in order to restore Windows compatibility.
 
 */
