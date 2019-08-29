@@ -92,7 +92,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	GString *comment_text;
 
 	comment_text = g_string_new("gds-render is a tool fo rendering GDS2 layout files into vector graphics.");
-	g_string_append_printf(comment_text, "\n\n Full git commit: %s", _app_git_commit);
+	g_string_append_printf(comment_text, "\n\nFull git commit: %s", _app_git_commit);
 
 	builder = gtk_builder_new_from_resource("/gui/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
