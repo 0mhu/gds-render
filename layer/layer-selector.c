@@ -857,4 +857,34 @@ ret_free_le_list:
 	g_list_free(le_list);
 }
 
+void layer_selector_auto_name_layers(LayerSelector *layer_selector, gboolean overwrite)
+{
+	GList *le_list;
+	GList *le_list_ptr;
+	LayerElement *le;
+	const char *old_layer_name;
+	GString *new_layer_name;
+
+	g_return_if_fail(LAYER_IS_SELECTOR(layer_selector));
+
+	new_layer_name = g_string_new_len(NULL, 10);
+	le_list = gtk_container_get_children(GTK_CONTAINER(layer_selector->list_box));
+
+	for (le_list_ptr = le_list; le_list_ptr != NULL; le_list_ptr = g_list_next(le_list_ptr)) {
+		le = LAYER_ELEMENT(le_list_ptr->data);
+		if (!le)
+			continue;
+		old_layer_name = layer_element_get_name(le);
+
+		/* Check if layer name is empty or may be overwritten */
+		if (!old_layer_name || *old_layer_name == '\0' || overwrite) {
+			g_string_printf(new_layer_name, "Layer %d", layer_element_get_layer(le));
+			layer_element_set_name(le, new_layer_name->str);
+		}
+	}
+
+	g_string_free(new_layer_name, TRUE);
+	g_list_free(le_list);
+}
+
 /** @} */

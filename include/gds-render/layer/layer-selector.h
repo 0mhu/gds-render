@@ -107,6 +107,17 @@ void layer_selector_select_all_layers(LayerSelector *layer_selector, gboolean se
  */
 void layer_selector_auto_color_layers(LayerSelector *layer_selector, ColorPalette *palette, double global_alpha);
 
+/**
+ * @brief Auto name all layers in the layer selector.
+ *
+ * This functions sets the name of the layer equal to its number.
+ * The \p overwrite parameter specifies if already set layer names are overwritten.
+ *
+ * @param layer_selector LayerSelector
+ * @param overwrite Overwrite existing layer names
+ */
+void layer_selector_auto_name_layers(LayerSelector *layer_selector, gboolean overwrite);
+
 G_END_DECLS
 
 #endif /* __LAYER_SELECTOR_H__ */
