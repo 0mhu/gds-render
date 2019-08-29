@@ -103,7 +103,7 @@ void layer_selector_select_all_layers(LayerSelector *layer_selector, gboolean se
  * @brief Apply colors from palette to all layers. Aditionally set alpha
  * @param layer_selector LayerSelector object
  * @param palette Color palette to use
- * @param global_alpha Additional alpha value that is applied to all layers
+ * @param global_alpha Additional alpha value that is applied to all layers. Must be > 0
  */
 void layer_selector_auto_color_layers(LayerSelector *layer_selector, ColorPalette *palette, double global_alpha);
 
