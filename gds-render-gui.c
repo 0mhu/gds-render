@@ -589,8 +589,29 @@ static void on_select_all_layers_clicked(GtkWidget *button, gpointer user_data)
 static void auto_naming_clicked(GtkWidget *button, gpointer user_data)
 {
 	GdsRenderGui *gui;
+	GtkDialog *dialog;
+	gboolean overwrite;
+	int dialog_result;
+	(void)button;
 
 	gui = RENDERER_GUI(user_data);
+
+	/* Ask for overwrite */
+	dialog = GTK_DIALOG(gtk_message_dialog_new(gui->main_window, GTK_DIALOG_USE_HEADER_BAR, GTK_MESSAGE_QUESTION,
+						   GTK_BUTTONS_YES_NO, "Overwrite existing layer names?"));
+	dialog_result = gtk_dialog_run(dialog);
+	switch (dialog_result) {
+	case GTK_RESPONSE_YES:
+		overwrite = TRUE;
+		break;
+	case GTK_RESPONSE_NO: /* Expected fallthrough */
+	default:
+		overwrite = FALSE;
+		break;
+	}
+	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	layer_selector_auto_name_layers(gui->layer_selector, overwrite);
 }
 
 GtkWindow *gds_render_gui_get_main_window(GdsRenderGui *gui)
