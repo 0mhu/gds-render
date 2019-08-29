@@ -586,6 +586,13 @@ static void on_select_all_layers_clicked(GtkWidget *button, gpointer user_data)
 	layer_selector_select_all_layers(gui->layer_selector, TRUE);
 }
 
+static void auto_naming_clicked(GtkWidget *button, gpointer user_data)
+{
+	GdsRenderGui *gui;
+
+	gui = RENDERER_GUI(user_data);
+}
+
 GtkWindow *gds_render_gui_get_main_window(GdsRenderGui *gui)
 {
 	return gui->main_window;
@@ -601,6 +608,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	GtkWidget *sort_down_button;
 	GtkWidget *activity_bar_box;
 	GtkWidget *auto_color_button;
+	GtkWidget *auto_naming_button;
 
 	main_builder = gtk_builder_new_from_resource("/gui/main.glade");
 
@@ -671,6 +679,10 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	/* Get select all button and connect callback */
 	self->select_all_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-select-all"));
 	g_signal_connect(self->select_all_button, "clicked", G_CALLBACK(on_select_all_layers_clicked), self);
+
+	/* Setup auto naming button */
+	auto_naming_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-auto-name"));
+	g_signal_connect(auto_naming_button, "clicked", G_CALLBACK(auto_naming_clicked), self);
 
 	g_object_unref(main_builder);
 
