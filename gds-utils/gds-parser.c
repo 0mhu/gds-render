@@ -217,7 +217,7 @@ static signed int gds_convert_signed_int(const char *data)
 	int ret;
 
 	if (!data) {
-		GDS_ERROR("This should not happen");
+		GDS_ERROR("Conversion from GDS data to signed int failed.");
 		return 0;
 	}
 
@@ -248,7 +248,7 @@ static int16_t gds_convert_signed_int16(const char *data)
  * @param data Buffer containing the uint16
  * @return result
  */
-static uint16_t gds_convert_unsigend_int16(const char *data)
+static uint16_t gds_convert_unsigned_int16(const char *data)
 {
 	if (!data) {
 		GDS_ERROR("This should not happen");
@@ -541,17 +541,17 @@ static void gds_parse_date(const char *buffer, int length, struct gds_time_field
 	}
 
 	for (temp_date = mod_date; 1; temp_date = access_date) {
-		temp_date->year = gds_convert_unsigend_int16(buffer);
+		temp_date->year = gds_convert_unsigned_int16(buffer);
 		buffer += 2;
-		temp_date->month = gds_convert_unsigend_int16(buffer);
+		temp_date->month = gds_convert_unsigned_int16(buffer);
 		buffer += 2;
-		temp_date->day = gds_convert_unsigend_int16(buffer);
+		temp_date->day = gds_convert_unsigned_int16(buffer);
 		buffer += 2;
-		temp_date->hour = gds_convert_unsigend_int16(buffer);
+		temp_date->hour = gds_convert_unsigned_int16(buffer);
 		buffer += 2;
-		temp_date->minute = gds_convert_unsigend_int16(buffer);
+		temp_date->minute = gds_convert_unsigned_int16(buffer);
 		buffer += 2;
-		temp_date->second = gds_convert_unsigend_int16(buffer);
+		temp_date->second = gds_convert_unsigned_int16(buffer);
 		buffer += 2;
 
 		if (temp_date == access_date)
@@ -666,7 +666,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		}
 
-		rec_data_length = gds_convert_unsigend_int16(workbuff);
+		rec_data_length = gds_convert_unsigned_int16(workbuff);
 
 		if (rec_data_length < 4) {
 			/* Possible Zero-Padding: */
@@ -689,7 +689,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			GDS_ERROR("Unexpected end of file");
 			break;
 		}
-		rec_type = gds_convert_unsigend_int16(workbuff);
+		rec_type = gds_convert_unsigned_int16(workbuff);
 
 
 		/* if begin: Allocate structures */
