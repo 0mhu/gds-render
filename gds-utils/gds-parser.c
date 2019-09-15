@@ -283,13 +283,13 @@ static GList *append_library(GList *curr_list, struct gds_library **library_ptr)
 }
 
 /**
- * @brief Append graphics to list
+ * @brief Prepend graphics to list
  * @param curr_list List containing gds_graphics elements. May be NULL
  * @param type Type of graphics
  * @param graphics_ptr newly created graphic is written here
  * @return new list pointer
  */
-static GList *append_graphics(GList *curr_list, enum graphics_type type,
+static __attribute__((warn_unused_result)) GList *prepend_graphics(GList *curr_list, enum graphics_type type,
 			      struct gds_graphics **graphics_ptr)
 {
 	struct gds_graphics *gfx;
@@ -308,7 +308,7 @@ static GList *append_graphics(GList *curr_list, enum graphics_type type,
 	if (graphics_ptr)
 		*graphics_ptr = gfx;
 
-	return g_list_append(curr_list, gfx);
+	return g_list_prepend(curr_list, gfx);
 }
 
 /**
@@ -759,8 +759,10 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -3;
 				break;
 			}
-			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs,
-								     (rec_type == BOUNDARY ? GRAPHIC_POLYGON : GRAPHIC_BOX),
+			current_cell->graphic_objs = prepend_graphics(current_cell->graphic_objs,
+								     (rec_type == BOUNDARY
+									? GRAPHIC_POLYGON
+									: GRAPHIC_BOX),
 								     &current_graphics);
 			if (current_cell->graphic_objs == NULL) {
 				GDS_ERROR("Memory allocation failed");
@@ -791,7 +793,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -3;
 				break;
 			}
-			current_cell->graphic_objs = append_graphics(current_cell->graphic_objs,
+			current_cell->graphic_objs = prepend_graphics(current_cell->graphic_objs,
 								     GRAPHIC_PATH, &current_graphics);
 			if (current_cell->graphic_objs == NULL) {
 				GDS_ERROR("Memory allocation failed");
