@@ -43,8 +43,6 @@
 #include <gds-render/geometric/cell-geometrics.h>
 #include <gds-render/version.h>
 
-#include <time.h>
-
 enum gds_render_gui_signal_sig_ids {SIGNAL_WINDOW_CLOSED = 0, SIGNAL_COUNT};
 
 static guint gds_render_gui_signals[SIGNAL_COUNT];
@@ -150,10 +148,6 @@ static void on_load_gds(gpointer button, gpointer user)
 	GString *mod_date;
 	GString *acc_date;
 	unsigned int cell_error_level;
-	int repeat;
-	clock_t start_time;
-	clock_t end_time;
-	double time_spent;
 
 	self = RENDERER_GUI(user);
 	if (!self)
@@ -184,13 +178,7 @@ static void on_load_gds(gpointer button, gpointer user)
 	clear_lib_list(&self->gds_libraries);
 
 	/* Parse new GDSII file */
-	start_time = clock();
-	for (repeat = 0; repeat < 3; repeat++)
-		gds_result = parse_gds_from_file(filename, &self->gds_libraries);
-
-	end_time = clock();
-	time_spent = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
-	printf("Time needed for three rounds: %lf sec\n", time_spent);
+	gds_result = parse_gds_from_file(filename, &self->gds_libraries);
 
 	/* Delete file name afterwards */
 	g_free(filename);
