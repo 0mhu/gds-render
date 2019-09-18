@@ -177,6 +177,7 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 			cairo_stroke(cr);
 			break;
 		case GRAPHIC_BOX:
+			/* Expected fallthrough */
 		case GRAPHIC_POLYGON:
 			cairo_set_line_width(cr, 0.1/scale);
 			cairo_close_path(cr);
