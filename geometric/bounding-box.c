@@ -151,7 +151,7 @@ void bounding_box_calculate_path_box(GList *vertices, double thickness,
 	GList *vertex_iterator;
 	struct vector_2d pt;
 
-	printf("Warning! Function bounding_box_calculate_path_box not yet implemented correctly!\n");
+	//printf("Warning! Function bounding_box_calculate_path_box not yet implemented correctly!\n");
 
 	if (!vertices || !box)
 		return;
