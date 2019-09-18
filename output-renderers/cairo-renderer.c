@@ -189,6 +189,36 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 }
 
 /**
+ * @brief Read a line from a file descriptor
+ *
+ * In case of a broken pipe / closed writing end, it will terminate
+ *
+ * @param fd File descriptor to read from
+ * @param buff Buffer to write data in
+ * @param buff_size Buffer size
+ * @return length of read data
+ */
+static int read_line_from_fd(int fd, char *buff, size_t buff_size)
+{
+	ssize_t cnt;
+	char c;
+	unsigned int buff_cnt = 0;
+
+	while ((cnt = read(fd, &c, 1)) == 1) {
+		if (buff_cnt < (buff_size-1)) {
+			buff[buff_cnt++] = c;
+			if (c == '\n')
+				break;
+		} else {
+			break;
+		}
+	}
+
+	buff[buff_cnt] = 0;
+	return (int)buff_cnt;
+}
+
+/**
  * @brief Render \p cell to a PDF file specified by \p pdf_file
  * @param cell Toplevel cell to @ref Cairo-Renderer
  * @param layer_infos List of layer information. Specifies color and layer stacking
