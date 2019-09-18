@@ -6,6 +6,8 @@ pkg_search_module(GLIB REQUIRED glib-2.0)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(CAIRO REQUIRED cairo)
 
+add_compile_options(-Wall -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
+
 add_subdirectory(resources)
 add_subdirectory(doxygen)
 add_subdirectory(version)
@@ -31,8 +33,6 @@ set(SOURCE
   ${GEOMETRIC_SOURCES}
   ${LAYER_SELECTOR_SOURCES}
 )
-
-add_compile_options(-Wall -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
 
 add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c)
 add_dependencies(${PROJECT_NAME} glib-resources)
