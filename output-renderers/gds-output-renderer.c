@@ -260,8 +260,6 @@ LayerSettings *gds_output_renderer_get_and_ref_layer_settings(GdsOutputRenderer 
 
 	/* This function seems to already reference the LayerSettings object */
 	g_object_get(renderer, "layer-settings", &ret, NULL);
-	/* Reference it, so it is not cleared by another thread overwriting the property */
-	//g_object_ref(ret);
 
 	/* It is now safe to clear the lock */
 	g_mutex_unlock(&priv->settings_lock);
