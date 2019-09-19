@@ -152,7 +152,7 @@ int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct 
  * @param renderer GdsOutputrenderer object
  * @param status Status to supply to signal emission
  */
-void gds_output_renderer_update_gui_status_from_async(GdsOutputRenderer *renderer, const char *status);
+void gds_output_renderer_update_async_progress(GdsOutputRenderer *renderer, const char *status);
 
 G_END_DECLS
 

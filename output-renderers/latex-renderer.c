@@ -241,7 +241,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 	status = g_string_new(NULL);
 	g_string_printf(status, "Generating cell %s", cell->name);
-	gds_output_renderer_update_gui_status_from_async(renderer, status->str);
+	gds_output_renderer_update_async_progress(renderer, status->str);
 	g_string_free(status, TRUE);
 
 	/* Draw polygons of current cell */
