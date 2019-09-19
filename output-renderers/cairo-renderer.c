@@ -415,7 +415,7 @@ ret_parent:
 		}
 
 		/* Update asyc progress*/
-		gds_output_renderer_update_gui_status_from_async(renderer, receive_message);
+		gds_output_renderer_update_async_progress(renderer, receive_message);
 	}
 
 	waitpid(process_id, NULL, 0);
@@ -457,7 +457,7 @@ static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
 	else
 		pdf_file = output_file;
 
-	gds_output_renderer_update_gui_status_from_async(renderer, "Rendering Cairo Output...");
+	gds_output_renderer_update_async_progress(renderer, "Rendering Cairo Output...");
 	ret = cairo_renderer_render_cell_to_vector_file(renderer, cell, layer_infos, pdf_file, svg_file, scale);
 
 	if (settings)

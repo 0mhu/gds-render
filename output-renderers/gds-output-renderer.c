@@ -413,7 +413,7 @@ static gboolean idle_event_processor_callback(gpointer user_data)
 	return FALSE;
 }
 
-void gds_output_renderer_update_gui_status_from_async(GdsOutputRenderer *renderer, const char *status)
+void gds_output_renderer_update_async_progress(GdsOutputRenderer *renderer, const char *status)
 {
 	GSource *idle_event_processor;
 	GdsOutputRendererPrivate *priv;
