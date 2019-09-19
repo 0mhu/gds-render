@@ -227,7 +227,7 @@ static int read_line_from_fd(int fd, char *buff, size_t buff_size)
  * @param scale Scale the output image down by \p scale
  * @return Error
  */
-static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GList *layer_infos, const char *pdf_file,
+static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer, struct gds_cell *cell, GList *layer_infos, const char *pdf_file,
 						     const char *svg_file, double scale)
 {
 	cairo_surface_t *pdf_surface = NULL, *svg_surface = NULL;
@@ -240,27 +240,39 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 	double rec_x0, rec_y0, rec_width, rec_height;
 	double xmin = INT32_MAX, xmax = INT32_MIN, ymin = INT32_MAX, ymax = INT32_MIN;
 	pid_t process_id;
+	int comm_pipe[2];
+	char receive_message[200];
 
 	if (pdf_file == NULL && svg_file == NULL) {
 		/* No output specified */
 		return -1;
 	}
 
+	/* Generate communication pipe for status updates */
+	if (pipe(comm_pipe) == -1)
+		return -2;
+
 	/* Fork to a new child process. This ensures the memory leaks (see issue #16) in Cairo don't
 	 * brick everything.
 	 *
 	 * And by the way: This now bricks all Windows compatibility. Deal with it.
 	 */
-
-	/* Use fork for production code and -1 as value for debugging */
 	process_id = fork();
 	//process_id = -1;
 	if (process_id < 0) {
-		/* Well... shit... We have to run it in our process. */
+		/* This should not happen */
+		fprintf(stderr, "Fatal error: Cairo Renderer: Could not spawn child process!");
+		exit(-2);
 	} else if (process_id > 0) {
 		/* Woohoo... Successfully dumped the shitty code to an unknowing victim */
 		goto ret_parent;
 	}
+
+	/* Close stdin and (stdout and stderr may live on) */
+	close(0);
+	//close(1);
+	close(comm_pipe[0]);
+
 
 	layers = (struct cairo_layer *)calloc(MAX_LAYERS, sizeof(struct cairo_layer));
 
@@ -291,7 +303,7 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 		}
 	}
 
-
+	dprintf(comm_pipe[1], "Rendering layers\n");
 	render_cell(cell, layers, scale);
 
 	/* get size of image and top left coordinate */
@@ -309,7 +321,7 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 		/* Print size */
 		cairo_recording_surface_ink_extents(layers[linfo->layer].rec, &rec_x0, &rec_y0,
 				&rec_width, &rec_height);
-		printf("Size of layer %d%s%s%s: <%lf x %lf> @ (%lf | %lf)\n",
+		dprintf(comm_pipe[1], "Size of layer %d%s%s%s: <%lf x %lf> @ (%lf | %lf)\n",
 			linfo->layer,
 			(linfo->name && linfo->name[0] ? " (" : ""),
 			(linfo->name && linfo->name[0] ? linfo->name : ""),
@@ -328,7 +340,7 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 
 	}
 
-	printf("Cell bounding box: (%lf | %lf) -- (%lf | %lf)\n", xmin, ymin, xmax, ymax);
+	/* printf("Cell bounding box: (%lf | %lf) -- (%lf | %lf)\n", xmin, ymin, xmax, ymax); */
 
 	if (pdf_file) {
 		pdf_surface = cairo_pdf_surface_create(pdf_file, xmax-xmin, ymax-ymin);
@@ -343,6 +355,8 @@ static int cairo_renderer_render_cell_to_vector_file(struct gds_cell *cell, GLis
 	/* Write layers to PDF */
 	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
 		linfo = (struct layer_info *)info_list->data;
+
+		dprintf(comm_pipe[1], "Exporting layer %d to file\n", linfo->layer);
 
 		if (linfo->layer >= MAX_LAYERS) {
 			printf("Layer outside of Spec.\n");
@@ -387,14 +401,26 @@ ret_clear_layers:
 
 	printf("Cairo export finished. It might still be buggy!\n");
 
-	/* If forked, suspend process */
-	if (process_id == 0)
-		exit(0);
+	/* Suspend child process */
+	exit(0);
 
-	/* Fork didn't work. Just return here */
-	return 0;
 ret_parent:
+	close(comm_pipe[1]);
+
+	while (read_line_from_fd(comm_pipe[0], receive_message, sizeof(receive_message)) > 0) {
+		/* Strip \n from string and replace with ' ' */
+		for (i = 0; receive_message[i] != '\0'; i++) {
+			if (receive_message[i] == '\n')
+				receive_message[i] = ' ';
+		}
+
+		/* Update asyc progress*/
+		gds_output_renderer_update_gui_status_from_async(renderer, receive_message);
+	}
+
 	waitpid(process_id, NULL, 0);
+
+	close(comm_pipe[0]);
 	return 0;
 }
 
@@ -432,7 +458,7 @@ static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
 		pdf_file = output_file;
 
 	gds_output_renderer_update_gui_status_from_async(renderer, "Rendering Cairo Output...");
-	ret = cairo_renderer_render_cell_to_vector_file(cell, layer_infos, pdf_file, svg_file, scale);
+	ret = cairo_renderer_render_cell_to_vector_file(renderer, cell, layer_infos, pdf_file, svg_file, scale);
 
 	if (settings)
 		g_object_unref(settings);
