@@ -577,6 +577,7 @@ void layer_selector_generate_layer_widgets(LayerSelector *selector, GList *libs)
 static LayerElement *layer_selector_find_layer_element_in_list(GList *el_list, int layer)
 {
 	LayerElement *ret = NULL;
+
 	for (; el_list != NULL; el_list = el_list->next) {
 		if (layer_element_get_layer(LAYER_ELEMENT(el_list->data)) == layer) {
 			ret = LAYER_ELEMENT(el_list->data);
@@ -597,19 +598,18 @@ static LayerElement *layer_selector_find_layer_element_in_list(GList *el_list, i
  * @param self LayerSelector instance
  * @param file_name File name to load from
  */
-static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, gchar *file_name)
+static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, const gchar *file_name)
 {
 	GFile *file;
 	GFileInputStream *stream;
 	GDataInputStream *dstream;
 	LayerElement *le;
-	char *name;
-	gboolean export;
-	int layer;
-	GdkRGBA color;
-	int result;
 	GList *rows;
 	GList *temp;
+	GList *layer_infos;
+	int status;
+	LayerSettings *layer_settings;
+	struct layer_info *linfo;
 
 	file = g_file_new_for_path(file_name);
 	stream = g_file_read(file, NULL, NULL);
@@ -624,30 +624,39 @@ static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, gch
 	/* Reference and remove all rows from box */
 	for (temp = rows; temp != NULL; temp = temp->next) {
 		le = LAYER_ELEMENT(temp->data);
-		/* Referencing protets the widget from being deleted when removed */
+		/* Referencing protects the widget from being deleted when removed */
 		g_object_ref(G_OBJECT(le));
 		gtk_container_remove(GTK_CONTAINER(self->list_box), GTK_WIDGET(le));
 	}
 
-	while((result = mapping_parser_load_line(dstream, &export, &name, &layer, &color)) >= 0) {
-		/* skip broken line */
-		if (result == 1)
+	/* Load Layer settings. No need to check pointer, will be checked by load csv func. */
+	layer_settings = layer_settings_new();
+
+	status = layer_settings_load_from_csv(layer_settings, file_name);
+	if (status)
+		goto abort_layer_settings;
+
+	layer_infos = layer_settings_get_layer_info_list(layer_settings);
+	if (!layer_infos)
+		goto abort_layer_settings;
+
+	/* Loop over all layer infos read from the CSV file */
+	for (; layer_infos; layer_infos = g_list_next(layer_infos)) {
+		linfo = (struct layer_info *)layer_infos->data;
+		le = layer_selector_find_layer_element_in_list(rows, linfo->layer);
+		if (!le)
 			continue;
 
-		/* Add rows in the same order as in file */
-		if ((le = layer_selector_find_layer_element_in_list(rows, layer))) {
-			gtk_list_box_insert(self->list_box, GTK_WIDGET(le), -1);
-
-			layer_element_set_color(le, &color);
-			layer_element_set_export(le, export);
-			layer_element_set_name(le, name);
-			g_free(name);
-
-			/* Dereference and remove from list */
-			g_object_unref(G_OBJECT(le));
-			rows = g_list_remove(rows, le);
-		}
+		layer_element_set_name(le, linfo->name);
+		layer_element_set_export(le, (linfo->render ? TRUE : FALSE));
+		layer_element_set_color(le, &linfo->color);
+		gtk_container_add(GTK_CONTAINER(self->list_box), GTK_WIDGET(le));
+		rows = g_list_remove(rows, le);
 	}
+
+abort_layer_settings:
+	/* Destroy layer settings. Not needed for adding remaining elements */
+	g_object_unref(layer_settings);
 
 	/* Add remaining elements */
 	for (temp = rows; temp != NULL; temp = temp->next) {
