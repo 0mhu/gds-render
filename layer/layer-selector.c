@@ -36,7 +36,6 @@
 #include <gds-render/layer/layer-selector.h>
 #include <gds-render/gds-utils/gds-parser.h>
 #include <gds-render/widgets/layer-element.h>
-#include <gds-render/layer/mapping-parser.h>
 
 struct _LayerSelector {
 	/* Parent */
