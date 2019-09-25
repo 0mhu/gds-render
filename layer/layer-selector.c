@@ -711,29 +711,14 @@ static void layer_selector_load_mapping_clicked(GtkWidget *button, gpointer user
  */
 static void layer_selector_save_layer_mapping_data(LayerSelector *self, const gchar *file_name)
 {
-	FILE *file;
-	char workbuff[512];
-	GList *le_list;
-	GList *temp;
+	LayerSettings *layer_settings;
 
-	/* Overwrite existing file */
-	file = fopen((const char *)file_name, "w");
+	g_return_if_fail(LAYER_IS_SELECTOR(self));
+	g_return_if_fail(file_name);
 
-	le_list = gtk_container_get_children(GTK_CONTAINER(self->list_box));
-
-	/* File format is CSV: <Layer>,<target_pos>,<R>,<G>,<B>,<Alpha>,<Export?>,<Name> */
-	for (temp = le_list; temp != NULL; temp = temp->next) {
-		/* To be sure it is a valid string */
-		workbuff[0] = 0;
-		mapping_parser_gen_csv_line(LAYER_ELEMENT(temp->data), workbuff, sizeof(workbuff));
-		fwrite(workbuff, sizeof(char), strlen(workbuff), file);
-	}
-
-	g_list_free(le_list);
-
-	/* Save File */
-	fflush(file);
-	fclose(file);
+	/* Get layer settings. No need to check return value. to_csv func is safe */
+	layer_settings = layer_selector_export_rendered_layer_info(self);
+	(void)layer_settings_to_csv(layer_settings, file_name);
 }
 
 /**
