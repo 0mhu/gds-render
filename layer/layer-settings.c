@@ -314,10 +314,14 @@ int layer_settings_load_from_csv(LayerSettings *settings, const char *path)
 	GInputStream *in_stream;
 	GDataInputStream *data_stream;
 	int parser_ret;
+	int stacked_pos;
 	struct layer_info linfo;
 
 	file = g_file_new_for_path(path);
 	in_stream = G_INPUT_STREAM(g_file_read(file, NULL, NULL));
+
+	g_return_val_if_fail(GDS_RENDER_IS_LAYER_SETTINGS(settings), -2);
+
 	if (!in_stream) {
 		ret = -1;
 		goto ret_destroy_file;
@@ -327,10 +331,13 @@ int layer_settings_load_from_csv(LayerSettings *settings, const char *path)
 
 	data_stream = g_data_input_stream_new(in_stream);
 
+	stacked_pos = 0;
 	while ((parser_ret = layer_settings_load_csv_line_from_stream(data_stream, &linfo)) >= 0) {
 		/* Line broken */
 		if (parser_ret == 1)
 			continue;
+
+		linfo.stacked_position = stacked_pos++;
 
 		layer_settings_append_layer_info(settings, &linfo);
 		/* Clear name to prevent memory leak */
