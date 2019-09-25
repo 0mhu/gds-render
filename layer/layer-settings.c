@@ -223,7 +223,7 @@ int layer_settings_to_csv(LayerSettings *settings, const char *path)
 		linfo = (struct layer_info *)info_iter->data;
 
 		layer_settings_gen_csv_line(string, linfo);
-		g_output_stream_write(w_fstream, string->str, sizeof(gchar), NULL, NULL);
+		g_output_stream_write(w_fstream, string->str, string->len * sizeof(gchar), NULL, NULL);
 	}
 
 	/* Delete string */
