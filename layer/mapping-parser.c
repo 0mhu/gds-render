@@ -31,69 +31,6 @@
 
 #include <gds-render/layer/mapping-parser.h>
 
-int mapping_parser_load_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color)
-{
-	int ret;
-	gsize len;
-	gchar *line;
-	GRegex *regex;
-	GMatchInfo *mi;
-	char *match;
-
-	if ((!export) || (!name) || (!layer) || (!color)) {
-		ret = 1;
-		goto ret_direct;
-	}
-
-	regex = g_regex_new("^(?<layer>[0-9]+),(?<r>[0-9\\.]+),(?<g>[0-9\\.]+),(?<b>[0-9\\.]+),(?<a>[0-9\\.]+),(?<export>[01]),(?<name>.*)$", 0, 0, NULL);
-
-	line = g_data_input_stream_read_line(stream, &len, NULL, NULL);
-	if (!line) {
-		ret = -1;
-		goto destroy_regex;
-	}
-
-	/* Match line in CSV */
-	g_regex_match(regex, line, 0, &mi);
-	if (g_match_info_matches(mi)) {
-		/* Line is valid */
-		match = g_match_info_fetch_named(mi, "layer");
-		*layer = (int)g_ascii_strtoll(match, NULL, 10);
-		g_free(match);
-		match = g_match_info_fetch_named(mi, "r");
-		color->red = g_ascii_strtod(match, NULL);
-		g_free(match);
-		match = g_match_info_fetch_named(mi, "g");
-		color->green = g_ascii_strtod(match, NULL);
-		g_free(match);
-		match = g_match_info_fetch_named(mi, "b");
-		color->blue = g_ascii_strtod(match, NULL);
-		g_free(match);
-		match = g_match_info_fetch_named(mi, "a");
-		color->alpha = g_ascii_strtod(match, NULL);
-		g_free(match);
-		match = g_match_info_fetch_named(mi, "export");
-		*export = ((!strcmp(match, "1")) ? TRUE : FALSE);
-		g_free(match);
-		match = g_match_info_fetch_named(mi, "name");
-		*name = match;
-
-		ret = 0;
-	} else {
-		/* Line is malformatted */
-		printf("Could not recognize line in CSV as valid entry: %s\n", line);
-		ret = 1;
-	}
-
-	g_match_info_free(mi);
-	g_free(line);
-destroy_regex:
-	g_regex_unref(regex);
-ret_direct:
-	return ret;
-
-}
-
 void mapping_parser_gen_csv_line(LayerElement *layer_element, char *line_buffer, size_t max_len)
 {
 	int i;

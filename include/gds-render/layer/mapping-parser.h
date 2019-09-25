@@ -37,17 +37,6 @@
 #include <gds-render/layer/layer-settings.h>
 
 /**
- * @brief Load a line from \p stream and parse try to parse it as layer information
- * @param stream Input data stream
- * @param export Layer shall be exported
- * @param name Layer name. Free returned pointer after using.
- * @param layer Layer number
- * @param color RGBA color.
- * @return 1 if malformatted line, 0 if parsing was successful and parameters are valid, -1 if file end
- */
-int mapping_parser_load_line(GDataInputStream *stream, gboolean *export, char **name, int *layer, GdkRGBA *color);
-
-/**
  * @brief Create Line for LayerMapping file with supplied information
  * @param layer_element information
  * @param line_buffer buffer to write to
