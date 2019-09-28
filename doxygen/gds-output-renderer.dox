@@ -9,7 +9,7 @@
  * @warning Although the GdsOutputRenderer class provides compatibility for asynchronous rendering,
  * the class is not thread safe / re-entrant. Only use it from a signle context. Not even the rendering function called is allowed to modifiy this object.
  * 
- * A allowed function to be called from the async rendering thread is #gds_output_renderer_update_gui_status_from_async and the get functions for the properties.
+ * A allowed function to be called from the async rendering thread is #gds_output_renderer_update_async_progress and the get functions for the properties.
  *  
  * @note The context that owned the renderer has to ensure that only one rendering is active at a time for a single instance of a renderer.
  *

@@ -220,6 +220,7 @@ static int read_line_from_fd(int fd, char *buff, size_t buff_size)
 
 /**
  * @brief Render \p cell to a PDF file specified by \p pdf_file
+ * @param renderer The current renderer this function is running from
  * @param cell Toplevel cell to @ref Cairo-Renderer
  * @param layer_infos List of layer information. Specifies color and layer stacking
  * @param pdf_file PDF output file. Set to NULL if no PDF file has to be generated
