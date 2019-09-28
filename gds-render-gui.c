@@ -255,7 +255,6 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 
 	gtk_tree_view_set_model(self->cell_tree_view, GTK_TREE_MODEL(self->cell_filter));
 
-	/* TODO: check if these are destroyed afterwards */
 	render_dates = gtk_cell_renderer_text_new();
 	render_cell = lib_cell_renderer_new();
 	render_lib = lib_cell_renderer_new();
