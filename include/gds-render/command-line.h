@@ -42,16 +42,16 @@
  * @param layer_file Layer mapping file
  * @param so_path Shared object
  * @param tex_standalone Standalone TeX
- * @param tec_layers TeX OCR layers
+ * @param tex_layers TeX OCR layers
  * @param scale Scale value
  * @return Error code, 0 if successful
  */
 int command_line_convert_gds(const char *gds_name,
-			      const char *cell_name,
-			      char **renderers,
-			      char **output_file_names,
-			      const char *layer_file,
-			      const char *so_path,
+			     const char *cell_name,
+			     char **renderers,
+			     char **output_file_names,
+			     const char *layer_file,
+			     const char *so_path,
 			     gboolean tex_standalone,
 			     gboolean tex_layers,
 			     double scale);

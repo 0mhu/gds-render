@@ -18,7 +18,7 @@
  */
 
 /**
- * @file latex-output.c
+ * @file latex-renderer.c
  * @brief LaTeX Output Renderer
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */

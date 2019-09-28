@@ -2,7 +2,7 @@
  * @defgroup ExternalRenderer External Shared Object Renderer
  * @ingroup GdsOutputRenderer
  *
- * @subsection ExternalRendererProps Properties
+ * @section ExternalRendererProps Properties
  * This class inherits all properties from its parent @ref GdsOutputRenderer.
  * In addition to that, it implements the following properties:
  *

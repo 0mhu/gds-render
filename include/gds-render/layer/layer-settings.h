@@ -18,8 +18,8 @@
  */
 
 /**
- * @file layer-info.h
- * @brief LayerSettings class heade file
+ * @file layer-settings.h
+ * @brief LayerSettings class header file
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
@@ -96,8 +96,12 @@ int layer_settings_remove_layer(LayerSettings *settings, int layer);
 GList *layer_settings_get_layer_info_list(LayerSettings *settings);
 
 /**
- * @brief Write layer settings to a CSV file
- * @param path
+ * @brief Write layer settings to a CSV file.
+ *
+ * This function writes the layer settings to a CSV file according to the
+ * layer mapping specification (@ref lmf-spec)
+ * @param settings LayerSettings object
+ * @param path Output path for CSV file.
  * @return 0 if successful
  */
 int layer_settings_to_csv(LayerSettings *settings, const char *path);

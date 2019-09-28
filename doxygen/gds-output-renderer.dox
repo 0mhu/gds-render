@@ -15,7 +15,7 @@
  *
  * By default this class implements the following features:
  * 
- * @subsection GdsOutputRendererProps Properties
+ * @section GdsOutputRendererProps Properties
  * Property Name    | Description
  * -----------------|----------------------------------------------------------------
  * layer-settings   | LayerSettings object containing the layer rendering information
@@ -23,7 +23,7 @@
  *
  * All these properties have to be set for rendering.
  *
- * @subsection GdsOutputRendererSignals Signals / Events
+ * @section GdsOutputRendererSignals Signals / Events
  * Signal Name      | Description                                     | Callback prototype
  * -----------------|-------------------------------------------------|-----------------------------------------------------------
  * async-finished   | The asynchronous rendering is finished          | void callback(GdsOutputRenderer *src, gpointer user_data)

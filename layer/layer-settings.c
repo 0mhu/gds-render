@@ -18,7 +18,7 @@
  */
 
 /**
- * @file layer-info.c
+ * @file layer-settings.c
  * @brief Implementation of the LayerSettings class
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */

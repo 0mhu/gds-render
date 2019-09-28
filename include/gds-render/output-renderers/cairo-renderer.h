@@ -17,7 +17,7 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @file cairo-output.h
+ * @file cairo-renderer.h
  * @brief Header File for Cairo output renderer
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
