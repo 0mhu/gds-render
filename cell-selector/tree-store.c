@@ -32,6 +32,11 @@
 #include <gds-render/cell-selector/lib-cell-renderer.h>
 #include <gds-render/gds-utils/gds-types.h>
 
+struct filter_visible_params {
+	GtkSearchEntry *search_entry;
+	GtkTreeView *tree_view;
+};
+
 /**
  * @brief this function olny allows cells to be selected
  * @param selection
@@ -78,13 +83,13 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
  */
 static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
-	struct tree_stores *stores = (struct tree_stores *)data;
+	struct filter_visible_params *params = (struct filter_visible_params *)data;
 	struct gds_cell *cell;
 	struct gds_library *lib;
 	gboolean result = FALSE;
 	const char *search_string;
 
-	if (!model || !iter || !stores)
+	if (!model || !iter || !params)
 		goto exit_filter;
 
 	gtk_tree_model_get(model, iter, CELL_SEL_CELL, &cell, CELL_SEL_LIBRARY, &lib, -1);
@@ -97,7 +102,7 @@ static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter 
 	if (!cell)
 		goto exit_filter;
 
-	search_string = gtk_entry_get_text(stores->search_entry);
+	search_string = gtk_entry_get_text(GTK_ENTRY(params->search_entry));
 
 	/* Show all, if field is empty */
 	if (!strlen(search_string))
@@ -106,7 +111,7 @@ static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter 
 	if (strstr(cell->name, search_string))
 		result = TRUE;
 
-	gtk_tree_view_expand_all(stores->base_tree_view);
+	gtk_tree_view_expand_all(params->tree_view);
 
 exit_filter:
 	return result;
@@ -126,29 +131,30 @@ static void change_filter(GtkWidget *entry, gpointer data)
  * @param search_entry Entry field for search
  * @return Tree stores for storing data inside the GtkTreeView
  */
-struct tree_stores *setup_cell_selector(GtkTreeView* view, GtkEntry *search_entry)
+int setup_cell_selector(GtkTreeView *view, GtkEntry *search_entry, GtkTreeStore **base_store,
+			GtkTreeModelFilter **filter)
 {
 	static struct tree_stores stores;
+	GtkTreeStore *base_store;
 	GtkCellRenderer *render_dates;
 	GtkCellRenderer *render_cell;
 	GtkCellRenderer *render_lib;
 	GtkTreeViewColumn *column;
 
-	stores.base_tree_view = view;
-	stores.search_entry = search_entry;
 
-	stores.base_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
+
+	*base_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER,
+					 G_TYPE_POINTER, G_TYPE_UINT,
+					 G_TYPE_STRING, G_TYPE_STRING);
 
 	/* Searching */
-	if (search_entry) {
-		stores.filter = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(stores.base_store), NULL));
-		gtk_tree_model_filter_set_visible_func (stores.filter,
-								(GtkTreeModelFilterVisibleFunc)cell_store_filter_visible_func,
-								 &stores, NULL);
-		g_signal_connect(GTK_SEARCH_ENTRY(search_entry), "search-changed", G_CALLBACK(change_filter), &stores);
-	}
+	*filter = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(*base_store), NULL));
+	gtk_tree_model_filter_set_visible_func(*filter,
+						(GtkTreeModelFilterVisibleFunc)cell_store_filter_visible_func,
+						 &stores, NULL);
+	g_signal_connect(GTK_SEARCH_ENTRY(search_entry), "search-changed", G_CALLBACK(change_filter), &stores);
 
-	gtk_tree_view_set_model(view, GTK_TREE_MODEL(stores.filter));
+	gtk_tree_view_set_model(view, GTK_TREE_MODEL(*filter));
 
 	render_dates = gtk_cell_renderer_text_new();
 	render_cell = lib_cell_renderer_new();
