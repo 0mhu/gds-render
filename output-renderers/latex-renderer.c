@@ -35,7 +35,7 @@
 /**
  * @brief Struct representing the LaTeX-Renderer object.
  *
- * This struct holds the LaTeX renderer internal data. It is only used inside the @ref LatexRenderer class.
+ * This struct holds the LaTeX renderer internal data. It is only used inside the @ref LaTeX-Renderer class.
  */
 struct _LatexRenderer {
 	GdsOutputRenderer parent;
