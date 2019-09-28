@@ -183,7 +183,6 @@ static void gapp_activate(GApplication *app, gpointer user_data)
  */
 static int start_gui(int argc, char **argv)
 {
-
 	GtkApplication *gapp;
 	int app_status;
 	static struct application_data appdata = {
@@ -288,7 +287,6 @@ int main(int argc, char **argv)
 			printf("Scale < 1 not allowed. Setting to 1\n");
 			scale = 1;
 		}
-
 
 		/* Get gds name */
 		gds_name = argv[1];
