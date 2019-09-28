@@ -135,7 +135,7 @@ static GString *generate_string_from_date(struct gds_time_field *date)
 }
 
 /**
- * @brief this function olny allows cells to be selected
+ * @brief This function only allows valid cells to be selected
  * @param selection
  * @param model
  * @param path
@@ -170,6 +170,11 @@ static gboolean tree_sel_func(GtkTreeSelection *selection,
 	return ret;
 }
 
+/**
+ * @brief Trigger refiltering of cell filter
+ * @param entry Unused widget, that emitted the signal
+ * @param data GdsrenderGui self instance
+ */
 static void cell_tree_view_change_filter(GtkWidget *entry, gpointer data)
 {
 	GdsRenderGui *self = RENDERER_GUI(data);
@@ -210,7 +215,7 @@ static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter 
 	if (!cell)
 		goto exit_filter;
 
-	search_string = gtk_entry_get_text(GTK_ENTRY(self->cell_search_entry));
+	search_string = gtk_entry_get_text(GTK_ENTRY(self->cell_search_entry	));
 
 	/* Show all, if field is empty */
 	if (!strlen(search_string))
@@ -231,7 +236,6 @@ exit_filter:
  */
 int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 {
-	GtkTreeStore *base_store;
 	GtkCellRenderer *render_dates;
 	GtkCellRenderer *render_cell;
 	GtkCellRenderer *render_lib;
@@ -242,7 +246,7 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 					 G_TYPE_STRING, G_TYPE_STRING);
 
 	/* Searching */
-	self->cell_filter = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(base_store), NULL));
+	self->cell_filter = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(self->cell_tree_store), NULL));
 	gtk_tree_model_filter_set_visible_func(self->cell_filter,
 						(GtkTreeModelFilterVisibleFunc)cell_store_filter_visible_func,
 						 self, NULL);
