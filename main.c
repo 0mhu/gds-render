@@ -133,7 +133,7 @@ static const GActionEntry app_actions[] = {
  * @brief Called when a GUI main window is closed
  *
  * The GdsRenderGui object associated with the closed main window
- * is removed from the list of open GUIs (\p user_data) and unreferenced.
+ * is removed from the list of open GUIs (\p user_data) and dereferenced.
  *
  * @param gui The GUI instance the closed main window belongs to
  * @param user_data List of GUIs
@@ -198,7 +198,7 @@ static int start_gui(int argc, char **argv)
 
 	if (g_application_get_is_remote(G_APPLICATION(gapp)) == TRUE) {
 		g_application_activate(G_APPLICATION(gapp));
-		printf("There is already an open instance. Will open second window in said instance.\n");
+		printf("There is already an open instance. Will open second window in that instance.\n");
 		return 0;
 	}
 
