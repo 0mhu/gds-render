@@ -184,6 +184,7 @@ static void gapp_activate(GApplication *app, gpointer user_data)
 static int start_gui(int argc, char **argv)
 {
 	GtkApplication *gapp;
+	GString *application_domain;
 	int app_status;
 	static struct application_data appdata = {
 		.gui_list = NULL
@@ -192,7 +193,16 @@ static int start_gui(int argc, char **argv)
 	GMenu *m_quit;
 	GMenu *m_about;
 
-	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_FLAGS_NONE);
+	/*
+	 * Generate version dependent application id
+	 * This allows running the application in different versions at the same time.
+	 */
+	application_domain = g_string_new(NULL);
+	g_string_printf(application_domain, "de.shimatta.gds_render_%s", _app_git_commit);
+
+	gapp = gtk_application_new(application_domain->str, G_APPLICATION_FLAGS_NONE);
+	g_string_free(application_domain, TRUE);
+
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
 	g_signal_connect(gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
 
