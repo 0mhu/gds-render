@@ -30,7 +30,8 @@ add_compile_options(-Wall -Wold-style-declaration -Wuninitialized -Wmaybe-uninit
 
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
         message("${Yellow}Debug mode for translations used!${ColorReset}")
-	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
+	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"${CMAKE_CURRENT_BINARY_DIR}/translations\")
+	message("${BoldMagenta}${CMAKE_CURRENT_BINARY_DIR}/translations used as data dir${ColorReset}")
 else(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message("Global locale directory used. Make sure files in /usr/share/locale are available")
 	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
