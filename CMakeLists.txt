@@ -39,6 +39,7 @@ ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
 add_subdirectory(resources)
 add_subdirectory(doxygen)
+add_subdirectory(translations)
 add_subdirectory(version)
 
 include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
