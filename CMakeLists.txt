@@ -28,6 +28,15 @@ pkg_check_modules(CAIRO REQUIRED cairo)
 
 add_compile_options(-Wall -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
 
+IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        message("${Yellow}Debug mode for translations used!${ColorReset}")
+	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
+else(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	message("Global locale directory used. Make sure files in /usr/share/locale are available")
+	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
+ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+
 add_subdirectory(resources)
 add_subdirectory(doxygen)
 add_subdirectory(version)

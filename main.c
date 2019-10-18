@@ -23,9 +23,13 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+
+
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <glib/gi18n.h>
+#include <locale.h>
 
 #include <gds-render/gds-render-gui.h>
 #include <gds-render/command-line.h>
@@ -91,8 +95,8 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	(void)parameter;
 	GString *comment_text;
 
-	comment_text = g_string_new("gds-render is a free tool for rendering GDS2 layout files into vector graphics.");
-	g_string_append_printf(comment_text, "\n\nFull git commit: %s", _app_git_commit);
+	comment_text = g_string_new(_("gds-render is a free tool for rendering GDS2 layout files into vector graphics."));
+	g_string_append_printf(comment_text, _("\n\nFull git commit: %s"), _app_git_commit);
 
 	builder = gtk_builder_new_from_resource("/gui/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
@@ -111,7 +115,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 		/* Pixbuf is now owned by about dialog. Unref */
 		g_object_unref(logo_buf);
 	} else if (error) {
-		fprintf(stderr, "Logo could not be displayed: %s\n", error->message);
+		fprintf(stderr, _("Logo could not be displayed: %s\n"), error->message);
 		g_error_free(error);
 	}
 
@@ -193,6 +197,10 @@ static int start_gui(int argc, char **argv)
 	GMenu *m_quit;
 	GMenu *m_about;
 
+	bindtextdomain(GETTEXT_PACKAGE, LOCALEDATADIR "/locale");
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	textdomain(GETTEXT_PACKAGE);
+
 	/*
 	 * Generate version dependent application id
 	 * This allows running the application in different versions at the same time.
@@ -208,7 +216,7 @@ static int start_gui(int argc, char **argv)
 
 	if (g_application_get_is_remote(G_APPLICATION(gapp)) == TRUE) {
 		g_application_activate(G_APPLICATION(gapp));
-		printf("There is already an open instance. Will open second window in that instance.\n");
+		printf(_("There is already an open instance. Will open second window in that instance.\n"));
 		return 0;
 	}
 
