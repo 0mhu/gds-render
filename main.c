@@ -197,10 +197,6 @@ static int start_gui(int argc, char **argv)
 	GMenu *m_quit;
 	GMenu *m_about;
 
-	bindtextdomain(GETTEXT_PACKAGE, LOCALEDATADIR "/locale");
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
-
 	/*
 	 * Generate version dependent application id
 	 * This allows running the application in different versions at the same time.
@@ -272,6 +268,10 @@ int main(int argc, char **argv)
 	gchar *custom_library_path = NULL;
 	int scale = 1000;
 	int app_status = 0;
+
+	bindtextdomain(GETTEXT_PACKAGE, LOCALEDATADIR "/locale");
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	textdomain(GETTEXT_PACKAGE);
 
 	GOptionEntry entries[] = {
 		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
