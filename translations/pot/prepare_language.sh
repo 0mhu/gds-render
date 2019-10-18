@@ -11,6 +11,7 @@ cd "$DIR"
 
 if [ -z $1 ]; then
 	echo "Please specify language code to generate/update"
+	exit -1
 fi
 
 locale="$1"

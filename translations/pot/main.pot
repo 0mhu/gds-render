@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-18 20:50+0200\n"
+"POT-Creation-Date: 2019-10-18 23:08+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,16 +25,83 @@ msgid ""
 "Full git commit: %s"
 msgstr ""
 
+#: ../main.c:289
+msgid " FILE - Convert GDS file <FILE> to graphic"
+msgstr ""
+
+#: ../main.c:223
+msgid "About"
+msgstr ""
+
+#: ../main.c:282
+msgid "Cell to render"
+msgstr ""
+
+#: ../main.c:284
+msgid "Create PDF Layers (OCG)"
+msgstr ""
+
+#: ../main.c:283
+msgid "Create standalone TeX"
+msgstr ""
+
+#: ../main.c:279
+msgid "Divide output coordinates by <SCALE>"
+msgstr ""
+
+#: ../main.c:314
+#, c-format
+msgid "Ignored argument: %s"
+msgstr ""
+
 #: ../main.c:118
 #, c-format
 msgid "Logo could not be displayed: %s\n"
 msgstr ""
 
-#: ../main.c:219
+#: ../main.c:294
+#, c-format
+msgid "Option parsing failed: %s\n"
+msgstr ""
+
+#: ../main.c:280
+msgid "Output file path. Can be used multiple times."
+msgstr ""
+
+#: ../main.c:281
+msgid "Path for Layer Mapping File"
+msgstr ""
+
+#: ../main.c:277
+msgid "Print version"
+msgstr ""
+
+#: ../main.c:222
+msgid "Quit"
+msgstr ""
+
+#: ../main.c:278
+msgid "Renderer to use. Can be used multiple times."
+msgstr ""
+
+#: ../main.c:305
+#, c-format
+msgid "Scale < 1 not allowed. Setting to 1\n"
+msgstr ""
+
+#: ../main.c:215
 #, c-format
 msgid ""
 "There is already an open instance. Will open second window in that "
 "instance.\n"
+msgstr ""
+
+#: ../main.c:247
+#, c-format
+msgid ""
+"This is gds-render, version: %s\n"
+"\n"
+"For a list of supported commands execute with --help option.\n"
 msgstr ""
 
 #: ../main.c:98

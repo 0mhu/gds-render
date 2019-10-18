@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib/gi18n.h>
 
 #include <gds-render/gds-render-gui.h>
 #include <gds-render/gds-utils/gds-parser.h>
@@ -259,17 +260,17 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 	render_cell = lib_cell_renderer_new();
 	render_lib = lib_cell_renderer_new();
 
-	column = gtk_tree_view_column_new_with_attributes("Library", render_lib, "gds-lib", CELL_SEL_LIBRARY, NULL);
+	column = gtk_tree_view_column_new_with_attributes(_("Library"), render_lib, "gds-lib", CELL_SEL_LIBRARY, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
-	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "gds-cell", CELL_SEL_CELL,
+	column = gtk_tree_view_column_new_with_attributes(_("Cell"), render_cell, "gds-cell", CELL_SEL_CELL,
 							  "error-level", CELL_SEL_CELL_ERROR_STATE, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
-	column = gtk_tree_view_column_new_with_attributes("Mod. Date", render_dates, "text", CELL_SEL_MODDATE, NULL);
+	column = gtk_tree_view_column_new_with_attributes(_("Mod. Date"), render_dates, "text", CELL_SEL_MODDATE, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
-	column = gtk_tree_view_column_new_with_attributes("Acc. Date", render_dates, "text", CELL_SEL_ACCESSDATE, NULL);
+	column = gtk_tree_view_column_new_with_attributes(_("Acc. Date"), render_dates, "text", CELL_SEL_ACCESSDATE, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
 	/* Callback for selection
@@ -308,17 +309,17 @@ static void on_load_gds(gpointer button, gpointer user)
 	if (!self)
 		return;
 
-	open_dialog = gtk_file_chooser_dialog_new("Open GDSII File", self->main_window,
+	open_dialog = gtk_file_chooser_dialog_new(_("Open GDSII File"), self->main_window,
 						  GTK_FILE_CHOOSER_ACTION_OPEN,
-						  "Cancel", GTK_RESPONSE_CANCEL,
-						  "Open GDSII", GTK_RESPONSE_ACCEPT,
+						  _("Cancel"), GTK_RESPONSE_CANCEL,
+						  _("Open GDSII"), GTK_RESPONSE_ACCEPT,
 						  NULL);
 	file_chooser = GTK_FILE_CHOOSER(open_dialog);
 
 	/* Add GDS II Filter */
 	filter = gtk_file_filter_new();
 	gtk_file_filter_add_pattern(filter, "*.gds");
-	gtk_file_filter_set_name(filter, "GDSII-Files");
+	gtk_file_filter_set_name(filter, _("GDSII-Files"));
 	gtk_file_chooser_add_filter(file_chooser, filter);
 
 	dialog_result = gtk_dialog_run(GTK_DIALOG(open_dialog));
