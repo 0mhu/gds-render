@@ -29,4 +29,8 @@ execute_process(COMMAND bash ./generate-git-commit-string.sh
 		OUTPUT_VARIABLE GIT_COMMIT)
 message("${BoldGreen}Commit: ${GIT_COMMIT}")
 message("Version: ${GIT_VER}${ColorReset}")
+
+IF(GIT_VER MATCHES "-dirty")
+        message("${BoldRed}Build is dirty! Commit your changes before releasing this version!${ColorReset}")
+ENDIF(GIT_VER MATCHES "-dirty")
 target_compile_definitions(version PRIVATE PROJECT_GIT_VERSION=${GIT_VER} PROJECT_GIT_COMMIT=${GIT_COMMIT})
