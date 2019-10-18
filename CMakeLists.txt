@@ -37,7 +37,6 @@ else(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
 ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-
 add_subdirectory(resources)
 add_subdirectory(doxygen)
 add_subdirectory(version)
