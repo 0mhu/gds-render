@@ -1,5 +1,9 @@
 project(gds-render)
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  set(CMAKE_INSTALL_PREFIX "/usr/" CACHE PATH "..." FORCE)
+endif()
+
 if(NOT WIN32)
   string(ASCII 27 Esc)
   set(ColorReset "${Esc}[m")
@@ -30,8 +34,8 @@ add_compile_options(-Wall -Wold-style-declaration -Wuninitialized -Wmaybe-uninit
 
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
         message("${Yellow}Debug mode for translations used!${ColorReset}")
-	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"${CMAKE_CURRENT_BINARY_DIR}/translations\")
-	message("${BoldMagenta}${CMAKE_CURRENT_BINARY_DIR}/translations used as data dir${ColorReset}")
+	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"${CMAKE_CURRENT_BINARY_DIR}/translations/output\")
+	message("${BoldMagenta}${CMAKE_CURRENT_BINARY_DIR}/translations/output used as data dir${ColorReset}")
 else(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message("Global locale directory used. Make sure files in /usr/share/locale are available")
 	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
@@ -67,8 +71,12 @@ set(SOURCE
 add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c)
 add_dependencies(${PROJECT_NAME} glib-resources)
 add_dependencies(${PROJECT_NAME} version)
+add_dependencies(${PROJECT_NAME} translations)
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c PROPERTIES GENERATED 1)
 target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
-install (TARGETS ${PROJECT_NAME} DESTINATION bin)
+install (TARGETS ${PROJECT_NAME} 
+	RUNTIME	
+		DESTINATION bin
+	)
 
 add_custom_target(documentation DEPENDS doxygen)

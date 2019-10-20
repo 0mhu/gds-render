@@ -20,13 +20,14 @@ pkgver () {
 }
 
 build () {
-	cd "$srcdir/$pkgname-git"
-	cmake -DCMAKE_BUILD_TYPE=Release .
+	mkdir "$srcdir/$pkgname-git/build"
+	cd "$srcdir/$pkgname-git/build"
+	cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
 }
 
 package () {
-	cd "$srcdir/$pkgname-git"
+	cd "$srcdir/$pkgname-git/build"
 	make DESTDIR="${pkgdir}" install 
 	install -D -m664 "$srcdir/$pkgname-git/AUR/gds-render.desktop" \
 			 "$pkgdir/usr/share/applications/gds-render.desktop"
@@ -34,4 +35,5 @@ package () {
 			 "$pkgdir/usr/share/icons/hicolor/scalable/apps/gds-render.svg"
 	install -D -m664 "$srcdir/$pkgname-git/icon/128x128/gds-render.png" \
 			 "$pkgdir/usr/share/icons/hicolor/128x128/apps/gds-render.png"
+	tar cf - "$srcdir/$pkgname-git/build/translations/output/locale" | (cd "$pkgdir/usr/share/" && tar xf -) 
 }
