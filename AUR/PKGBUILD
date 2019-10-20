@@ -1,7 +1,7 @@
 	# Maintainer: Mario Hüttel <mario (dot) huettel (!) gmx (dot) net>
 
 pkgname=gds-render
-pkgver=20180725.001
+pkgver=20191020.403.448de30
 pkgrel=1
 pkgdesc="Conversion tool for converting GDS layout files into TikZ Code and PDF"
 arch=('i686' 'x86_64')
@@ -35,5 +35,6 @@ package () {
 			 "$pkgdir/usr/share/icons/hicolor/scalable/apps/gds-render.svg"
 	install -D -m664 "$srcdir/$pkgname-git/icon/128x128/gds-render.png" \
 			 "$pkgdir/usr/share/icons/hicolor/128x128/apps/gds-render.png"
-	tar cf - "$srcdir/$pkgname-git/build/translations/output/locale" | (cd "$pkgdir/usr/share/" && tar xf -) 
+	
+	(cd $srcdir/$pkgname-git/build/translations/output/ && tar cf - "locale" | (cd "$pkgdir/usr/share/" && tar xf -)) 
 }
