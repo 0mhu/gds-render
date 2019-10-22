@@ -29,6 +29,7 @@
  */
 
 #include <stdio.h>
+#include <glib/gi18n.h>
 
 #include <gds-render/command-line.h>
 #include <gds-render/gds-utils/gds-parser.h>
@@ -70,14 +71,14 @@ static int create_renderers(char **renderers,
 		return -1;
 
 	if (!renderers || !output_file_names) {
-		fprintf(stderr, "Please specify renderers and file names\n");
+		fprintf(stderr, _("Please specify renderers and file names\n"));
 		return -1;
 	}
 
 	count_render = string_array_count(renderers);
 	count_out = string_array_count(output_file_names);
 	if (count_render != count_out) {
-		fprintf(stderr, "Count of renderers %d does not match count of output file names %d\n",
+		fprintf(stderr, _("Count of renderers %d does not match count of output file names %d\n"),
 			count_render, count_out);
 		return -1;
 	}
@@ -100,7 +101,7 @@ static int create_renderers(char **renderers,
 			output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_svg());
 		} else if (!strcmp(current_renderer, "ext")) {
 			if (!so_path) {
-				fprintf(stderr, "Please specify shared object for external renderer. Will ignore this renderer.\n");
+				fprintf(stderr, _("Please specify shared object for external renderer. Will ignore this renderer.\n"));
 				continue;
 			}
 			output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(so_path));
@@ -154,7 +155,7 @@ int command_line_convert_gds(const char *gds_name,
 
 	/* Check if parameters are valid */
 	if (!gds_name || !cell_name || !output_file_names || !layer_file || !renderers) {
-		printf("Probably missing argument. Check --help option\n");
+		printf(_("Probably missing argument. Check --help option\n"));
 		return -2;
 	}
 
@@ -180,7 +181,7 @@ int command_line_convert_gds(const char *gds_name,
 
 	first_lib = (struct gds_library *)libs->data;
 	if (!first_lib) {
-		fprintf(stderr, "No library in library list. This should not happen.\n");
+		fprintf(stderr, _("No library in library list. This should not happen.\n"));
 		/* This is safe. Library destruction can handle an empty list element */
 		goto ret_destroy_library_list;
 	}
@@ -189,27 +190,27 @@ int command_line_convert_gds(const char *gds_name,
 	toplevel_cell = find_gds_cell_in_lib(first_lib, cell_name);
 
 	if (!toplevel_cell) {
-		printf("Couldn't find cell in first library!\n");
+		printf(_("Couldn't find cell in first library!\n"));
 		goto ret_destroy_library_list;
 	}
 
 	/* Check if cell passes vital checks */
 	res = gds_tree_check_reference_loops(toplevel_cell->parent_library);
 	if (res < 0) {
-		fprintf(stderr, "Checking library %s failed.\n", first_lib->name);
+		fprintf(stderr, _("Checking library %s failed.\n"), first_lib->name);
 		goto ret_destroy_library_list;
 	} else if (res > 0) {
-		fprintf(stderr, "%d reference loops found.\n", res);
+		fprintf(stderr, _("%d reference loops found.\n"), res);
 
 		/* do further checking if the specified cell and/or its subcells are affected */
 		if (toplevel_cell->checks.affected_by_reference_loop == 1) {
-			fprintf(stderr, "Cell is affected by reference loop. Abort!\n");
+			fprintf(stderr, _("Cell is affected by reference loop. Abort!\n"));
 			goto ret_destroy_library_list;
 		}
 	}
 
 	if (toplevel_cell->checks.affected_by_reference_loop == GDS_CELL_CHECK_NOT_RUN)
-		fprintf(stderr, "Cell was not checked. This should not happen. Please report this issue. Will continue either way.\n");
+		fprintf(stderr, _("Cell was not checked. This should not happen. Please report this issue. Will continue either way.\n"));
 
 	/* Note: unresolved references are not an abort condition.
 	 * Deal with it.

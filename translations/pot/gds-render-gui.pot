@@ -8,43 +8,43 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-18 23:08+0200\n"
+"POT-Creation-Date: 2019-10-22 23:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../gds-render-gui.c:272
+#: ../gds-render-gui.c:273
 msgid "Acc. Date"
 msgstr ""
 
-#: ../gds-render-gui.c:313
+#: ../gds-render-gui.c:314
 msgid "Cancel"
 msgstr ""
 
-#: ../gds-render-gui.c:265
+#: ../gds-render-gui.c:266
 msgid "Cell"
 msgstr ""
 
-#: ../gds-render-gui.c:321
+#: ../gds-render-gui.c:322
 msgid "GDSII-Files"
 msgstr ""
 
-#: ../gds-render-gui.c:262
+#: ../gds-render-gui.c:263
 msgid "Library"
 msgstr ""
 
-#: ../gds-render-gui.c:269
+#: ../gds-render-gui.c:270
 msgid "Mod. Date"
 msgstr ""
 
-#: ../gds-render-gui.c:314
+#: ../gds-render-gui.c:315
 msgid "Open GDSII"
 msgstr ""
 
-#: ../gds-render-gui.c:311
+#: ../gds-render-gui.c:312
 msgid "Open GDSII File"
 msgstr ""
