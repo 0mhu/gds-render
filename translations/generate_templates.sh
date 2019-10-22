@@ -14,6 +14,6 @@ mkdir -p "pot"
 
 for file in $files; do
 	pot="pot/"$(echo "${file#*/}" | sed -e "s/\//_/g")
-	pot="${pot%.c}.pot"	
+	pot="${pot%.c}.pot"
 	xgettext --keyword=_ --language=C --add-comments --sort-output -o "$pot" "$file"
 done
