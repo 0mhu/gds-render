@@ -17,34 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../gds-render-gui.c:273
-msgid "Acc. Date"
+#: ../widgets/activity-bar.c:105
+msgid "Ready"
 msgstr ""
 
-#: ../gds-render-gui.c:314
-msgid "Cancel"
-msgstr ""
-
-#: ../gds-render-gui.c:266
-msgid "Cell"
-msgstr ""
-
-#: ../gds-render-gui.c:322
-msgid "GDSII-Files"
-msgstr ""
-
-#: ../gds-render-gui.c:263
-msgid "Library"
-msgstr ""
-
-#: ../gds-render-gui.c:270
-msgid "Mod. Date"
-msgstr ""
-
-#: ../gds-render-gui.c:315
-msgid "Open GDSII"
-msgstr ""
-
-#: ../gds-render-gui.c:312
-msgid "Open GDSII File"
+#: ../widgets/activity-bar.c:111
+msgid "Working..."
 msgstr ""
