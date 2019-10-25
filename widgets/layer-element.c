@@ -54,6 +54,7 @@ static void layer_element_constructed(GObject *obj)
 static void layer_element_class_init(LayerElementClass *klass)
 {
 	GObjectClass *oclass = G_OBJECT_CLASS(klass);
+
 	oclass->dispose = layer_element_dispose;
 	oclass->constructed = layer_element_constructed;
 }
@@ -62,6 +63,7 @@ static void layer_element_init(LayerElement *self)
 {
 	GtkBuilder *builder;
 	GtkWidget *glade_box;
+
 	builder = gtk_builder_new_from_resource("/gui/layer-widget.glade");
 	glade_box = GTK_WIDGET(gtk_builder_get_object(builder, "box"));
 	gtk_container_add(GTK_CONTAINER(self), glade_box);
@@ -86,7 +88,7 @@ const char *layer_element_get_name(LayerElement *elem)
 	return gtk_entry_get_text(elem->priv.name);
 }
 
-void layer_element_set_name(LayerElement *elem, const char* name)
+void layer_element_set_name(LayerElement *elem, const char *name)
 {
 	gtk_entry_set_text(elem->priv.name, name);
 }
@@ -139,8 +141,9 @@ void layer_element_set_dnd_callbacks(LayerElement *elem, struct layer_element_dn
 		return;
 
 	/* Setup drag and drop */
-	gtk_style_context_add_class (gtk_widget_get_style_context(GTK_WIDGET(elem)), "row");
-	gtk_drag_source_set(GTK_WIDGET(elem->priv.event_handle), GDK_BUTTON1_MASK, data->entries, data->entry_count, GDK_ACTION_MOVE);
+	gtk_style_context_add_class(gtk_widget_get_style_context(GTK_WIDGET(elem)), "row");
+	gtk_drag_source_set(GTK_WIDGET(elem->priv.event_handle), GDK_BUTTON1_MASK,
+			    data->entries, data->entry_count, GDK_ACTION_MOVE);
 	g_signal_connect(elem->priv.event_handle, "drag-begin", G_CALLBACK(data->drag_begin), NULL);
 	g_signal_connect(elem->priv.event_handle, "drag-data-get", G_CALLBACK(data->drag_data_get), NULL);
 	g_signal_connect(elem->priv.event_handle, "drag-end", G_CALLBACK(data->drag_end), NULL);
