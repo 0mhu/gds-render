@@ -26,17 +26,17 @@
 #include <gds-render/layer/color-palette.h>
 
 struct _ColorPalette {
-	/* Inheritance */
-	GObject parent;
+		/* Inheritance */
+		GObject parent;
 
-	/* Custom fields */
-	/** @brief The internal array to store the colors */
-	GdkRGBA *color_array;
-	/** @brief The length of the _ColorPalette::color_array array */
-	unsigned int color_array_length;
+		/* Custom fields */
+		/** @brief The internal array to store the colors */
+		GdkRGBA *color_array;
+		/** @brief The length of the _ColorPalette::color_array array */
+		unsigned int color_array_length;
 
-	/* Dummy bytes to ensure ABI compatibility in future versions */
-	gpointer dummy[4];
+		/* Dummy bytes to ensure ABI compatibility in future versions */
+		gpointer dummy[4];
 };
 
 G_DEFINE_TYPE(ColorPalette, color_palette, G_TYPE_OBJECT)
@@ -141,13 +141,16 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 			g_regex_match(regex, line, 0, &mi);
 			if (g_match_info_matches(mi) && color_idx < lines) {
 				match = g_match_info_fetch_named(mi, "red");
-				palette->color_array[color_idx].red = (double)g_ascii_strtoll(match, NULL, 16) / 255.0;
+				palette->color_array[color_idx].red =
+						(double)g_ascii_strtoll(match, NULL, 16) / 255.0;
 				g_free(match);
 				match = g_match_info_fetch_named(mi, "green");
-				palette->color_array[color_idx].green = (double)g_ascii_strtoll(match, NULL, 16) / 255.0;
+				palette->color_array[color_idx].green =
+						(double)g_ascii_strtoll(match, NULL, 16) / 255.0;
 				g_free(match);
 				match = g_match_info_fetch_named(mi, "blue");
-				palette->color_array[color_idx].blue = (double)g_ascii_strtoll(match, NULL, 16) / 255.0;
+				palette->color_array[color_idx].blue =
+						(double)g_ascii_strtoll(match, NULL, 16) / 255.0;
 				g_free(match);
 
 				/* Only RGB supported so far. Fix alpha channel to 1.0 */
@@ -233,8 +236,7 @@ static void color_palette_dispose(GObject *gobj)
 	ColorPalette *palette;
 
 	palette = GDS_RENDER_COLOR_PALETTE(gobj);
-	if (palette->color_array)
-	{
+	if (palette->color_array) {
 		palette->color_array_length = 0;
 		free(palette->color_array);
 	}

@@ -225,9 +225,8 @@ int command_line_convert_gds(const char *gds_name,
 ret_destroy_library_list:
 	clear_lib_list(&libs);
 ret_clear_renderers:
-	for (list_iter = renderer_list; list_iter; list_iter = list_iter->next) {
+	for (list_iter = renderer_list; list_iter; list_iter = list_iter->next)
 		g_object_unref(list_iter->data);
-	}
 ret_destroy_layer_mapping:
 	g_object_unref(layer_sett);
 	return ret;

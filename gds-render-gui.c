@@ -216,7 +216,7 @@ static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter 
 	if (!cell)
 		goto exit_filter;
 
-	search_string = gtk_entry_get_text(GTK_ENTRY(self->cell_search_entry	));
+	search_string = gtk_entry_get_text(GTK_ENTRY(self->cell_search_entry));
 
 	/* Show all, if field is empty */
 	if (!strlen(search_string))
@@ -247,7 +247,9 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 					 G_TYPE_STRING, G_TYPE_STRING);
 
 	/* Searching */
-	self->cell_filter = GTK_TREE_MODEL_FILTER(gtk_tree_model_filter_new(GTK_TREE_MODEL(self->cell_tree_store), NULL));
+	self->cell_filter = GTK_TREE_MODEL_FILTER(
+				gtk_tree_model_filter_new(GTK_TREE_MODEL(self->cell_tree_store), NULL));
+
 	gtk_tree_model_filter_set_visible_func(self->cell_filter,
 						(GtkTreeModelFilterVisibleFunc)cell_store_filter_visible_func,
 						 self, NULL);
@@ -274,8 +276,10 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
 	/* Callback for selection
-	 * This prevents selecting a library */
-	gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(self->cell_tree_view), tree_sel_func, NULL, NULL);
+	 * This prevents selecting a library
+	 */
+	gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(self->cell_tree_view),
+					       tree_sel_func, NULL, NULL);
 
 	return 0;
 }
@@ -451,7 +455,9 @@ static void async_rendering_finished_callback(GdsOutputRenderer *renderer, gpoin
 	g_object_unref(renderer);
 }
 
-static void async_rendering_status_update_callback(GdsOutputRenderer *renderer, const char *status_message, gpointer data)
+static void async_rendering_status_update_callback(GdsOutputRenderer *renderer,
+						   const char *status_message,
+						   gpointer data)
 {
 	GdsRenderGui *gui;
 	(void)renderer;

@@ -129,8 +129,8 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
  * @brief Contains the application menu entries
  */
 static const GActionEntry app_actions[] = {
-	{"quit", app_quit, NULL, NULL, NULL, {0}},
-	{"about", app_about, NULL, NULL, NULL, {0}}
+	{ "quit", app_quit, NULL, NULL, NULL, {0} },
+	{ "about", app_about, NULL, NULL, NULL, {0} },
 };
 
 /**
@@ -275,14 +275,17 @@ int main(int argc, char **argv)
 
 	GOptionEntry entries[] = {
 		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, _("Print version"), NULL},
-		{"renderer", 'r', 0, G_OPTION_ARG_STRING_ARRAY, &renderer_args, _("Renderer to use. Can be used multiple times."), "pdf|svg|tikz|ext"},
+		{"renderer", 'r', 0, G_OPTION_ARG_STRING_ARRAY, &renderer_args,
+			_("Renderer to use. Can be used multiple times."), "pdf|svg|tikz|ext"},
 		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, _("Divide output coordinates by <SCALE>"), "<SCALE>" },
-		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME_ARRAY, &output_paths, _("Output file path. Can be used multiple times."), "PATH" },
+		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME_ARRAY, &output_paths,
+			_("Output file path. Can be used multiple times."), "PATH" },
 		{"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, _("Path for Layer Mapping File"), "PATH" },
 		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, _("Cell to render"), "NAME" },
 		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, _("Create standalone TeX"), NULL },
 		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, _("Create PDF Layers (OCG)"), NULL },
-		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
+		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, 
+			"Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
 		{NULL}
 	};
 
@@ -310,9 +313,8 @@ int main(int argc, char **argv)
 		gds_name = argv[1];
 
 		/* Print out additional arguments as ignored */
-		for (i = 2; i < argc; i++) {
+		for (i = 2; i < argc; i++)
 			printf(_("Ignored argument: %s"), argv[i]);
-		}
 
 		app_status =
 			command_line_convert_gds(gds_name, cellname, renderer_args, output_paths, mappingname,
