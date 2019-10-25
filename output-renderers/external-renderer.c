@@ -79,7 +79,8 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	}
 
 	/* Load symbol from library */
-	so_render_func = (int (*)(struct gds_cell *, GList *, const char *, double))dlsym(so_handle, EXTERNAL_LIBRARY_FUNCTION);
+	so_render_func = (int (*)(struct gds_cell *, GList *, const char *, double))
+				dlsym(so_handle, EXTERNAL_LIBRARY_FUNCTION);
 	error_msg = dlerror();
 	if (error_msg != NULL) {
 		fprintf(stderr, "Rendering function not found in library:\n%s\n", error_msg);
@@ -133,7 +134,7 @@ static void external_renderer_get_property(GObject *obj, guint property_id, GVal
 		g_value_set_string(value, self->shared_object_path);
 		break;
 	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (obj, property_id, pspec);
+		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
 		break;
 	}
 }

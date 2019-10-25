@@ -17,10 +17,10 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
-  * @file cairo-renderer.c
-  * @brief Output renderer for Cairo PDF export
-  * @author Mario Hüttel <mario.huettel@gmx.net>
-  */
+ * @file cairo-renderer.c
+ * @brief Output renderer for Cairo PDF export
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
 
 /** @addtogroup Cairo-Renderer
  *  @{
@@ -121,7 +121,8 @@ static void render_cell(struct gds_cell *cell, struct cairo_layer *layers, doubl
 	/* Render child cells */
 	for (instance_list = cell->child_cells; instance_list != NULL; instance_list = instance_list->next) {
 		cell_instance = (struct gds_cell_instance *)instance_list->data;
-		if ((temp_cell = cell_instance->cell_ref) != NULL) {
+		temp_cell = cell_instance->cell_ref;
+		if (temp_cell != NULL) {
 			apply_inherited_transform_to_all_layers(layers,
 								&cell_instance->origin,
 								cell_instance->magnification,
@@ -228,8 +229,12 @@ static int read_line_from_fd(int fd, char *buff, size_t buff_size)
  * @param scale Scale the output image down by \p scale
  * @return Error
  */
-static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer, struct gds_cell *cell, GList *layer_infos, const char *pdf_file,
-						     const char *svg_file, double scale)
+static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer,
+						     struct gds_cell *cell,
+						     GList *layer_infos,
+						     const char *pdf_file,
+						     const char *svg_file,
+						     double scale)
 {
 	cairo_surface_t *pdf_surface = NULL, *svg_surface = NULL;
 	cairo_t *pdf_cr = NULL, *svg_cr = NULL;
@@ -393,7 +398,7 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 ret_clear_layers:
 	for (i = 0; i < MAX_LAYERS; i++) {
 		lay = &layers[i];
-		if(lay->cr) {
+		if (lay->cr) {
 			cairo_destroy(lay->cr);
 			cairo_surface_destroy(lay->rec);
 		}

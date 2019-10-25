@@ -18,10 +18,10 @@
  */
 
 /**
-  * @file gds-output-renderer.c
-  * @brief Base GObject class for output renderers
-  * @author Mario Hüttel <mario.huettel@gmx.net>
-  */
+ * @file gds-output-renderer.c
+ * @brief Base GObject class for output renderers
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
 
 /** @addtogroup GdsOutputRenderer
  *  @{
@@ -213,8 +213,6 @@ void gds_output_renderer_init(GdsOutputRenderer *self)
 	priv->idle_function_parameters.status_message = NULL;
 	g_mutex_init(&priv->settings_lock);
 	g_mutex_init(&priv->idle_function_parameters.message_lock);
-
-	return;
 }
 
 GdsOutputRenderer *gds_output_renderer_new()
@@ -328,7 +326,7 @@ static void gds_output_renderer_async_wrapper(GTask *task,
 		ret = -1000;
 		goto ret_from_task;
 	}
-	if(!priv->mutex_init_status) {
+	if (!priv->mutex_init_status) {
 		ret = -1001;
 		goto ret_from_task;
 	}

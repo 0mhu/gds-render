@@ -54,7 +54,8 @@ struct _LayerSelector {
 
 G_DEFINE_TYPE(LayerSelector, layer_selector, G_TYPE_OBJECT)
 
-/* Drag and drop code 
+/*
+ * Drag and drop code
  * Original code from https://blog.gtk.org/2017/06/01/drag-and-drop-in-lists-revisited/
  */
 
@@ -72,16 +73,16 @@ static void sel_layer_element_drag_begin(GtkWidget *widget, GdkDragContext *cont
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
 	cr = cairo_create(surface);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context(row), "drag-icon");
-	gtk_widget_draw (row, cr);
+	gtk_style_context_add_class(gtk_widget_get_style_context(row), "drag-icon");
+	gtk_widget_draw(row, cr);
 	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-icon");
 
-	gtk_widget_translate_coordinates (widget, row, 0, 0, &x, &y);
-	cairo_surface_set_device_offset (surface, -x, -y);
-	gtk_drag_set_icon_surface (context, surface);
+	gtk_widget_translate_coordinates(widget, row, 0, 0, &x, &y);
+	cairo_surface_set_device_offset(surface, -x, -y);
+	gtk_drag_set_icon_surface(context, surface);
 
-	cairo_destroy (cr);
-	cairo_surface_destroy (surface);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
 
 	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", row);
 	gtk_style_context_add_class(gtk_widget_get_style_context(row), "drag-row");
@@ -115,14 +116,14 @@ static void sel_layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *c
 			       32, (const guchar *)&widget, sizeof(gpointer));
 }
 
-static GtkListBoxRow *layer_selector_get_last_row (GtkListBox *list)
+static GtkListBoxRow *layer_selector_get_last_row(GtkListBox *list)
 {
 	int i;
 	GtkListBoxRow *row;
+	GtkListBoxRow *tmp;
 
 	row = NULL;
 	for (i = 0; ; i++) {
-		GtkListBoxRow *tmp;
 		tmp = gtk_list_box_get_row_at_index(list, i);
 		if (tmp == NULL)
 			break;
@@ -132,15 +133,15 @@ static GtkListBoxRow *layer_selector_get_last_row (GtkListBox *list)
 	return row;
 }
 
-static GtkListBoxRow *layer_selector_get_row_before (GtkListBox *list, GtkListBoxRow *row)
+static GtkListBoxRow *layer_selector_get_row_before(GtkListBox *list, GtkListBoxRow *row)
 {
 	int pos;
 
-	pos = gtk_list_box_row_get_index (row);
-	return gtk_list_box_get_row_at_index (list, pos - 1);
+	pos = gtk_list_box_row_get_index(row);
+	return gtk_list_box_get_row_at_index(list, pos - 1);
 }
 
-static GtkListBoxRow *layer_selector_get_row_after (GtkListBox *list, GtkListBoxRow *row)
+static GtkListBoxRow *layer_selector_get_row_after(GtkListBox *list, GtkListBoxRow *row)
 {
 	int pos;
 
@@ -276,40 +277,40 @@ static void layer_selector_drag_leave(GtkWidget *widget, GdkDragContext *context
 }
 
 static const char *dnd_additional_css =
-  ".row:not(:first-child) { "
-  "  border-top: 1px solid alpha(gray,0.5); "
-  "  border-bottom: 1px solid transparent; "
-  "}"
-  ".row:first-child { "
-  "  border-top: 1px solid transparent; "
-  "  border-bottom: 1px solid transparent; "
-  "}"
-  ".row:last-child { "
-  "  border-top: 1px solid alpha(gray,0.5); "
-  "  border-bottom: 1px solid alpha(gray,0.5); "
-  "}"
-  ".row.drag-icon { "
-  "  background: #282828; "
-  "  border: 1px solid blue; "
-  "}"
-  ".row.drag-row { "
-  "  color: gray; "
-  "  background: alpha(gray,0.2); "
-  "}"
-  ".row.drag-row.drag-hover { "
-  "  border-top: 1px solid #4e9a06; "
-  "  border-bottom: 1px solid #4e9a06; "
-  "}"
-  ".row.drag-hover image, "
-  ".row.drag-hover label { "
-  "  color: #4e9a06; "
-  "}"
-  ".row.drag-hover-top {"
-  "  border-top: 1px solid #4e9a06; "
-  "}"
-  ".row.drag-hover-bottom {"
-  "  border-bottom: 1px solid #4e9a06; "
-  "}";
+	".row:not(:first-child) { "
+	"  border-top: 1px solid alpha(gray,0.5); "
+	"  border-bottom: 1px solid transparent; "
+	"}"
+	".row:first-child { "
+	"  border-top: 1px solid transparent; "
+	"  border-bottom: 1px solid transparent; "
+	"}"
+	".row:last-child { "
+	"  border-top: 1px solid alpha(gray,0.5); "
+	"  border-bottom: 1px solid alpha(gray,0.5); "
+	"}"
+	".row.drag-icon { "
+	"  background: #282828; "
+	"  border: 1px solid blue; "
+	"}"
+	".row.drag-row { "
+	"  color: gray; "
+	"  background: alpha(gray,0.2); "
+	"}"
+	".row.drag-row.drag-hover { "
+	"  border-top: 1px solid #4e9a06; "
+	"  border-bottom: 1px solid #4e9a06; "
+	"}"
+	".row.drag-hover image, "
+	".row.drag-hover label { "
+	"  color: #4e9a06; "
+	"}"
+	".row.drag-hover-top {"
+	"  border-top: 1px solid #4e9a06; "
+	"}"
+	".row.drag-hover-bottom {"
+	"  border-bottom: 1px solid #4e9a06; "
+	"}";
 
 static void layer_selector_dispose(GObject *self)
 {
@@ -348,7 +349,8 @@ static void layer_selector_class_init(LayerSelectorClass *klass)
 
 static void layer_selector_setup_dnd(LayerSelector *self)
 {
-	gtk_drag_dest_set(GTK_WIDGET(self->list_box), GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP, &self->dnd_target, 1, GDK_ACTION_MOVE);
+	gtk_drag_dest_set(GTK_WIDGET(self->list_box), GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP,
+			  &self->dnd_target, 1, GDK_ACTION_MOVE);
 	g_signal_connect(self->list_box, "drag-data-received", G_CALLBACK(layer_selector_drag_data_received), NULL);
 	g_signal_connect(self->list_box, "drag-motion", G_CALLBACK(layer_selector_drag_motion), NULL);
 	g_signal_connect(self->list_box, "drag-leave", G_CALLBACK(layer_selector_drag_leave), NULL);
@@ -398,11 +400,11 @@ LayerSettings *layer_selector_export_rendered_layer_info(LayerSelector *selector
 
 	row_list = gtk_container_get_children(GTK_CONTAINER(selector->list_box));
 
-	for (i = 0,iterator = row_list; iterator != NULL; iterator = g_list_next(iterator), i++) {
+	for (i = 0, iterator = row_list; iterator != NULL; iterator = g_list_next(iterator), i++) {
 		le = LAYER_ELEMENT(iterator->data);
 
 		/* Get name from layer element. This must not be freed */
-		linfo.name =(char *)layer_element_get_name(le);
+		linfo.name = (char *)layer_element_get_name(le);
 
 		layer_element_get_color(le, &linfo.color);
 		linfo.render = (layer_element_get_export(le) ? 1 : 0);
@@ -424,9 +426,9 @@ static void layer_selector_clear_widgets(LayerSelector *self)
 	GList *temp;
 
 	list = gtk_container_get_children(GTK_CONTAINER(self->list_box));
-	for (temp = list; temp != NULL; temp = temp->next) {
+	for (temp = list; temp != NULL; temp = temp->next)
 		gtk_container_remove(GTK_CONTAINER(self->list_box), GTK_WIDGET(temp->data));
-	}
+
 	/* Widgets are already destroyed when removed from box because they are only referenced inside the container */
 
 	g_list_free(list);
@@ -444,7 +446,8 @@ static void layer_selector_clear_widgets(LayerSelector *self)
  * @param layer Layer number to check for
  * @return TRUE if layer is present, else FALSE
  */
-static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self, int layer) {
+static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self, int layer)
+{
 	GList *list;
 	GList *temp;
 	LayerElement *widget;
@@ -552,9 +555,8 @@ void layer_selector_generate_layer_widgets(LayerSelector *selector, GList *libs)
 
 	for (; libs != NULL; libs = libs->next) {
 		lib = (struct gds_library *)libs->data;
-		for (cell_list = lib->cells; cell_list != NULL; cell_list = cell_list->next) {
+		for (cell_list = lib->cells; cell_list != NULL; cell_list = cell_list->next)
 			layer_selector_analyze_cell_layers(selector, (struct gds_cell *)cell_list->data);
-		} /* For Cell List */
 	} /* For libs */
 
 	/* Sort the layers */
@@ -690,7 +692,8 @@ static void layer_selector_load_mapping_clicked(GtkWidget *button, gpointer user
 
 	sel = LAYER_SELECTOR(user_data);
 
-	dialog = gtk_file_chooser_dialog_new("Load Mapping File", GTK_WINDOW(sel->load_parent_window), GTK_FILE_CHOOSER_ACTION_OPEN,
+	dialog = gtk_file_chooser_dialog_new("Load Mapping File", GTK_WINDOW(sel->load_parent_window),
+					     GTK_FILE_CHOOSER_ACTION_OPEN,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Load Mapping", GTK_RESPONSE_ACCEPT, NULL);
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if (res == GTK_RESPONSE_ACCEPT) {
@@ -735,7 +738,8 @@ static void layer_selector_save_mapping_clicked(GtkWidget *button, gpointer user
 
 	sel = LAYER_SELECTOR(user_data);
 
-	dialog = gtk_file_chooser_dialog_new("Save Mapping File", GTK_WINDOW(sel->save_parent_window), GTK_FILE_CHOOSER_ACTION_SAVE,
+	dialog = gtk_file_chooser_dialog_new("Save Mapping File", GTK_WINDOW(sel->save_parent_window),
+					     GTK_FILE_CHOOSER_ACTION_SAVE,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save Mapping", GTK_RESPONSE_ACCEPT, NULL);
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
@@ -802,9 +806,8 @@ void layer_selector_select_all_layers(LayerSelector *layer_selector, gboolean se
 
 	for (iter = le_list; iter != NULL; iter = g_list_next(iter)) {
 		le = LAYER_ELEMENT(iter->data);
-		if (LAYER_IS_ELEMENT(le)) {
+		if (LAYER_IS_ELEMENT(le))
 			layer_element_set_export(le, select);
-		}
 	}
 
 	g_list_free(le_list);
