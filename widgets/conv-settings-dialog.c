@@ -170,8 +170,11 @@ static gboolean shape_drawer_drawing_callback(GtkWidget *widget, cairo_t *cr, gp
 
 	final_scale_value = (width_scale < height_scale ? width_scale : height_scale);
 
-	cairo_rectangle(cr, -(double)dialog->cell_width*final_scale_value/2.0, -(double)dialog->cell_height*final_scale_value/2.0,
-			(double)dialog->cell_width*final_scale_value, (double)dialog->cell_height*final_scale_value);
+	cairo_rectangle(cr,
+			-(double)dialog->cell_width * final_scale_value / 2.0,
+			-(double)dialog->cell_height * final_scale_value / 2.0,
+			(double)dialog->cell_width * final_scale_value,
+			(double)dialog->cell_height * final_scale_value);
 	cairo_stroke(cr);
 	cairo_restore(cr);
 
@@ -183,9 +186,9 @@ static double convert_number_to_engineering(double input, const char **out_prefi
 	const char *selected_prefix = NULL;
 	double return_val = 0.0;
 	int idx;
-	static const char * prefixes[] = {"y", "z", "a", "f", "p", "n", "u", "m", "c", "d", /* < 1 */
-				 "", /* 1 */
-				 "h", "k", "M", "G", "T", "P", "E", "Z", "Y"}; /* > 1 */
+	static const char * const prefixes[] = {"y", "z", "a", "f", "p", "n", "u", "m", "c", "d", /* < 1 */
+						"", /* 1 */
+						"h", "k", "M", "G", "T", "P", "E", "Z", "Y"}; /* > 1 */
 	static const double scale[] = {1E-24, 1E-21, 1E-18, 1E-15, 1E-12, 1E-9, 1E-6, 1E-3, 1E-2, 1E-1,
 					1,
 					1E2, 1E3, 1E6, 1E9, 1E12, 1E15, 1E18, 1E21, 1E24};
@@ -193,7 +196,7 @@ static double convert_number_to_engineering(double input, const char **out_prefi
 
 	/* If pointer is invalid, return NaN */
 	if (!out_prefix)
-		return 0.0 / 0.0;
+		return (0.0 / 0.0);
 
 	/* Start with the 2nd smallest prefix */
 	for (idx = 1; idx < prefix_count; idx++) {
@@ -308,9 +311,9 @@ RendererSettingsDialog *renderer_settings_dialog_new(GtkWindow *parent)
 	RendererSettingsDialog *res;
 
 	res = RENDERER_SETTINGS_DIALOG(g_object_new(RENDERER_TYPE_SETTINGS_DIALOG, NULL));
-	if (res && parent) {
+	if (res && parent)
 		gtk_window_set_transient_for(GTK_WINDOW(res), parent);
-	}
+
 	return res;
 }
 
@@ -322,13 +325,12 @@ void renderer_settings_dialog_get_settings(RendererSettingsDialog *dialog, struc
 	settings->scale = gtk_range_get_value(GTK_RANGE(dialog->scale));
 
 	/* Get active radio button selection */
-	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_latex)) == TRUE) {
+	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_latex)) == TRUE)
 		settings->renderer = RENDERER_LATEX_TIKZ;
-	} else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_pdf)) == TRUE) {
+	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_pdf)) == TRUE)
 		settings->renderer = RENDERER_CAIROGRAPHICS_PDF;
-	} else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_svg)) == TRUE) {
+	else if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->radio_cairo_svg)) == TRUE)
 		settings->renderer = RENDERER_CAIROGRAPHICS_SVG;
-	}
 
 	settings->tex_pdf_layers = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->layer_check));
 	settings->tex_standalone = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dialog->standalone_check));
