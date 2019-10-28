@@ -90,7 +90,8 @@ int gds_tree_check_cell_references(struct gds_library *lib)
  * @param cell Cell to check for
  * @return 0 if cell is not in list. 1 if cell is in list
  */
-static int gds_tree_check_list_contains_cell(GList *list, struct gds_cell *cell) {
+static int gds_tree_check_list_contains_cell(GList *list, struct gds_cell *cell)
+{
 	GList *iter;
 
 	for (iter = list; iter != NULL; iter = g_list_next(iter)) {
@@ -177,12 +178,14 @@ int gds_tree_check_reference_loops(struct gds_library *lib)
 		res = gds_tree_check_iterate_ref_and_check(cell_to_check, &visited_cells);
 
 		if (visited_cells) {
-			/* If  cell contains no loop, print error when list not empty.
+			/*
+			 * If  cell contains no loop, print error when list not empty.
 			 * In case of a loop, it is completely normal that the list is not empty,
 			 * due to the instant return from gds_tree_check_iterate_ref_and_check()
 			 */
 			if (res == 0)
-				fprintf(stderr, "Visited cell list should be empty. This is a bug. Please report this.\n");
+				fprintf(stderr,
+					"Visited cell list should be empty. This is a bug. Please report this.\n");
 			g_list_free(visited_cells);
 			visited_cells = NULL;
 		}
