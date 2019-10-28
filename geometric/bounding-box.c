@@ -33,8 +33,8 @@
 
 #include <gds-render/geometric/bounding-box.h>
 
-#define MIN(a,b) (((a) < (b)) ? (a) : (b)) /**< @brief Return smaller number */
-#define MAX(a,b) (((a) > (b)) ? (a) : (b)) /**< @brief Return bigger number */
+#define MIN(a, b) (((a) < (b)) ? (a) : (b)) /**< @brief Return smaller number */
+#define MAX(a, b) (((a) > (b)) ? (a) : (b)) /**< @brief Return bigger number */
 #define ABS_DBL(a) ((a) < 0 ? -(a) : (a))
 
 void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
@@ -151,7 +151,7 @@ void bounding_box_calculate_path_box(GList *vertices, double thickness,
 	GList *vertex_iterator;
 	struct vector_2d pt;
 
-	//printf("Warning! Function bounding_box_calculate_path_box not yet implemented correctly!\n");
+	//printf("Warning! Function %s not yet implemented correctly!\n", __func__);
 
 	if (!vertices || !box)
 		return;

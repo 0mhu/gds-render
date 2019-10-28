@@ -46,9 +46,10 @@ double vector_2d_scalar_multipy(struct vector_2d *a, struct vector_2d *b)
 void vector_2d_normalize(struct vector_2d *vec)
 {
 	double len;
+
 	if (!vec)
 		return;
-	len = sqrt(pow(vec->x,2)+pow(vec->y,2));
+	len = sqrt(pow(vec->x, 2) + pow(vec->y, 2));
 	vec->x = vec->x/len;
 	vec->y = vec->y/len;
 }
@@ -97,9 +98,8 @@ struct vector_2d *vector_2d_alloc(void)
 
 void vector_2d_free(struct vector_2d *vec)
 {
-	if (vec) {
+	if (vec)
 		free(vec);
-	}
 }
 
 void vector_2d_scale(struct vector_2d *vec, double scale)
@@ -114,9 +114,9 @@ void vector_2d_scale(struct vector_2d *vec, double scale)
 double vector_2d_abs(struct vector_2d *vec)
 {
 	double len = 0.0;
-	if (vec) {
-		len = sqrt(pow(vec->x,2)+pow(vec->y,2));
-	}
+
+	if (vec)
+		len = sqrt(pow(vec->x, 2) + pow(vec->y, 2));
 	return len;
 }
 
@@ -142,7 +142,7 @@ void vector_2d_subtract(struct vector_2d *res, struct vector_2d *a, struct vecto
 void vector_2d_add(struct vector_2d *res, struct vector_2d *a, struct vector_2d *b)
 {
 	if (res && a && b) {
-		res->x = a->x +b->x;
+		res->x = a->x + b->x;
 		res->y = a->y + b->y;
 	}
 }
