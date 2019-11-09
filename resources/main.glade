@@ -20,6 +20,7 @@
   <object class="GtkImage" id="save-mapping-img">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="tooltip_text" translatable="yes">Save the current layer configuration to CSV</property>
     <property name="stock">gtk-save-as</property>
   </object>
   <object class="GtkImage" id="select-all-img">
@@ -46,7 +47,7 @@
         <property name="name">header</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="title" translatable="yes">GDS Renderer</property>
+        <property name="title" translatable="yes">GDS-Render</property>
         <property name="show_close_button">True</property>
         <child>
           <object class="GtkButton" id="button-load-gds">
@@ -54,6 +55,7 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Open GDS2 Database</property>
             <property name="use_stock">True</property>
             <property name="always_show_image">True</property>
             <style>
@@ -68,6 +70,7 @@
             <property name="sensitive">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Load the current layer configuration from CSV</property>
             <property name="image">load-mapping-img</property>
             <property name="always_show_image">True</property>
             <style>
@@ -103,6 +106,7 @@
             <property name="sensitive">False</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Convert selected cell</property>
             <property name="use_stock">True</property>
             <property name="always_show_image">True</property>
             <style>
@@ -188,6 +192,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Sort layers ascending</property>
                         <property name="image">sort-up-img</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -202,6 +207,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Sort layers descending</property>
                         <property name="image">sort-down-img</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -216,6 +222,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Automatically color layers</property>
                         <property name="image">color-img</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -230,6 +237,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Select all layers for export</property>
                         <property name="image">select-all-img</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -244,6 +252,7 @@
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="tooltip_text" translatable="yes">Automatically name layers</property>
                         <property name="image">auto-name-img</property>
                         <property name="always_show_image">True</property>
                       </object>
@@ -264,6 +273,7 @@
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="margin_top">1</property>
                     <property name="hscrollbar_policy">never</property>
                     <property name="shadow_type">in</property>
                     <child>

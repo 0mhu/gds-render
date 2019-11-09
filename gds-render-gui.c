@@ -35,13 +35,22 @@
 #include <gds-render/gds-utils/gds-tree-checker.h>
 #include <gds-render/layer/layer-selector.h>
 #include <gds-render/widgets/activity-bar.h>
-#include <gds-render/cell-selector/tree-store.h>
 #include <gds-render/cell-selector/lib-cell-renderer.h>
 #include <gds-render/output-renderers/latex-renderer.h>
 #include <gds-render/output-renderers/cairo-renderer.h>
 #include <gds-render/widgets/conv-settings-dialog.h>
 #include <gds-render/geometric/cell-geometrics.h>
 #include <gds-render/version.h>
+
+/** @brief Columns of selection tree view */
+enum cell_store_columns {
+	CELL_SEL_LIBRARY = 0,
+	CELL_SEL_CELL,
+	CELL_SEL_CELL_ERROR_STATE, /**< Used for cell color and selectability */
+	CELL_SEL_MODDATE,
+	CELL_SEL_ACCESSDATE,
+	CELL_SEL_COLUMN_COUNT /**< @brief Not a column. Used to determine count of columns */
+};
 
 enum gds_render_gui_signal_sig_ids {SIGNAL_WINDOW_CLOSED = 0, SIGNAL_COUNT};
 
@@ -64,6 +73,7 @@ struct _GdsRenderGui {
 	GtkWidget *save_layer_button;
 	GtkWidget *select_all_button;
 	GtkTreeStore *cell_tree_store;
+	GtkTreeModelFilter *cell_filter;
 	GtkWidget *cell_search_entry;
 	LayerSelector *layer_selector;
 	GtkTreeView *cell_tree_view;
@@ -122,6 +132,155 @@ static GString *generate_string_from_date(struct gds_time_field *date)
 			(unsigned int)date->hour,
 			(unsigned int)date->minute);
 	return str;
+}
+
+/**
+ * @brief This function only allows valid cells to be selected
+ * @param selection
+ * @param model
+ * @param path
+ * @param path_currently_selected
+ * @param data
+ * @return TRUE if element is selectable, FALSE if not
+ */
+static gboolean tree_sel_func(GtkTreeSelection *selection,
+				GtkTreeModel *model,
+				GtkTreePath *path,
+				gboolean path_currently_selected,
+				gpointer data)
+{
+	GtkTreeIter iter;
+	struct gds_cell *cell;
+	unsigned int error_level;
+	gboolean ret = FALSE;
+	(void)selection;
+	(void)path_currently_selected;
+	(void)data;
+
+	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, CELL_SEL_CELL, &cell, CELL_SEL_CELL_ERROR_STATE, &error_level, -1);
+
+	/* Allow only rows with _valid_ cell to be selected */
+	if (cell) {
+		/* Cell available. Check if it passed the critical checks */
+		if (!(error_level & LIB_CELL_RENDERER_ERROR_ERR))
+			ret = TRUE;
+	}
+
+	return ret;
+}
+
+/**
+ * @brief Trigger refiltering of cell filter
+ * @param entry Unused widget, that emitted the signal
+ * @param data GdsrenderGui self instance
+ */
+static void cell_tree_view_change_filter(GtkWidget *entry, gpointer data)
+{
+	GdsRenderGui *self = RENDERER_GUI(data);
+	(void)entry;
+
+	gtk_tree_model_filter_refilter(self->cell_filter);
+}
+
+/**
+ * @brief cell_store_filter_visible_func Decides whether an element of the tree model @p model is visible.
+ * @param model Tree model
+ * @param iter Current element / iter in Model to check
+ * @param data Data. Set to static stores variable
+ * @return TRUE if visible, else FALSE
+ * @note TODO: Maybe implement Damerau-Levenshtein distance matching
+ */
+static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+{
+	GdsRenderGui *self;
+	struct gds_cell *cell;
+	struct gds_library *lib;
+	gboolean result = FALSE;
+	const char *search_string;
+
+	self = RENDERER_GUI(data);
+	g_return_val_if_fail(RENDERER_IS_GUI(self), FALSE);
+
+	if (!model || !iter)
+		goto exit_filter;
+
+	gtk_tree_model_get(model, iter, CELL_SEL_CELL, &cell, CELL_SEL_LIBRARY, &lib, -1);
+
+	if (lib) {
+		result = TRUE;
+		goto exit_filter;
+	}
+
+	if (!cell)
+		goto exit_filter;
+
+	search_string = gtk_entry_get_text(GTK_ENTRY(self->cell_search_entry));
+
+	/* Show all, if field is empty */
+	if (!strlen(search_string))
+		result = TRUE;
+
+	if (strstr(cell->name, search_string))
+		result = TRUE;
+
+	gtk_tree_view_expand_all(self->cell_tree_view);
+
+exit_filter:
+	return result;
+}
+
+/**
+ * @brief Setup a GtkTreeView with the necessary columns
+ * @param self Current GUI object
+ */
+int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
+{
+	GtkCellRenderer *render_dates;
+	GtkCellRenderer *render_cell;
+	GtkCellRenderer *render_lib;
+	GtkTreeViewColumn *column;
+
+	self->cell_tree_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER,
+					 G_TYPE_POINTER, G_TYPE_UINT,
+					 G_TYPE_STRING, G_TYPE_STRING);
+
+	/* Searching */
+	self->cell_filter = GTK_TREE_MODEL_FILTER(
+				gtk_tree_model_filter_new(GTK_TREE_MODEL(self->cell_tree_store), NULL));
+
+	gtk_tree_model_filter_set_visible_func(self->cell_filter,
+						(GtkTreeModelFilterVisibleFunc)cell_store_filter_visible_func,
+						 self, NULL);
+	g_signal_connect(GTK_SEARCH_ENTRY(self->cell_search_entry), "search-changed",
+			 G_CALLBACK(cell_tree_view_change_filter), self);
+
+	gtk_tree_view_set_model(self->cell_tree_view, GTK_TREE_MODEL(self->cell_filter));
+
+	render_dates = gtk_cell_renderer_text_new();
+	render_cell = lib_cell_renderer_new();
+	render_lib = lib_cell_renderer_new();
+
+	column = gtk_tree_view_column_new_with_attributes("Library", render_lib, "gds-lib", CELL_SEL_LIBRARY, NULL);
+	gtk_tree_view_append_column(self->cell_tree_view, column);
+
+	column = gtk_tree_view_column_new_with_attributes("Cell", render_cell, "gds-cell", CELL_SEL_CELL,
+							  "error-level", CELL_SEL_CELL_ERROR_STATE, NULL);
+	gtk_tree_view_append_column(self->cell_tree_view, column);
+
+	column = gtk_tree_view_column_new_with_attributes("Mod. Date", render_dates, "text", CELL_SEL_MODDATE, NULL);
+	gtk_tree_view_append_column(self->cell_tree_view, column);
+
+	column = gtk_tree_view_column_new_with_attributes("Acc. Date", render_dates, "text", CELL_SEL_ACCESSDATE, NULL);
+	gtk_tree_view_append_column(self->cell_tree_view, column);
+
+	/* Callback for selection
+	 * This prevents selecting a library
+	 */
+	gtk_tree_selection_set_select_function(gtk_tree_view_get_selection(self->cell_tree_view),
+					       tree_sel_func, NULL, NULL);
+
+	return 0;
 }
 
 /**
@@ -295,7 +454,9 @@ static void async_rendering_finished_callback(GdsOutputRenderer *renderer, gpoin
 	g_object_unref(renderer);
 }
 
-static void async_rendering_status_update_callback(GdsOutputRenderer *renderer, const char *status_message, gpointer data)
+static void async_rendering_status_update_callback(GdsOutputRenderer *renderer,
+						   const char *status_message,
+						   gpointer data)
 {
 	GdsRenderGui *gui;
 	(void)renderer;
@@ -536,6 +697,7 @@ static void gds_render_gui_dispose(GObject *gobject)
 	g_clear_object(&self->convert_button);
 	g_clear_object(&self->layer_selector);
 	g_clear_object(&self->cell_tree_store);
+	g_clear_object(&self->cell_filter);
 	g_clear_object(&self->cell_search_entry);
 	g_clear_object(&self->activity_status_bar);
 	g_clear_object(&self->palette);
@@ -624,7 +786,6 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	GtkBuilder *main_builder;
 	GtkWidget *listbox;
 	GtkHeaderBar *header_bar;
-	struct tree_stores *cell_selector_stores;
 	GtkWidget *sort_up_button;
 	GtkWidget *sort_down_button;
 	GtkWidget *activity_bar_box;
@@ -636,9 +797,7 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	self->cell_tree_view = GTK_TREE_VIEW(gtk_builder_get_object(main_builder, "cell-tree"));
 	self->cell_search_entry = GTK_WIDGET(gtk_builder_get_object(main_builder, "cell-search"));
 
-	cell_selector_stores = setup_cell_selector(self->cell_tree_view, GTK_ENTRY(self->cell_search_entry));
-
-	self->cell_tree_store = cell_selector_stores->base_store;
+	gds_render_gui_setup_cell_selector(self);
 
 	self->main_window = GTK_WINDOW(gtk_builder_get_object(main_builder, "main-window"));
 	self->open_button = GTK_WIDGET(gtk_builder_get_object(main_builder, "button-load-gds"));
@@ -716,10 +875,9 @@ static void gds_render_gui_init(GdsRenderGui *self)
 	g_object_ref(self->main_window);
 	g_object_ref(self->cell_tree_view);
 	g_object_ref(self->convert_button);
-	g_object_ref(self->layer_selector);
-	g_object_ref(self->cell_tree_store);
+	/* g_object_ref(self->layer_selector); <= This is already referenced by the _new() function */
 	g_object_ref(self->cell_search_entry);
-	g_object_ref(self->palette);
+	/* g_object_ref(self->palette); */
 	g_object_ref(self->open_button);
 	g_object_ref(self->load_layer_button);
 	g_object_ref(self->save_layer_button);

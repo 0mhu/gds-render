@@ -1,3 +1,4 @@
+project(libversion)
 add_library(version STATIC "version.c")
 execute_process(COMMAND bash ./generate-version-string.sh
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}		

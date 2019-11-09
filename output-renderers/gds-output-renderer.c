@@ -18,10 +18,10 @@
  */
 
 /**
-  * @file gds-output-renderer.c
-  * @brief Base GObject class for output renderers
-  * @author Mario Hüttel <mario.huettel@gmx.net>
-  */
+ * @file gds-output-renderer.c
+ * @brief Base GObject class for output renderers
+ * @author Mario Hüttel <mario.huettel@gmx.net>
+ */
 
 /** @addtogroup GdsOutputRenderer
  *  @{
@@ -213,8 +213,6 @@ void gds_output_renderer_init(GdsOutputRenderer *self)
 	priv->idle_function_parameters.status_message = NULL;
 	g_mutex_init(&priv->settings_lock);
 	g_mutex_init(&priv->idle_function_parameters.message_lock);
-
-	return;
 }
 
 GdsOutputRenderer *gds_output_renderer_new()
@@ -260,8 +258,6 @@ LayerSettings *gds_output_renderer_get_and_ref_layer_settings(GdsOutputRenderer 
 
 	/* This function seems to already reference the LayerSettings object */
 	g_object_get(renderer, "layer-settings", &ret, NULL);
-	/* Reference it, so it is not cleared by another thread overwriting the property */
-	//g_object_ref(ret);
 
 	/* It is now safe to clear the lock */
 	g_mutex_unlock(&priv->settings_lock);
@@ -330,7 +326,7 @@ static void gds_output_renderer_async_wrapper(GTask *task,
 		ret = -1000;
 		goto ret_from_task;
 	}
-	if(!priv->mutex_init_status) {
+	if (!priv->mutex_init_status) {
 		ret = -1001;
 		goto ret_from_task;
 	}
@@ -415,7 +411,7 @@ static gboolean idle_event_processor_callback(gpointer user_data)
 	return FALSE;
 }
 
-void gds_output_renderer_update_gui_status_from_async(GdsOutputRenderer *renderer, const char *status)
+void gds_output_renderer_update_async_progress(GdsOutputRenderer *renderer, const char *status)
 {
 	GSource *idle_event_processor;
 	GdsOutputRendererPrivate *priv;

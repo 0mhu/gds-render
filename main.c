@@ -125,15 +125,15 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
  * @brief Contains the application menu entries
  */
 static const GActionEntry app_actions[] = {
-	{"quit", app_quit, NULL, NULL, NULL, {0}},
-	{"about", app_about, NULL, NULL, NULL, {0}}
+	{ "quit", app_quit, NULL, NULL, NULL, {0} },
+	{ "about", app_about, NULL, NULL, NULL, {0} },
 };
 
 /**
  * @brief Called when a GUI main window is closed
  *
  * The GdsRenderGui object associated with the closed main window
- * is removed from the list of open GUIs (\p user_data) and unreferenced.
+ * is removed from the list of open GUIs (\p user_data) and dereferenced.
  *
  * @param gui The GUI instance the closed main window belongs to
  * @param user_data List of GUIs
@@ -183,8 +183,8 @@ static void gapp_activate(GApplication *app, gpointer user_data)
  */
 static int start_gui(int argc, char **argv)
 {
-
 	GtkApplication *gapp;
+	GString *application_domain;
 	int app_status;
 	static struct application_data appdata = {
 		.gui_list = NULL
@@ -193,13 +193,22 @@ static int start_gui(int argc, char **argv)
 	GMenu *m_quit;
 	GMenu *m_about;
 
-	gapp = gtk_application_new("de.shimatta.gds-render", G_APPLICATION_FLAGS_NONE);
+	/*
+	 * Generate version dependent application id
+	 * This allows running the application in different versions at the same time.
+	 */
+	application_domain = g_string_new(NULL);
+	g_string_printf(application_domain, "de.shimatta.gds_render_%s", _app_git_commit);
+
+	gapp = gtk_application_new(application_domain->str, G_APPLICATION_FLAGS_NONE);
+	g_string_free(application_domain, TRUE);
+
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
 	g_signal_connect(gapp, "activate", G_CALLBACK(gapp_activate), &appdata);
 
 	if (g_application_get_is_remote(G_APPLICATION(gapp)) == TRUE) {
 		g_application_activate(G_APPLICATION(gapp));
-		printf("There is already an open instance. Will open second window in said instance.\n");
+		printf("There is already an open instance. Will open second window in that instance.\n");
 		return 0;
 	}
 
@@ -258,14 +267,17 @@ int main(int argc, char **argv)
 
 	GOptionEntry entries[] = {
 		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
-		{"renderer", 'r', 0, G_OPTION_ARG_STRING_ARRAY, &renderer_args, "Renderer to use. Can be used multiple times.", "pdf|svg|tikz|ext"},
+		{"renderer", 'r', 0, G_OPTION_ARG_STRING_ARRAY, &renderer_args,
+		 "Renderer to use. Can be used multiple times.", "pdf|svg|tikz|ext"},
 		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
-		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME_ARRAY, &output_paths, "Output file path. Can be used multiple times.", "PATH" },
+		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME_ARRAY, &output_paths,
+		 "Output file path. Can be used multiple times.", "PATH" },
 		{"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
 		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
 		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
 		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
-		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
+		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path,
+		 "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
 		{NULL}
 	};
 
@@ -289,14 +301,12 @@ int main(int argc, char **argv)
 			scale = 1;
 		}
 
-
 		/* Get gds name */
 		gds_name = argv[1];
 
 		/* Print out additional arguments as ignored */
-		for (i = 2; i < argc; i++) {
+		for (i = 2; i < argc; i++)
 			printf("Ignored argument: %s", argv[i]);
-		}
 
 		app_status =
 			command_line_convert_gds(gds_name, cellname, renderer_args, output_paths, mappingname,

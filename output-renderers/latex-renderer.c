@@ -140,7 +140,8 @@ static gboolean write_layer_env(FILE *tex_file, GdkRGBA *color, int layer, GList
 			color->red = inf->color.red;
 			color->green = inf->color.green;
 			color->blue = inf->color.blue;
-			g_string_printf(buffer, "\\begin{pgfonlayer}{l%d}\n\\ifcreatepdflayers\n\\begin{scope}[ocg={ref=%d, status=visible,name={%s}}]\n\\fi\n",
+			g_string_printf(buffer,
+					"\\begin{pgfonlayer}{l%d}\n\\ifcreatepdflayers\n\\begin{scope}[ocg={ref=%d, status=visible,name={%s}}]\n\\fi\n",
 					layer, layer, inf->name);
 			WRITEOUT_BUFFER(buffer);
 			return TRUE;
@@ -167,21 +168,26 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 	struct gds_graphics *gfx;
 	struct gds_point *pt;
 	GdkRGBA color;
-	static const char *line_caps[] = {"butt", "round", "rect"};
+	static const char * const line_caps[] = {"butt", "round", "rect"};
 
 	for (temp = graphics; temp != NULL; temp = temp->next) {
 		gfx = (struct gds_graphics *)temp->data;
 		if (write_layer_env(tex_file, &color, (int)gfx->layer, linfo, buffer) == TRUE) {
 
 			/* Layer is defined => create graphics */
-			if (gfx->gfx_type == GRAPHIC_POLYGON || gfx->gfx_type == GRAPHIC_BOX ) {
-				g_string_printf(buffer, "\\draw[line width=0.00001 pt, draw={c%d}, fill={c%d}, fill opacity={%lf}] ",
+			if (gfx->gfx_type == GRAPHIC_POLYGON || gfx->gfx_type == GRAPHIC_BOX) {
+				g_string_printf(buffer,
+						"\\draw[line width=0.00001 pt, draw={c%d}, fill={c%d}, fill opacity={%lf}] ",
 						gfx->layer, gfx->layer, color.alpha);
 				WRITEOUT_BUFFER(buffer);
 				/* Append vertices */
-				for (temp_vertex = gfx->vertices; temp_vertex != NULL; temp_vertex = temp_vertex->next) {
+				for (temp_vertex = gfx->vertices;
+				     temp_vertex != NULL;
+				     temp_vertex = temp_vertex->next) {
 					pt = (struct gds_point *)temp_vertex->data;
-					g_string_printf(buffer, "(%lf pt, %lf pt) -- ", ((double)pt->x)/scale, ((double)pt->y)/scale);
+					g_string_printf(buffer, "(%lf pt, %lf pt) -- ",
+							((double)pt->x)/scale,
+							((double)pt->y)/scale);
 					WRITEOUT_BUFFER(buffer);
 				}
 				g_string_printf(buffer, "cycle;\n");
@@ -204,7 +210,9 @@ static void generate_graphics(FILE *tex_file, GList *graphics, GList *linfo, GSt
 				WRITEOUT_BUFFER(buffer);
 
 				/* Append vertices */
-				for (temp_vertex = gfx->vertices; temp_vertex != NULL; temp_vertex = temp_vertex->next) {
+				for (temp_vertex = gfx->vertices;
+				     temp_vertex != NULL;
+				     temp_vertex = temp_vertex->next) {
 					pt = (struct gds_point *)temp_vertex->data;
 					g_string_printf(buffer, "(%lf pt, %lf pt)%s",
 							((double)pt->x)/scale,
@@ -241,7 +249,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 	status = g_string_new(NULL);
 	g_string_printf(status, "Generating cell %s", cell->name);
-	gds_output_renderer_update_gui_status_from_async(renderer, status->str);
+	gds_output_renderer_update_async_progress(renderer, status->str);
 	g_string_free(status, TRUE);
 
 	/* Draw polygons of current cell */
@@ -257,13 +265,14 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 
 		/* generate translation scope */
 		g_string_printf(buffer, "\\begin{scope}[shift={(%lf pt,%lf pt)}]\n",
-				((double)inst->origin.x)/scale,((double)inst->origin.y)/scale);
+				((double)inst->origin.x) / scale, ((double)inst->origin.y) / scale);
 		WRITEOUT_BUFFER(buffer);
 
 		g_string_printf(buffer, "\\begin{scope}[rotate=%lf]\n", inst->angle);
 		WRITEOUT_BUFFER(buffer);
 
-		g_string_printf(buffer, "\\begin{scope}[yscale=%lf, xscale=%lf]\n", (inst->flipped ? -1*inst->magnification : inst->magnification),
+		g_string_printf(buffer, "\\begin{scope}[yscale=%lf, xscale=%lf]\n",
+				(inst->flipped ? -1*inst->magnification : inst->magnification),
 				inst->magnification);
 		WRITEOUT_BUFFER(buffer);
 
@@ -302,7 +311,8 @@ static int latex_render_cell_to_code(struct gds_cell *cell, GList *layer_infos, 
 	WRITEOUT_BUFFER(working_line);
 	g_string_printf(working_line, "\\iftestmode\n");
 	WRITEOUT_BUFFER(working_line);
-	g_string_printf(working_line, "\\documentclass[tikz]{standalone}\n\\usepackage{xcolor}\n\\usetikzlibrary{ocgx}\n\\begin{document}\n");
+	g_string_printf(working_line,
+			"\\documentclass[tikz]{standalone}\n\\usepackage{xcolor}\n\\usetikzlibrary{ocgx}\n\\begin{document}\n");
 	WRITEOUT_BUFFER(working_line);
 	g_string_printf(working_line, "\\fi\n");
 	WRITEOUT_BUFFER(working_line);
@@ -361,9 +371,8 @@ static int latex_renderer_render_output(GdsOutputRenderer *renderer,
 		g_error("Could not open LaTeX output file");
 	}
 
-	if (settings) {
+	if (settings)
 		g_object_unref(settings);
-	}
 
 	return ret;
 }

@@ -36,7 +36,6 @@
 #include <gds-render/layer/layer-selector.h>
 #include <gds-render/gds-utils/gds-parser.h>
 #include <gds-render/widgets/layer-element.h>
-#include <gds-render/layer/mapping-parser.h>
 
 struct _LayerSelector {
 	/* Parent */
@@ -55,7 +54,8 @@ struct _LayerSelector {
 
 G_DEFINE_TYPE(LayerSelector, layer_selector, G_TYPE_OBJECT)
 
-/* Drag and drop code 
+/*
+ * Drag and drop code
  * Original code from https://blog.gtk.org/2017/06/01/drag-and-drop-in-lists-revisited/
  */
 
@@ -73,16 +73,16 @@ static void sel_layer_element_drag_begin(GtkWidget *widget, GdkDragContext *cont
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
 	cr = cairo_create(surface);
 
-	gtk_style_context_add_class (gtk_widget_get_style_context(row), "drag-icon");
-	gtk_widget_draw (row, cr);
+	gtk_style_context_add_class(gtk_widget_get_style_context(row), "drag-icon");
+	gtk_widget_draw(row, cr);
 	gtk_style_context_remove_class(gtk_widget_get_style_context(row), "drag-icon");
 
-	gtk_widget_translate_coordinates (widget, row, 0, 0, &x, &y);
-	cairo_surface_set_device_offset (surface, -x, -y);
-	gtk_drag_set_icon_surface (context, surface);
+	gtk_widget_translate_coordinates(widget, row, 0, 0, &x, &y);
+	cairo_surface_set_device_offset(surface, -x, -y);
+	gtk_drag_set_icon_surface(context, surface);
 
-	cairo_destroy (cr);
-	cairo_surface_destroy (surface);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
 
 	g_object_set_data(G_OBJECT(gtk_widget_get_parent(row)), "drag-row", row);
 	gtk_style_context_add_class(gtk_widget_get_style_context(row), "drag-row");
@@ -116,14 +116,14 @@ static void sel_layer_element_drag_data_get(GtkWidget *widget, GdkDragContext *c
 			       32, (const guchar *)&widget, sizeof(gpointer));
 }
 
-static GtkListBoxRow *layer_selector_get_last_row (GtkListBox *list)
+static GtkListBoxRow *layer_selector_get_last_row(GtkListBox *list)
 {
 	int i;
 	GtkListBoxRow *row;
+	GtkListBoxRow *tmp;
 
 	row = NULL;
 	for (i = 0; ; i++) {
-		GtkListBoxRow *tmp;
 		tmp = gtk_list_box_get_row_at_index(list, i);
 		if (tmp == NULL)
 			break;
@@ -133,15 +133,15 @@ static GtkListBoxRow *layer_selector_get_last_row (GtkListBox *list)
 	return row;
 }
 
-static GtkListBoxRow *layer_selector_get_row_before (GtkListBox *list, GtkListBoxRow *row)
+static GtkListBoxRow *layer_selector_get_row_before(GtkListBox *list, GtkListBoxRow *row)
 {
 	int pos;
 
-	pos = gtk_list_box_row_get_index (row);
-	return gtk_list_box_get_row_at_index (list, pos - 1);
+	pos = gtk_list_box_row_get_index(row);
+	return gtk_list_box_get_row_at_index(list, pos - 1);
 }
 
-static GtkListBoxRow *layer_selector_get_row_after (GtkListBox *list, GtkListBoxRow *row)
+static GtkListBoxRow *layer_selector_get_row_after(GtkListBox *list, GtkListBoxRow *row)
 {
 	int pos;
 
@@ -277,40 +277,40 @@ static void layer_selector_drag_leave(GtkWidget *widget, GdkDragContext *context
 }
 
 static const char *dnd_additional_css =
-  ".row:not(:first-child) { "
-  "  border-top: 1px solid alpha(gray,0.5); "
-  "  border-bottom: 1px solid transparent; "
-  "}"
-  ".row:first-child { "
-  "  border-top: 1px solid transparent; "
-  "  border-bottom: 1px solid transparent; "
-  "}"
-  ".row:last-child { "
-  "  border-top: 1px solid alpha(gray,0.5); "
-  "  border-bottom: 1px solid alpha(gray,0.5); "
-  "}"
-  ".row.drag-icon { "
-  "  background: #282828; "
-  "  border: 1px solid blue; "
-  "}"
-  ".row.drag-row { "
-  "  color: gray; "
-  "  background: alpha(gray,0.2); "
-  "}"
-  ".row.drag-row.drag-hover { "
-  "  border-top: 1px solid #4e9a06; "
-  "  border-bottom: 1px solid #4e9a06; "
-  "}"
-  ".row.drag-hover image, "
-  ".row.drag-hover label { "
-  "  color: #4e9a06; "
-  "}"
-  ".row.drag-hover-top {"
-  "  border-top: 1px solid #4e9a06; "
-  "}"
-  ".row.drag-hover-bottom {"
-  "  border-bottom: 1px solid #4e9a06; "
-  "}";
+	".row:not(:first-child) { "
+	"  border-top: 1px solid alpha(gray,0.5); "
+	"  border-bottom: 1px solid transparent; "
+	"}"
+	".row:first-child { "
+	"  border-top: 1px solid transparent; "
+	"  border-bottom: 1px solid transparent; "
+	"}"
+	".row:last-child { "
+	"  border-top: 1px solid alpha(gray,0.5); "
+	"  border-bottom: 1px solid alpha(gray,0.5); "
+	"}"
+	".row.drag-icon { "
+	"  background: #282828; "
+	"  border: 1px solid blue; "
+	"}"
+	".row.drag-row { "
+	"  color: gray; "
+	"  background: alpha(gray,0.2); "
+	"}"
+	".row.drag-row.drag-hover { "
+	"  border-top: 1px solid #4e9a06; "
+	"  border-bottom: 1px solid #4e9a06; "
+	"}"
+	".row.drag-hover image, "
+	".row.drag-hover label { "
+	"  color: #4e9a06; "
+	"}"
+	".row.drag-hover-top {"
+	"  border-top: 1px solid #4e9a06; "
+	"}"
+	".row.drag-hover-bottom {"
+	"  border-bottom: 1px solid #4e9a06; "
+	"}";
 
 static void layer_selector_dispose(GObject *self)
 {
@@ -349,7 +349,8 @@ static void layer_selector_class_init(LayerSelectorClass *klass)
 
 static void layer_selector_setup_dnd(LayerSelector *self)
 {
-	gtk_drag_dest_set(GTK_WIDGET(self->list_box), GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP, &self->dnd_target, 1, GDK_ACTION_MOVE);
+	gtk_drag_dest_set(GTK_WIDGET(self->list_box), GTK_DEST_DEFAULT_MOTION | GTK_DEST_DEFAULT_DROP,
+			  &self->dnd_target, 1, GDK_ACTION_MOVE);
 	g_signal_connect(self->list_box, "drag-data-received", G_CALLBACK(layer_selector_drag_data_received), NULL);
 	g_signal_connect(self->list_box, "drag-motion", G_CALLBACK(layer_selector_drag_motion), NULL);
 	g_signal_connect(self->list_box, "drag-leave", G_CALLBACK(layer_selector_drag_leave), NULL);
@@ -399,11 +400,11 @@ LayerSettings *layer_selector_export_rendered_layer_info(LayerSelector *selector
 
 	row_list = gtk_container_get_children(GTK_CONTAINER(selector->list_box));
 
-	for (i = 0,iterator = row_list; iterator != NULL; iterator = g_list_next(iterator), i++) {
+	for (i = 0, iterator = row_list; iterator != NULL; iterator = g_list_next(iterator), i++) {
 		le = LAYER_ELEMENT(iterator->data);
 
 		/* Get name from layer element. This must not be freed */
-		linfo.name =(char *)layer_element_get_name(le);
+		linfo.name = (char *)layer_element_get_name(le);
 
 		layer_element_get_color(le, &linfo.color);
 		linfo.render = (layer_element_get_export(le) ? 1 : 0);
@@ -425,9 +426,9 @@ static void layer_selector_clear_widgets(LayerSelector *self)
 	GList *temp;
 
 	list = gtk_container_get_children(GTK_CONTAINER(self->list_box));
-	for (temp = list; temp != NULL; temp = temp->next) {
+	for (temp = list; temp != NULL; temp = temp->next)
 		gtk_container_remove(GTK_CONTAINER(self->list_box), GTK_WIDGET(temp->data));
-	}
+
 	/* Widgets are already destroyed when removed from box because they are only referenced inside the container */
 
 	g_list_free(list);
@@ -445,7 +446,8 @@ static void layer_selector_clear_widgets(LayerSelector *self)
  * @param layer Layer number to check for
  * @return TRUE if layer is present, else FALSE
  */
-static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self, int layer) {
+static gboolean layer_selector_check_if_layer_widget_exists(LayerSelector *self, int layer)
+{
 	GList *list;
 	GList *temp;
 	LayerElement *widget;
@@ -553,9 +555,8 @@ void layer_selector_generate_layer_widgets(LayerSelector *selector, GList *libs)
 
 	for (; libs != NULL; libs = libs->next) {
 		lib = (struct gds_library *)libs->data;
-		for (cell_list = lib->cells; cell_list != NULL; cell_list = cell_list->next) {
+		for (cell_list = lib->cells; cell_list != NULL; cell_list = cell_list->next)
 			layer_selector_analyze_cell_layers(selector, (struct gds_cell *)cell_list->data);
-		} /* For Cell List */
 	} /* For libs */
 
 	/* Sort the layers */
@@ -577,6 +578,7 @@ void layer_selector_generate_layer_widgets(LayerSelector *selector, GList *libs)
 static LayerElement *layer_selector_find_layer_element_in_list(GList *el_list, int layer)
 {
 	LayerElement *ret = NULL;
+
 	for (; el_list != NULL; el_list = el_list->next) {
 		if (layer_element_get_layer(LAYER_ELEMENT(el_list->data)) == layer) {
 			ret = LAYER_ELEMENT(el_list->data);
@@ -597,19 +599,18 @@ static LayerElement *layer_selector_find_layer_element_in_list(GList *el_list, i
  * @param self LayerSelector instance
  * @param file_name File name to load from
  */
-static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, gchar *file_name)
+static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, const gchar *file_name)
 {
 	GFile *file;
 	GFileInputStream *stream;
 	GDataInputStream *dstream;
 	LayerElement *le;
-	char *name;
-	gboolean export;
-	int layer;
-	GdkRGBA color;
-	int result;
 	GList *rows;
 	GList *temp;
+	GList *layer_infos;
+	int status;
+	LayerSettings *layer_settings;
+	struct layer_info *linfo;
 
 	file = g_file_new_for_path(file_name);
 	stream = g_file_read(file, NULL, NULL);
@@ -624,30 +625,39 @@ static void layer_selector_load_layer_mapping_from_file(LayerSelector *self, gch
 	/* Reference and remove all rows from box */
 	for (temp = rows; temp != NULL; temp = temp->next) {
 		le = LAYER_ELEMENT(temp->data);
-		/* Referencing protets the widget from being deleted when removed */
+		/* Referencing protects the widget from being deleted when removed */
 		g_object_ref(G_OBJECT(le));
 		gtk_container_remove(GTK_CONTAINER(self->list_box), GTK_WIDGET(le));
 	}
 
-	while((result = mapping_parser_load_line(dstream, &export, &name, &layer, &color)) >= 0) {
-		/* skip broken line */
-		if (result == 1)
+	/* Load Layer settings. No need to check pointer, will be checked by load csv func. */
+	layer_settings = layer_settings_new();
+
+	status = layer_settings_load_from_csv(layer_settings, file_name);
+	if (status)
+		goto abort_layer_settings;
+
+	layer_infos = layer_settings_get_layer_info_list(layer_settings);
+	if (!layer_infos)
+		goto abort_layer_settings;
+
+	/* Loop over all layer infos read from the CSV file */
+	for (; layer_infos; layer_infos = g_list_next(layer_infos)) {
+		linfo = (struct layer_info *)layer_infos->data;
+		le = layer_selector_find_layer_element_in_list(rows, linfo->layer);
+		if (!le)
 			continue;
 
-		/* Add rows in the same order as in file */
-		if ((le = layer_selector_find_layer_element_in_list(rows, layer))) {
-			gtk_list_box_insert(self->list_box, GTK_WIDGET(le), -1);
-
-			layer_element_set_color(le, &color);
-			layer_element_set_export(le, export);
-			layer_element_set_name(le, name);
-			g_free(name);
-
-			/* Dereference and remove from list */
-			g_object_unref(G_OBJECT(le));
-			rows = g_list_remove(rows, le);
-		}
+		layer_element_set_name(le, linfo->name);
+		layer_element_set_export(le, (linfo->render ? TRUE : FALSE));
+		layer_element_set_color(le, &linfo->color);
+		gtk_container_add(GTK_CONTAINER(self->list_box), GTK_WIDGET(le));
+		rows = g_list_remove(rows, le);
 	}
+
+abort_layer_settings:
+	/* Destroy layer settings. Not needed for adding remaining elements */
+	g_object_unref(layer_settings);
 
 	/* Add remaining elements */
 	for (temp = rows; temp != NULL; temp = temp->next) {
@@ -682,7 +692,8 @@ static void layer_selector_load_mapping_clicked(GtkWidget *button, gpointer user
 
 	sel = LAYER_SELECTOR(user_data);
 
-	dialog = gtk_file_chooser_dialog_new("Load Mapping File", GTK_WINDOW(sel->load_parent_window), GTK_FILE_CHOOSER_ACTION_OPEN,
+	dialog = gtk_file_chooser_dialog_new("Load Mapping File", GTK_WINDOW(sel->load_parent_window),
+					     GTK_FILE_CHOOSER_ACTION_OPEN,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Load Mapping", GTK_RESPONSE_ACCEPT, NULL);
 	res = gtk_dialog_run(GTK_DIALOG(dialog));
 	if (res == GTK_RESPONSE_ACCEPT) {
@@ -702,29 +713,14 @@ static void layer_selector_load_mapping_clicked(GtkWidget *button, gpointer user
  */
 static void layer_selector_save_layer_mapping_data(LayerSelector *self, const gchar *file_name)
 {
-	FILE *file;
-	char workbuff[512];
-	GList *le_list;
-	GList *temp;
+	LayerSettings *layer_settings;
 
-	/* Overwrite existing file */
-	file = fopen((const char *)file_name, "w");
+	g_return_if_fail(LAYER_IS_SELECTOR(self));
+	g_return_if_fail(file_name);
 
-	le_list = gtk_container_get_children(GTK_CONTAINER(self->list_box));
-
-	/* File format is CSV: <Layer>,<target_pos>,<R>,<G>,<B>,<Alpha>,<Export?>,<Name> */
-	for (temp = le_list; temp != NULL; temp = temp->next) {
-		/* To be sure it is a valid string */
-		workbuff[0] = 0;
-		mapping_parser_gen_csv_line(LAYER_ELEMENT(temp->data), workbuff, sizeof(workbuff));
-		fwrite(workbuff, sizeof(char), strlen(workbuff), file);
-	}
-
-	g_list_free(le_list);
-
-	/* Save File */
-	fflush(file);
-	fclose(file);
+	/* Get layer settings. No need to check return value. to_csv func is safe */
+	layer_settings = layer_selector_export_rendered_layer_info(self);
+	(void)layer_settings_to_csv(layer_settings, file_name);
 }
 
 /**
@@ -742,7 +738,8 @@ static void layer_selector_save_mapping_clicked(GtkWidget *button, gpointer user
 
 	sel = LAYER_SELECTOR(user_data);
 
-	dialog = gtk_file_chooser_dialog_new("Save Mapping File", GTK_WINDOW(sel->save_parent_window), GTK_FILE_CHOOSER_ACTION_SAVE,
+	dialog = gtk_file_chooser_dialog_new("Save Mapping File", GTK_WINDOW(sel->save_parent_window),
+					     GTK_FILE_CHOOSER_ACTION_SAVE,
 					     "Cancel", GTK_RESPONSE_CANCEL, "Save Mapping", GTK_RESPONSE_ACCEPT, NULL);
 	gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
@@ -809,9 +806,8 @@ void layer_selector_select_all_layers(LayerSelector *layer_selector, gboolean se
 
 	for (iter = le_list; iter != NULL; iter = g_list_next(iter)) {
 		le = LAYER_ELEMENT(iter->data);
-		if (LAYER_IS_ELEMENT(le)) {
+		if (LAYER_IS_ELEMENT(le))
 			layer_element_set_export(le, select);
-		}
 	}
 
 	g_list_free(le_list);
