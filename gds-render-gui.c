@@ -758,6 +758,10 @@ static void auto_naming_clicked(GtkWidget *button, gpointer user_data)
 
 	gui = RENDERER_GUI(user_data);
 
+	/* Don't do anything if the selector is empty. */
+	if (!layer_selector_contains_elements(gui->layer_selector))
+		return;
+
 	/* Ask for overwrite */
 	dialog = GTK_DIALOG(gtk_message_dialog_new(gui->main_window, GTK_DIALOG_USE_HEADER_BAR, GTK_MESSAGE_QUESTION,
 						   GTK_BUTTONS_YES_NO, "Overwrite existing layer names?"));
