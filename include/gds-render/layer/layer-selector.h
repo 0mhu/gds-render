@@ -118,6 +118,18 @@ void layer_selector_auto_color_layers(LayerSelector *layer_selector, ColorPalett
  */
 void layer_selector_auto_name_layers(LayerSelector *layer_selector, gboolean overwrite);
 
+/**
+ * @brief Check if the given layer selector contains layer elements.
+ *
+ * This function checks whether there are elements present.
+ * If an invalid object pointer \p layer_selector is passed,
+ * the function returns FALSE
+ *
+ * @param[in] layer_selector Selector to check
+ * @return True, if there is at least one layer present inside the selector
+ */
+gboolean layer_selector_contains_elements(LayerSelector *layer_selector);
+
 G_END_DECLS
 
 #endif /* __LAYER_SELECTOR_H__ */

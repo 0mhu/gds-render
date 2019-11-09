@@ -883,4 +883,19 @@ void layer_selector_auto_name_layers(LayerSelector *layer_selector, gboolean ove
 	g_list_free(le_list);
 }
 
+gboolean layer_selector_contains_elements(LayerSelector *layer_selector)
+{
+	GList *layer_element_list;
+
+	/* Check objects */
+	g_return_val_if_fail(LAYER_IS_SELECTOR(layer_selector), FALSE);
+	g_return_val_if_fail(GTK_IS_LIST_BOX(layer_selector->list_box), FALSE);
+
+	/* Get a list of the child elements inside the list boy associated with this selector */
+	layer_element_list = gtk_container_get_children(GTK_CONTAINER(layer_selector->list_box));
+
+	/* Return TRUE if there is an element in the list, else return FALSE */
+	return (layer_element_list ? TRUE : FALSE);
+}
+
 /** @} */
