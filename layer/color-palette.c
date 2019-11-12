@@ -106,13 +106,13 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 	char_array = (const char *)g_bytes_get_data(data, &byte_count);
 
 	if (!char_array || !byte_count)
-		goto ret_unref;
+		goto ret_unref_data;
 
 	/* Get maximum lenght of color palette, assuming all entries are valid */
 	lines = count_non_empty_lines_in_array(char_array, byte_count);
 
 	if (lines <= 0)
-		goto ret_unref;
+		goto ret_unref_data;
 
 	palette->color_array = (GdkRGBA *)malloc(sizeof(GdkRGBA) * (unsigned int)lines);
 
@@ -128,10 +128,9 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 	color_idx = 0;
 
 	/* interate over lines and match */
-	for (idx = 0 ; idx < byte_count; idx++) {
+	for (idx = 0 ; (unsigned int)idx < byte_count; idx++) {
 		/* Fillup line. */
 		line[line_idx] = char_array[idx];
-
 
 		/* If end of line/string is reached, process */
 		if (line[line_idx] == '\n' || line[line_idx] == '\0') {
@@ -139,7 +138,7 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 
 			/* Match the line */
 			g_regex_match(regex, line, 0, &mi);
-			if (g_match_info_matches(mi) && color_idx < lines) {
+			if (g_match_info_matches(mi) && color_idx < (unsigned int)lines) {
 				match = g_match_info_fetch_named(mi, "red");
 				palette->color_array[color_idx].red =
 						(double)g_ascii_strtoll(match, NULL, 16) / 255.0;
@@ -169,10 +168,10 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 			continue;
 		}
 
-		/* increment line index. If end is reached write all bytes  to the line end
-		 * line is longer than required for parsing. This ensures, that everything works as expected
+		/* increment line index. If end is reached write all bytes  to the line end.
+		 * Line is longer than required for parsing. This ensures, that everything works as expected
 		 */
-		line_idx += (line_idx < sizeof(line)-1 ? 1 : 0);
+		line_idx += ((unsigned int)line_idx < sizeof(line)-1 ? 1 : 0);
 	}
 
 	/* Data read; Shrink array in case of invalid lines */
@@ -180,7 +179,7 @@ static int color_palette_fill_with_resource(ColorPalette *palette, char *resourc
 	palette->color_array_length = color_idx;
 
 	g_regex_unref(regex);
-ret_unref:
+ret_unref_data:
 	g_bytes_unref(data);
 
 	return 0;
