@@ -1,0 +1,50 @@
+# German translations for PACKAGE package.
+# Copyright (C) 2019 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Mario Hüttel <mario.huettel@gmx.net>, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gds-render VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-10-22 23:02+0200\n"
+"PO-Revision-Date: 2019-10-18 23:10+0200\n"
+"Last-Translator:  <mario.huettel@gmx.net>\n"
+"Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../gds-render-gui.c:273
+msgid "Acc. Date"
+msgstr "Zugr. Datum"
+
+#: ../gds-render-gui.c:314
+msgid "Cancel"
+msgstr "Abbruch"
+
+#: ../gds-render-gui.c:266
+msgid "Cell"
+msgstr "Zelle"
+
+#: ../gds-render-gui.c:322
+msgid "GDSII-Files"
+msgstr "GDSII-Dateiem"
+
+#: ../gds-render-gui.c:263
+msgid "Library"
+msgstr "Bibliothek"
+
+#: ../gds-render-gui.c:270
+msgid "Mod. Date"
+msgstr "Mod. Datum"
+
+#: ../gds-render-gui.c:315
+msgid "Open GDSII"
+msgstr "GDSII öffnen"
+
+#: ../gds-render-gui.c:312
+msgid "Open GDSII File"
+msgstr "GDSII Datei öffnen"
