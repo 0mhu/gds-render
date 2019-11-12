@@ -1,0 +1,122 @@
+# German translations for gds-render package.
+# Copyright (C) 2019 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the gds-render package.
+# Mario Hüttel <mario.huettel@gmx.net>, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gds-render VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-10-18 23:03+0200\n"
+"PO-Revision-Date: 2019-10-18 20:49+0200\n"
+"Last-Translator:  <mario.huettel@gmx.net>\n"
+"Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../main.c:99
+#, c-format
+msgid ""
+"\n"
+"\n"
+"Full git commit: %s"
+msgstr ""
+"\n"
+"\n"
+"Vollständige git Commit-ID %s"
+
+#: ../main.c:289
+msgid " FILE - Convert GDS file <FILE> to graphic"
+msgstr "Datei -- Konvertiere GDS Datei <Datei> zu Vektorgrafik"
+
+#: ../main.c:223
+msgid "About"
+msgstr "Über"
+
+#: ../main.c:282
+msgid "Cell to render"
+msgstr "Zu konvertierende Zelle"
+
+#: ../main.c:284
+msgid "Create PDF Layers (OCG)"
+msgstr "Generiere PDF Layer (OCG)"
+
+#: ../main.c:283
+msgid "Create standalone TeX"
+msgstr "Generiere alleinstehendes TeX"
+
+#: ../main.c:279
+msgid "Divide output coordinates by <SCALE>"
+msgstr "Skaliere Ausgabekoordinaten um Faktor <SCALE> herab"
+
+#: ../main.c:314
+#, c-format
+msgid "Ignored argument: %s"
+msgstr "Ignoriertes Argument: %s"
+
+#: ../main.c:118
+#, c-format
+msgid "Logo could not be displayed: %s\n"
+msgstr "Logo konnte nicht angezeigt werden: %s\n"
+
+#: ../main.c:294
+#, c-format
+msgid "Option parsing failed: %s\n"
+msgstr "Übergabeparameterkonvertierung fehlgeschlagen: %s\n"
+
+#: ../main.c:280
+msgid "Output file path. Can be used multiple times."
+msgstr "Ausgabedatei. Kann mehrfach angegeben werden."
+
+#: ../main.c:281
+msgid "Path for Layer Mapping File"
+msgstr "Pfad zur \"Layer Mapping\"-Datei"
+
+#: ../main.c:277
+msgid "Print version"
+msgstr "Programmversion aufgeben"
+
+#: ../main.c:222
+msgid "Quit"
+msgstr "Beenden"
+
+#: ../main.c:278
+msgid "Renderer to use. Can be used multiple times."
+msgstr "Gewünschter Renderer. Kann mehrfach angegeben werden."
+
+#: ../main.c:305
+#, c-format
+msgid "Scale < 1 not allowed. Setting to 1\n"
+msgstr "Skalierung < 1 nicht erlaubt. Rückfallwert 1 benutzt.\n"
+
+#: ../main.c:215
+#, c-format
+msgid ""
+"There is already an open instance. Will open second window in that "
+"instance.\n"
+msgstr ""
+"Es is bereits eine Instanz dieses Programms geöffnet. Ein weiteres Fenster "
+"in dieser wird geöffnet.\n"
+
+#: ../main.c:247
+#, c-format
+msgid ""
+"This is gds-render, version: %s\n"
+"\n"
+"For a list of supported commands execute with --help option.\n"
+msgstr ""
+"gds-render, Version %s\n"
+"\n"
+"Um eine Liste der unterstützten Befehle zu erhalten, bitte mit der Option --"
+"help ausführen.\n"
+
+#: ../main.c:98
+msgid ""
+"gds-render is a free tool for rendering GDS2 layout files into vector "
+"graphics."
+msgstr ""
+"gds-render is ein freies Werkzeug zum Wandeln von GDS2 Layouts in "
+"Vektorgrafiken."

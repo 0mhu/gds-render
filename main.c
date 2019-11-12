@@ -23,9 +23,13 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
+
+
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
+#include <glib/gi18n.h>
+#include <locale.h>
 
 #include <gds-render/gds-render-gui.h>
 #include <gds-render/command-line.h>
@@ -91,8 +95,8 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 	(void)parameter;
 	GString *comment_text;
 
-	comment_text = g_string_new("gds-render is a free tool for rendering GDS2 layout files into vector graphics.");
-	g_string_append_printf(comment_text, "\n\nFull git commit: %s", _app_git_commit);
+	comment_text = g_string_new(_("gds-render is a free tool for rendering GDS2 layout files into vector graphics."));
+	g_string_append_printf(comment_text, _("\n\nFull git commit: %s"), _app_git_commit);
 
 	builder = gtk_builder_new_from_resource("/gui/about.glade");
 	dialog = GTK_DIALOG(gtk_builder_get_object(builder, "about-dialog"));
@@ -111,7 +115,7 @@ static void app_about(GSimpleAction *action, GVariant *parameter, gpointer user_
 		/* Pixbuf is now owned by about dialog. Unref */
 		g_object_unref(logo_buf);
 	} else if (error) {
-		fprintf(stderr, "Logo could not be displayed: %s\n", error->message);
+		fprintf(stderr, _("Logo could not be displayed: %s\n"), error->message);
 		g_error_free(error);
 	}
 
@@ -208,15 +212,15 @@ static int start_gui(int argc, char **argv)
 
 	if (g_application_get_is_remote(G_APPLICATION(gapp)) == TRUE) {
 		g_application_activate(G_APPLICATION(gapp));
-		printf("There is already an open instance. Will open second window in that instance.\n");
+		printf(_("There is already an open instance. Will open second window in that instance.\n"));
 		return 0;
 	}
 
 	menu = g_menu_new();
 	m_quit = g_menu_new();
 	m_about = g_menu_new();
-	g_menu_append(m_quit, "Quit", "app.quit");
-	g_menu_append(m_about, "About", "app.about");
+	g_menu_append(m_quit, _("Quit"), "app.quit");
+	g_menu_append(m_about, _("About"), "app.about");
 	g_menu_append_section(menu, NULL, G_MENU_MODEL(m_about));
 	g_menu_append_section(menu, NULL, G_MENU_MODEL(m_quit));
 	g_action_map_add_action_entries(G_ACTION_MAP(gapp), app_actions,
@@ -240,7 +244,7 @@ static int start_gui(int argc, char **argv)
  */
 static void print_version(void)
 {
-	printf("This is gds-render, version: %s\n\nFor a list of supported commands execute with --help option.\n",
+	printf(_("This is gds-render, version: %s\n\nFor a list of supported commands execute with --help option.\n"),
 	       _app_version_string);
 }
 
@@ -265,28 +269,32 @@ int main(int argc, char **argv)
 	int scale = 1000;
 	int app_status = 0;
 
+	bindtextdomain(GETTEXT_PACKAGE, LOCALEDATADIR "/locale");
+	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+	textdomain(GETTEXT_PACKAGE);
+
 	GOptionEntry entries[] = {
-		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, "Print version", NULL},
+		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, _("Print version"), NULL},
 		{"renderer", 'r', 0, G_OPTION_ARG_STRING_ARRAY, &renderer_args,
-		 "Renderer to use. Can be used multiple times.", "pdf|svg|tikz|ext"},
-		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, "Divide output coordinates by <SCALE>", "<SCALE>" },
+			_("Renderer to use. Can be used multiple times."), "pdf|svg|tikz|ext"},
+		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, _("Divide output coordinates by <SCALE>"), "<SCALE>" },
 		{"output-file", 'o', 0, G_OPTION_ARG_FILENAME_ARRAY, &output_paths,
-		 "Output file path. Can be used multiple times.", "PATH" },
-		{"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, "Path for Layer Mapping File", "PATH" },
-		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, "Cell to render", "NAME" },
-		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, "Create standalone PDF", NULL },
-		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, "Create PDF Layers (OCG)", NULL },
-		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path,
-		 "Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
+			_("Output file path. Can be used multiple times."), "PATH" },
+		{"mapping", 'm', 0, G_OPTION_ARG_FILENAME, &mappingname, _("Path for Layer Mapping File"), "PATH" },
+		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, _("Cell to render"), "NAME" },
+		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, _("Create standalone TeX"), NULL },
+		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, _("Create PDF Layers (OCG)"), NULL },
+		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, 
+			"Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
 		{NULL}
 	};
 
-	context = g_option_context_new(" FILE - Convert GDS file <FILE> to graphic");
+	context = g_option_context_new(_(" FILE - Convert GDS file <FILE> to graphic"));
 	g_option_context_add_main_entries(context, entries, NULL);
 	g_option_context_add_group(context, gtk_get_option_group(TRUE));
 
 	if (!g_option_context_parse(context, &argc, &argv, &error)) {
-		g_print("Option parsing failed: %s\n", error->message);
+		g_print(_("Option parsing failed: %s\n"), error->message);
 		exit(1);
 	}
 
@@ -297,7 +305,7 @@ int main(int argc, char **argv)
 
 	if (argc >= 2) {
 		if (scale < 1) {
-			printf("Scale < 1 not allowed. Setting to 1\n");
+			printf(_("Scale < 1 not allowed. Setting to 1\n"));
 			scale = 1;
 		}
 
@@ -306,7 +314,7 @@ int main(int argc, char **argv)
 
 		/* Print out additional arguments as ignored */
 		for (i = 2; i < argc; i++)
-			printf("Ignored argument: %s", argv[i]);
+			printf(_("Ignored argument: %s"), argv[i]);
 
 		app_status =
 			command_line_convert_gds(gds_name, cellname, renderer_args, output_paths, mappingname,

@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-10-25 20:27+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../gds-render-gui.c:273
+msgid "Acc. Date"
+msgstr ""
+
+#: ../gds-render-gui.c:314
+msgid "Cancel"
+msgstr ""
+
+#: ../gds-render-gui.c:266
+msgid "Cell"
+msgstr ""
+
+#: ../gds-render-gui.c:322
+msgid "GDSII-Files"
+msgstr ""
+
+#: ../gds-render-gui.c:263
+msgid "Library"
+msgstr ""
+
+#: ../gds-render-gui.c:270
+msgid "Mod. Date"
+msgstr ""
+
+#: ../gds-render-gui.c:315
+msgid "Open GDSII"
+msgstr ""
+
+#: ../gds-render-gui.c:312
+msgid "Open GDSII File"
+msgstr ""

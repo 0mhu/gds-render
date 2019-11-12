@@ -37,6 +37,7 @@
  */
 
 #include <gds-render/widgets/activity-bar.h>
+#include <glib/gi18n.h>
 
 /** @brief Opaque ActivityBar object. Not viewable outside this source file. */
 struct _ActivityBar {
@@ -101,13 +102,13 @@ ActivityBar *activity_bar_new()
 /* TODO: Complete this once the task list is fully implemented */
 void activity_bar_set_ready(ActivityBar *bar)
 {
-	gtk_label_set_text(GTK_LABEL(bar->label), "Ready");
+	gtk_label_set_text(GTK_LABEL(bar->label), _("Ready"));
 	gtk_spinner_stop(GTK_SPINNER(bar->spinner));
 }
 
 void activity_bar_set_busy(ActivityBar *bar, const char *text)
 {
-	gtk_label_set_text(GTK_LABEL(bar->label), (text ? text : "Working..."));
+	gtk_label_set_text(GTK_LABEL(bar->label), (text ? text : _("Working...")));
 	gtk_spinner_start(GTK_SPINNER(bar->spinner));
 }
 
