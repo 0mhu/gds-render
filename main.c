@@ -285,7 +285,7 @@ int main(int argc, char **argv)
 		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, _("Create standalone TeX"), NULL },
 		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, _("Create PDF Layers (OCG)"), NULL },
 		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, 
-			"Path to a custom shared object, that implements the " EXTERNAL_LIBRARY_FUNCTION " function", "PATH"},
+			"Path to a custom shared object, that implements the necessary rendering functions", "PATH"},
 		{NULL}
 	};
 

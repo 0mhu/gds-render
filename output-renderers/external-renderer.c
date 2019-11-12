@@ -80,7 +80,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 
 	/* Load symbol from library */
 	so_render_func = (int (*)(struct gds_cell *, GList *, const char *, double))
-				dlsym(so_handle, EXTERNAL_LIBRARY_FUNCTION);
+				dlsym(so_handle, xstr(EXTERNAL_LIBRARY_RENDER_FUNCTION));
 	error_msg = dlerror();
 	if (error_msg != NULL) {
 		fprintf(stderr, "Rendering function not found in library:\n%s\n", error_msg);

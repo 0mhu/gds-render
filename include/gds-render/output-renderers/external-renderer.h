@@ -33,22 +33,13 @@
 
 #include <gds-render/output-renderers/gds-output-renderer.h>
 #include <gds-render/gds-utils/gds-types.h>
+#include <gds-render/output-renderers/external-renderer-interfaces.h>
 
 G_BEGIN_DECLS
 
 #define GDS_RENDER_TYPE_EXTERNAL_RENDERER (external_renderer_get_type())
 
 G_DECLARE_FINAL_TYPE(ExternalRenderer, external_renderer, GDS_RENDER, EXTERNAL_RENDERER, GdsOutputRenderer)
-
-/**
- * @brief function name expected to be found in external library.
- * 
- * The function has to be defined as follows:
- * @code
- * int EXTERNAL_LIBRARY_FUNCTION(struct gds_cell *toplevel, GList *layer_info_list, const char *output_file_name, double scale)
- * @endcode
- */
-#define EXTERNAL_LIBRARY_FUNCTION "render_cell_to_file"
 
 /**
  * @brief Create new ExternalRenderer object

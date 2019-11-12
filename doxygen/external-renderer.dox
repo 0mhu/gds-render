@@ -12,4 +12,14 @@
  *
  * All these properties have to be set for rendering.
  *
+ * @section ExternalRendererFuncs Necessary Functions
+ *
+ * The following functions and variables are necessary for an external renderer to implement:
+ *
+ * Code Define 				| Prototype  																	|  Description
+ * ---------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------
+ * @ref EXTERNAL_LIBRARY_RENDER_FUNCTION	| int EXTERNAL_LIBRARY_RENDER_FUNCTION(struct gds_cell *toplevel, GList *layer_info_list, const char *output_file_name, double scale)		| Render cell to output file
+ * @ref EXTERNAL_LIBRARY_INIT_FUNCTION		| int EXTERNAL_LIBRARY_INIT_FUNCTION(const char *option_string, const char *version_string)							| Init function. Executed before rendering. This is given the command line parameters specified for the external renderer and the version string of the currently running gds-render program.
+ * @ref EXTERNAL_LIBRARY_FORK_REQUEST		| int EXTERNAL_LIBRARY_FORK_REQUEST;														| The pure presence of this integer results in the execution inside a subprocess of hte whole shared object's code
+ *
  */
