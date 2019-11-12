@@ -30,8 +30,12 @@
 
 #include <dlfcn.h>
 #include <stdio.h>
+#include <sys/wait.h>
 
 #include <gds-render/output-renderers/external-renderer.h>
+#include <gds-render/version.h>
+
+#define FORCE_FORK 0U /**< @brief if != 0, then forking is forced regardless of the shared object's settings */
 
 struct _ExternalRenderer {
 	GdsOutputRenderer parent;
@@ -58,9 +62,13 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 				   const char *output_file, double scale,  const char *so_path)
 {
 	int (*so_render_func)(struct gds_cell *, GList *, const char *, double) = NULL;
+	int (*so_init_func)(const char *, const char *) = NULL;
 	void *so_handle = NULL;
 	char *error_msg;
+	int forking_req;
 	int ret = 0;
+	pid_t fork_pid = 0;
+	int forked_status;
 
 	if (!so_path) {
 		fprintf(stderr, "Path to shared object not set!\n");
@@ -78,7 +86,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 		return -2000;
 	}
 
-	/* Load symbol from library */
+	/* Load rendering symbol from library */
 	so_render_func = (int (*)(struct gds_cell *, GList *, const char *, double))
 				dlsym(so_handle, xstr(EXTERNAL_LIBRARY_RENDER_FUNCTION));
 	error_msg = dlerror();
@@ -87,12 +95,46 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 		goto ret_close_so_handle;
 	}
 
-	/* Execute */
-	if (so_render_func) {
-		g_message("Calling external renderer.");
-		ret = so_render_func(toplevel_cell, layer_info_list, output_file, scale);
-		g_message("External renderer finished.");
+	/* Load the init function */
+	so_init_func = (int (*)(const char *, const char *))dlsym(so_handle, xstr(EXTERNAL_LIBRARY_INIT_FUNCTION));
+	error_msg = dlerror();
+	if (error_msg != NULL) {
+		fprintf(stderr, "Rendering function not found in library:\n%s\n", error_msg);
+		goto ret_close_so_handle;
 	}
+
+	/* Check if forking is requested */
+	if (dlsym(so_handle, xstr(EXTERNAL_LIBRARY_FORK_REQUEST)))
+		forking_req = 1;
+	else if (FORCE_FORK)
+		forking_req = 1;
+	else
+		forking_req = 0;
+
+	/* Execute */
+
+	g_message("Calling external renderer.");
+
+	if (forking_req)
+		fork_pid = fork();
+	if (fork_pid != 0)
+		goto end_forked;
+
+	// TODO: Get parameters form command line and pass here
+	ret = so_init_func(NULL, _app_version_string);
+	if (!ret)
+		ret = so_render_func(toplevel_cell, layer_info_list, output_file, scale);
+
+	if (forking_req)
+		exit(ret);
+
+end_forked:
+	if (forking_req) {
+		waitpid(fork_pid, &forked_status, 0);
+		ret = WEXITSTATUS(forked_status);
+	}
+
+	g_message("External renderer finished.");
 
 ret_close_so_handle:
 	dlclose(so_handle);
