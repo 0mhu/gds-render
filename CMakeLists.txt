@@ -11,6 +11,7 @@ add_compile_options(-Wall -Wextra -Wold-style-declaration -Wuninitialized -Wmayb
 add_subdirectory(resources)
 add_subdirectory(doxygen)
 add_subdirectory(version)
+add_subdirectory(plugins)
 
 include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})

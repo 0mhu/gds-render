@@ -6,5 +6,5 @@ if (DOXYGEN_FOUND)
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 		COMMENT "Generating documentation with Doxygen")
 else (DOXYGEN_FOUND)
-  message("Doxygen need to be installed to generate the doxygen documentation")
+  message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
