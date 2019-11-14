@@ -290,6 +290,8 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
+	g_option_context_free(context);
+
 	if (version) {
 		print_version();
 		goto ret_status;
@@ -317,7 +319,10 @@ int main(int argc, char **argv)
 	}
 
 ret_status:
-	/* If necessary, free command line parameters */
+	/* If necessary, free command line parameters.
+	 * This is only really necessary for automated mem-leak testing.
+	 * Omitting these frees would be perfectly fine.
+	 */
 	if (output_paths)
 		g_strfreev(output_paths);
 	if (renderer_args)
