@@ -68,11 +68,17 @@ set(SOURCE
   ${LAYER_SELECTOR_SOURCES}
 )
 
-add_executable(${PROJECT_NAME} ${SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c)
+set(SOURCE_GENERATED
+  ${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c
+)
+
+SET_SOURCE_FILES_PROPERTIES(${SOURCE_GENERATED} PROPERTIES GENERATED 1)
+
+add_executable(${PROJECT_NAME} ${SOURCE} ${SOURCE_GENERATED})
 add_dependencies(${PROJECT_NAME} glib-resources)
 add_dependencies(${PROJECT_NAME} version)
 add_dependencies(${PROJECT_NAME} translations)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c PROPERTIES GENERATED 1)
+
 target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
 install (TARGETS ${PROJECT_NAME} 
 	RUNTIME	
