@@ -84,5 +84,3 @@ install (TARGETS ${PROJECT_NAME}
 	RUNTIME	
 		DESTINATION bin
 	)
-
-add_custom_target(documentation DEPENDS doxygen)
