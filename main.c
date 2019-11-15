@@ -261,12 +261,14 @@ int main(int argc, char **argv)
 	gchar **output_paths = NULL;
 	gchar *mappingname = NULL;
 	gchar *cellname = NULL;
-	gchar *render_lib_param_string = NULL;
 	gchar **renderer_args = NULL;
 	gboolean version = FALSE, pdf_standalone = FALSE, pdf_layers = FALSE;
-	gchar *custom_library_path = NULL;
 	int scale = 1000;
 	int app_status = 0;
+	struct external_renderer_params so_render_params;
+
+	so_render_params.so_path = NULL;
+	so_render_params.cli_params = NULL;
 
 	bindtextdomain(GETTEXT_PACKAGE, LOCALEDATADIR "/locale");
 	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
@@ -283,9 +285,9 @@ int main(int argc, char **argv)
 		{"cell", 'c', 0, G_OPTION_ARG_STRING, &cellname, _("Cell to render"), "NAME" },
 		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, _("Create standalone TeX"), NULL },
 		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, _("Create PDF Layers (OCG)"), NULL },
-		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, 
+		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &so_render_params.so_path,
 			_("Path to a custom shared object, that implements the necessary rendering functions"), "PATH"},
-		{"render-lib-params", 'W', 0, G_OPTION_ARG_STRING, &render_lib_param_string,
+		{"render-lib-params", 'W', 0, G_OPTION_ARG_STRING, &so_render_params.cli_params,
 			_("Argument string passed to render lib"), NULL},
 		{NULL, 0, 0, 0, NULL, NULL, NULL}
 	};
@@ -321,7 +323,7 @@ int main(int argc, char **argv)
 
 		app_status =
 			command_line_convert_gds(gds_name, cellname, renderer_args, output_paths, mappingname,
-						 custom_library_path, pdf_standalone, pdf_layers, scale);
+						 &so_render_params, pdf_standalone, pdf_layers, scale);
 
 	} else {
 		app_status = start_gui(argc, argv);
@@ -340,10 +342,10 @@ ret_status:
 		g_free(mappingname);
 	if (cellname)
 		free(cellname);
-	if (custom_library_path)
-		free(custom_library_path);
-	if (render_lib_param_string)
-		g_free(render_lib_param_string);
+	if (so_render_params.so_path)
+		free(so_render_params.so_path);
+	if (so_render_params.cli_params)
+		g_free(so_render_params.cli_params);
 
 	return app_status;
 }

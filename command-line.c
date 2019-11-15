@@ -56,7 +56,7 @@ static int create_renderers(char **renderers,
 			    char **output_file_names,
 			    gboolean tex_layers,
 			    gboolean tex_standalone,
-			    const char *so_path,
+			    const struct external_renderer_params *ext_params,
 			    GList **renderer_list,
 			    LayerSettings *layer_settings)
 {
@@ -100,11 +100,11 @@ static int create_renderers(char **renderers,
 		} else if (!strcmp(current_renderer, "svg")) {
 			output_renderer = GDS_RENDER_OUTPUT_RENDERER(cairo_renderer_new_svg());
 		} else if (!strcmp(current_renderer, "ext")) {
-			if (!so_path) {
+			if (!ext_params->so_path) {
 				fprintf(stderr, _("Please specify shared object for external renderer. Will ignore this renderer.\n"));
 				continue;
 			}
-			output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(so_path));
+			output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(ext_params->so_path));
 		} else {
 			continue;
 		}
@@ -138,7 +138,7 @@ int command_line_convert_gds(const char *gds_name,
 			      char **renderers,
 			      char **output_file_names,
 			      const char *layer_file,
-			      const char *so_path,
+			      struct external_renderer_params *ext_param,
 			      gboolean tex_standalone,
 			      gboolean tex_layers,
 			      double scale)
@@ -165,7 +165,7 @@ int command_line_convert_gds(const char *gds_name,
 
 	/* Create renderers */
 	if (create_renderers(renderers, output_file_names, tex_layers, tex_standalone,
-			     so_path, &renderer_list, layer_sett))
+			     ext_param, &renderer_list, layer_sett))
 		goto ret_destroy_layer_mapping;
 
 

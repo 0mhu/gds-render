@@ -34,13 +34,28 @@
 #include <glib.h>
 
 /**
+ * @brief External renderer paramameters to command line renderer
+ */
+struct external_renderer_params {
+	/**
+	 * @brief Path to shared object
+	 */
+	char *so_path;
+
+	/**
+	 * @brief Command line parameters given
+	 */
+	char *cli_params;
+};
+
+/**
  * @brief Convert GDS according to command line parameters
  * @param gds_name Path to GDS File
  * @param cell_name Cell name
  * @param renderers Renderer ids
  * @param output_file_names Output file names
  * @param layer_file Layer mapping file
- * @param so_path Shared object
+ * @param ext_params Settings for external library renderer
  * @param tex_standalone Standalone TeX
  * @param tex_layers TeX OCR layers
  * @param scale Scale value
@@ -51,7 +66,7 @@ int command_line_convert_gds(const char *gds_name,
 			     char **renderers,
 			     char **output_file_names,
 			     const char *layer_file,
-			     const char *so_path,
+			     struct external_renderer_params *ext_param,
 			     gboolean tex_standalone,
 			     gboolean tex_layers,
 			     double scale);
