@@ -55,7 +55,7 @@ struct external_renderer_params {
  * @param renderers Renderer ids
  * @param output_file_names Output file names
  * @param layer_file Layer mapping file
- * @param ext_params Settings for external library renderer
+ * @param ext_param Settings for external library renderer
  * @param tex_standalone Standalone TeX
  * @param tex_layers TeX OCR layers
  * @param scale Scale value
