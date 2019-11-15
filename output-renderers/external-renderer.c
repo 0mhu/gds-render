@@ -40,10 +40,12 @@
 struct _ExternalRenderer {
 	GdsOutputRenderer parent;
 	char *shared_object_path;
+	char *cli_param_string;
 };
 
 enum {
 	PROP_SO_PATH = 1, /**< @brief Shared object path property */
+	PROP_PARAM_STRING, /** @brief Shared object renderer parameter string from CLI */
 	N_PROPERTIES /**< @brief Used to get property count */
 };
 
@@ -56,10 +58,11 @@ G_DEFINE_TYPE(ExternalRenderer, external_renderer, GDS_RENDER_TYPE_OUTPUT_RENDER
  * @param output_file Destination file
  * @param scale the scaling value to scale the output cell down by.
  * @param so_path Path to shared object
+ * @param params Parameters passed to EXTERNAL_LIBRARY_INIT_FUNCTION
  * @return 0 if successful
  */
 static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *layer_info_list,
-				   const char *output_file, double scale,  const char *so_path)
+				   const char *output_file, double scale,  const char *so_path, const char *params)
 {
 	int (*so_render_func)(struct gds_cell *, GList *, const char *, double) = NULL;
 	int (*so_init_func)(const char *, const char *) = NULL;
@@ -120,8 +123,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	if (fork_pid != 0)
 		goto end_forked;
 
-	// TODO: Get parameters form command line and pass here
-	ret = so_init_func(NULL, _app_version_string);
+	ret = so_init_func(params, _app_version_string);
 	if (!ret)
 		ret = so_render_func(toplevel_cell, layer_info_list, output_file, scale);
 
@@ -158,7 +160,8 @@ static int external_renderer_render_output(GdsOutputRenderer *renderer,
 	if (settings)
 		layer_infos = layer_settings_get_layer_info_list(settings);
 
-	ret = external_renderer_render_cell(cell, layer_infos, output_file, scale, ext_renderer->shared_object_path);
+	ret = external_renderer_render_cell(cell, layer_infos, output_file, scale, ext_renderer->shared_object_path,
+					    ext_renderer->cli_param_string);
 	if (settings)
 		g_object_unref(settings);
 
@@ -174,6 +177,9 @@ static void external_renderer_get_property(GObject *obj, guint property_id, GVal
 	switch (property_id) {
 	case PROP_SO_PATH:
 		g_value_set_string(value, self->shared_object_path);
+		break;
+	case PROP_PARAM_STRING:
+		g_value_set_string(value, self->cli_param_string);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
@@ -193,6 +199,11 @@ static void external_renderer_set_property(GObject *obj, guint property_id, cons
 			g_free(self->shared_object_path);
 		self->shared_object_path = g_value_dup_string(value);
 		break;
+	case PROP_PARAM_STRING:
+		if (self->cli_param_string)
+			g_free(self->cli_param_string);
+		self->cli_param_string = g_value_dup_string(value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
 		break;
@@ -201,7 +212,9 @@ static void external_renderer_set_property(GObject *obj, guint property_id, cons
 
 static void external_renderer_dispose(GObject *self_obj)
 {
-	ExternalRenderer *self = GDS_RENDER_EXTERNAL_RENDERER(self_obj);
+	ExternalRenderer *self;
+
+	self = GDS_RENDER_EXTERNAL_RENDERER(self_obj);
 
 	if (self->shared_object_path) {
 		g_free(self->shared_object_path);
@@ -236,12 +249,19 @@ static void external_renderer_class_init(ExternalRendererClass *klass)
 					    "Path to the shared object to search rendering function in.",
 					    NULL,
 					    G_PARAM_READWRITE);
+	external_renderer_properties[PROP_PARAM_STRING] =
+			g_param_spec_string("param-string",
+					    "Shared object renderer parameter string",
+					    "Command line arguments passed to the external shared object renderer",
+					    NULL,
+					    G_PARAM_READWRITE);
 	g_object_class_install_properties(oclass, N_PROPERTIES, external_renderer_properties);
 }
 
 static void external_renderer_init(ExternalRenderer *self)
 {
 	self->shared_object_path = NULL;
+	self->cli_param_string = NULL;
 }
 
 ExternalRenderer *external_renderer_new()

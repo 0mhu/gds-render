@@ -9,6 +9,7 @@
  * Property Name    | Description
  * -----------------|----------------------------------------------------------------
  * shared-object-path  | Path to the shared object used for rendering
+ * param-string | Command line parameters passed to external renderer's init function
  *
  * All these properties have to be set for rendering.
  *
