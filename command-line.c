@@ -104,7 +104,9 @@ static int create_renderers(char **renderers,
 				fprintf(stderr, _("Please specify shared object for external renderer. Will ignore this renderer.\n"));
 				continue;
 			}
-			output_renderer = GDS_RENDER_OUTPUT_RENDERER(external_renderer_new_with_so(ext_params->so_path));
+			output_renderer = GDS_RENDER_OUTPUT_RENDERER(
+						external_renderer_new_with_so_and_param(ext_params->so_path,
+											ext_params->cli_params));
 		} else {
 			continue;
 		}

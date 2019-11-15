@@ -271,9 +271,10 @@ ExternalRenderer *external_renderer_new()
 	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, NULL);
 }
 
-ExternalRenderer *external_renderer_new_with_so(const char *so_path)
+ExternalRenderer *external_renderer_new_with_so_and_param(const char *so_path, const char *param_string)
 {
-	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, "shared-object-path", so_path, NULL);
+	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, "shared-object-path", so_path,
+				"param-string", param_string,NULL);
 }
 
 /** @} */

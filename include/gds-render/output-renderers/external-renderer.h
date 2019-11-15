@@ -50,9 +50,10 @@ ExternalRenderer *external_renderer_new();
 /**
  * @brief Create new ExternalRenderer object with specified shared object path
  * @param so_path Path to shared object, the rendering function is searched in
+ * @param param_string Command line parameter string passed to external renderer
  * @return New object.
  */
-ExternalRenderer *external_renderer_new_with_so(const char *so_path);
+ExternalRenderer *external_renderer_new_with_so_and_param(const char *so_path, const char *param_string);
 
 G_END_DECLS
 
