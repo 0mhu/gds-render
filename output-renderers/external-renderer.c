@@ -127,9 +127,11 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	if (!ret)
 		ret = so_render_func(toplevel_cell, layer_info_list, output_file, scale);
 
+	/* If we are in a separate process, terminate here */
 	if (forking_req)
 		exit(ret);
 
+	/* The forked paths end here */
 end_forked:
 	if (forking_req) {
 		waitpid(fork_pid, &forked_status, 0);
