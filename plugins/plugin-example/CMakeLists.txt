@@ -1,4 +1,4 @@
-project(pythonrenderer)
+project(pluginexample)
 cmake_minimum_required(VERSION 2.8)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(PYTHON REQUIRED python3)

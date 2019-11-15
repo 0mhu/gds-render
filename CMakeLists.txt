@@ -30,6 +30,7 @@ pkg_search_module(GLIB REQUIRED glib-2.0)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(CAIRO REQUIRED cairo)
 
+include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(plugins)
 
 add_compile_options(-Wall -Wextra -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
@@ -48,7 +49,6 @@ add_subdirectory(doxygen)
 add_subdirectory(translations)
 add_subdirectory(version)
 
-include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
 

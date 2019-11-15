@@ -1,2 +1,2 @@
-add_subdirectory(python-renderer)
-add_custom_target(plugins DEPENDS pythonrenderer)
+add_subdirectory(plugin-example)
+add_custom_target(plugins DEPENDS pluginexample)

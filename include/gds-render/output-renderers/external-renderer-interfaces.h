@@ -41,6 +41,11 @@
  */
 #define EXTERNAL_LIBRARY_FORK_REQUEST exported_fork_request
 
+/**
+ * @brief Define for declaring the exported functions
+ */
+#define FUNC_DECL(FUNC) FUNC
+
 /** @} */
 
 #endif /* __EXTERNAL_RENDERER_INTERFACES_H__ */
