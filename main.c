@@ -23,8 +23,6 @@
  * @author Mario Hüttel <mario.huettel@gmx.net>
  */
 
-
-
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
@@ -263,6 +261,7 @@ int main(int argc, char **argv)
 	gchar **output_paths = NULL;
 	gchar *mappingname = NULL;
 	gchar *cellname = NULL;
+	gchar *render_lib_param_string = NULL;
 	gchar **renderer_args = NULL;
 	gboolean version = FALSE, pdf_standalone = FALSE, pdf_layers = FALSE;
 	gchar *custom_library_path = NULL;
@@ -285,8 +284,10 @@ int main(int argc, char **argv)
 		{"tex-standalone", 'a', 0, G_OPTION_ARG_NONE, &pdf_standalone, _("Create standalone TeX"), NULL },
 		{"tex-layers", 'l', 0, G_OPTION_ARG_NONE, &pdf_layers, _("Create PDF Layers (OCG)"), NULL },
 		{"custom-render-lib", 'P', 0, G_OPTION_ARG_FILENAME, &custom_library_path, 
-			"Path to a custom shared object, that implements the necessary rendering functions", "PATH"},
-		{NULL}
+			_("Path to a custom shared object, that implements the necessary rendering functions"), "PATH"},
+		{"render-lib-params", 'W', 0, G_OPTION_ARG_STRING, &render_lib_param_string,
+			_("Argument string passed to render lib"), NULL},
+		{NULL, 0, 0, 0, NULL, NULL, NULL}
 	};
 
 	context = g_option_context_new(_(" FILE - Convert GDS file <FILE> to graphic"));
@@ -341,6 +342,8 @@ ret_status:
 		free(cellname);
 	if (custom_library_path)
 		free(custom_library_path);
+	if (render_lib_param_string)
+		g_free(render_lib_param_string);
 
 	return app_status;
 }
