@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gds-render VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-18 23:03+0200\n"
+"POT-Creation-Date: 2019-11-15 20:32+0100\n"
 "PO-Revision-Date: 2019-10-18 20:49+0200\n"
 "Last-Translator:  <mario.huettel@gmx.net>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: ../main.c:99
+#: ../main.c:97
 #, c-format
 msgid ""
 "\n"
@@ -28,23 +28,27 @@ msgstr ""
 "\n"
 "Vollständige git Commit-ID %s"
 
-#: ../main.c:289
+#: ../main.c:293
 msgid " FILE - Convert GDS file <FILE> to graphic"
 msgstr "Datei -- Konvertiere GDS Datei <Datei> zu Vektorgrafik"
 
-#: ../main.c:223
+#: ../main.c:221
 msgid "About"
 msgstr "Über"
 
-#: ../main.c:282
+#: ../main.c:289
+msgid "Argument string passed to render lib"
+msgstr "Argumente, die an externe Render-Bibliothek weitergegeben werden sollen"
+
+#: ../main.c:283
 msgid "Cell to render"
 msgstr "Zu konvertierende Zelle"
 
-#: ../main.c:284
+#: ../main.c:285
 msgid "Create PDF Layers (OCG)"
 msgstr "Generiere PDF Layer (OCG)"
 
-#: ../main.c:283
+#: ../main.c:284
 msgid "Create standalone TeX"
 msgstr "Generiere alleinstehendes TeX"
 
@@ -52,34 +56,41 @@ msgstr "Generiere alleinstehendes TeX"
 msgid "Divide output coordinates by <SCALE>"
 msgstr "Skaliere Ausgabekoordinaten um Faktor <SCALE> herab"
 
-#: ../main.c:314
+#: ../main.c:320
 #, c-format
 msgid "Ignored argument: %s"
 msgstr "Ignoriertes Argument: %s"
 
-#: ../main.c:118
+#: ../main.c:116
 #, c-format
 msgid "Logo could not be displayed: %s\n"
 msgstr "Logo konnte nicht angezeigt werden: %s\n"
 
-#: ../main.c:294
+#: ../main.c:298
 #, c-format
 msgid "Option parsing failed: %s\n"
 msgstr "Übergabeparameterkonvertierung fehlgeschlagen: %s\n"
 
-#: ../main.c:280
+#: ../main.c:281
 msgid "Output file path. Can be used multiple times."
 msgstr "Ausgabedatei. Kann mehrfach angegeben werden."
 
-#: ../main.c:281
+#: ../main.c:282
 msgid "Path for Layer Mapping File"
 msgstr "Pfad zur \"Layer Mapping\"-Datei"
 
-#: ../main.c:277
+#: ../main.c:287
+msgid ""
+"Path to a custom shared object, that implements the necessary rendering "
+"functions"
+msgstr ""
+"Pfad zu einer Programmbibliothek, die die notwendigen Renderingfunktionen bereitstellt"
+
+#: ../main.c:276
 msgid "Print version"
 msgstr "Programmversion aufgeben"
 
-#: ../main.c:222
+#: ../main.c:220
 msgid "Quit"
 msgstr "Beenden"
 
@@ -87,12 +98,12 @@ msgstr "Beenden"
 msgid "Renderer to use. Can be used multiple times."
 msgstr "Gewünschter Renderer. Kann mehrfach angegeben werden."
 
-#: ../main.c:305
+#: ../main.c:311
 #, c-format
 msgid "Scale < 1 not allowed. Setting to 1\n"
 msgstr "Skalierung < 1 nicht erlaubt. Rückfallwert 1 benutzt.\n"
 
-#: ../main.c:215
+#: ../main.c:213
 #, c-format
 msgid ""
 "There is already an open instance. Will open second window in that "
@@ -101,7 +112,7 @@ msgstr ""
 "Es is bereits eine Instanz dieses Programms geöffnet. Ein weiteres Fenster "
 "in dieser wird geöffnet.\n"
 
-#: ../main.c:247
+#: ../main.c:245
 #, c-format
 msgid ""
 "This is gds-render, version: %s\n"
@@ -113,7 +124,7 @@ msgstr ""
 "Um eine Liste der unterstützten Befehle zu erhalten, bitte mit der Option --"
 "help ausführen.\n"
 
-#: ../main.c:98
+#: ../main.c:96
 msgid ""
 "gds-render is a free tool for rendering GDS2 layout files into vector "
 "graphics."
