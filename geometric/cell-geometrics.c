@@ -63,7 +63,7 @@ static void update_box_with_gfx(union bounding_box *box, struct gds_graphics *gf
 		 * Please be aware if paths are the outmost elements of your cell.
 		 * You might end up with a completely wrong calculated cell size.
 		 */
-		bounding_box_calculate_path_box(gfx->vertices, gfx->width_absolute,
+		bounding_box_update_with_path(gfx->vertices, gfx->width_absolute,
 							(conv_generic_to_vector_2d_t)&convert_gds_point_to_2d_vector,
 							&current_box);
 		break;

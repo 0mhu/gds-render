@@ -145,7 +145,7 @@ static void calculate_path_miter_points(struct vector_2d *a, struct vector_2d *b
 	vector_2d_subtract(m2, m2, &v_vec);
 }
 
-void bounding_box_calculate_path_box(GList *vertices, double thickness,
+void bounding_box_update_with_path(GList *vertices, double thickness,
 					conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
 {
 	GList *vertex_iterator;
@@ -191,24 +191,40 @@ void bounding_box_update_point(union bounding_box *destination, conv_generic_to_
 	destination->vectors.upper_right.y = MAX(destination->vectors.upper_right.y, point.y);
 }
 
-/**
- * @brief Apply transformations onto bounding box.
- * @param scale Scaling factor
- * @param rotation_deg Roation of bounding box around the origin in degrees (counterclockwise)
- * @param flip_at_x Flip the boundig box on the x axis before rotating.
- * @param box Bounding box the operations should be applied to.
- */
+void bounding_box_get_all_points(struct vector_2d *points, union bounding_box *box)
+{
+	if (!points || !box)
+		return;
+
+	points[0].x = box->vectors.lower_left.x;
+	points[0].y = box->vectors.lower_left.y;
+	points[1].x = box->vectors.upper_right.x;
+	points[1].y = box->vectors.lower_left.y;
+	points[2].x = box->vectors.upper_right.x;
+	points[2].y = box->vectors.upper_right.y;
+	points[3].x = box->vectors.lower_left.x;
+	points[3].y = box->vectors.upper_right.y;
+}
+
 void bounding_box_apply_transform(double scale, double rotation_deg, bool flip_at_x, union bounding_box *box)
 {
 	int i;
+	struct vector_2d input_points[4];
 
-	/* Due to linearity, the order of the operations does not matter.
-	 * flip must be applied before rotation as defined by the GDS format
-	 */
-	for (i = 0; i < 2; i++) {
-		box->vector_array[i].y *= (flip_at_x ? -1 : 1);
-		vector_2d_rotate(&box->vector_array[i], rotation_deg * M_PI / 180);
-		vector_2d_scale(&box->vector_array[i], scale);
+	if (!box)
+		return;
+
+	bounding_box_get_all_points(input_points, box);
+
+	/* Reset box */
+	bounding_box_prepare_empty(box);
+
+	for (i = 0; i < 4; i++) {
+		input_points[i].y *= (flip_at_x ? -1 : 1);
+		vector_2d_rotate(&input_points[i], rotation_deg * M_PI / 180.0);
+		vector_2d_scale(&input_points[i], scale);
+
+		bounding_box_update_point(box, NULL, &input_points[i]);
 	}
 }
 
