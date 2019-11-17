@@ -1,0 +1,6 @@
+/**
+ * @defgroup plugins External Renderer Plugins
+ * 
+ * These plugins can be loaded with the @ref ExternalRenderer
+ *
+ */ 
