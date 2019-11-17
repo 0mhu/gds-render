@@ -77,9 +77,9 @@ static void layer_settings_class_init(LayerSettingsClass *klass)
  * @brief Copy layer_info struct
  *
  * This function copies a layer info struct.
- * Be aware, that it does not only copy the pointer to the
- * layer name, but instead duplicates the string.
  *
+ * @note Be aware, that it does not only copy the pointer to the
+ *       layer name, but instead duplicates the string.
  * @param info Info to copy
  * @return new layer_info struct
  */
