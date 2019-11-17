@@ -88,7 +88,7 @@ void bounding_box_get_all_points(struct vector_2d *points, union bounding_box *b
 /**
  * @brief Apply transformations onto bounding box.
  *
- * All corner points of the bounding \f$ \vec{P_i} \f$ box are transformed to output points \f$ \vec{P_o} \f$ by:
+ * All corner points \f$ \vec{P_i} \f$ of the bounding box are transformed to output points \f$ \vec{P_o} \f$ by:
  *
  * \f$ \vec{P_o} = s \cdot \begin{pmatrix}\cos\left(\phi\right) & -\sin\left(\phi\right)\\ \sin\left(\phi\right) & \cos\left(\phi\right)\end{pmatrix} \cdot \begin{pmatrix} 1 & 0 \\ 0 & -1^{m} \end{pmatrix} \cdot \vec{P_i} \f$, with:
  *
