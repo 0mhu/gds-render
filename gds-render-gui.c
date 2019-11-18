@@ -602,20 +602,12 @@ static void on_convert_clicked(gpointer button, gpointer user)
 					 self);
 
 			activity_bar_set_busy(self->activity_status_bar, "Rendering cell...");
-			/* TODO: Replace this with asynchronous rendering. However, this fixes issue #19 */
 
 			g_signal_connect(render_engine, "progress-changed",
 					 G_CALLBACK(async_rendering_status_update_callback), self);
 			gds_output_renderer_render_output_async(render_engine, cell_to_render, sett->scale);
-
-
-			//self->button_state_data.rendering_active = FALSE;
-
-			//g_object_unref(render_engine);
 		}
-
 		g_free(file_name);
-
 	} else {
 		gtk_widget_destroy(dialog);
 	}
