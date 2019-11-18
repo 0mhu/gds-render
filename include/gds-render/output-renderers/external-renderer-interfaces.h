@@ -50,7 +50,7 @@
  *
  * This not only helps with the declaration but also makes the symbols visible, so they can be called form outside the library
  */
-#define FUNC_DECL(FUNC) EXPORT_FUNC FUNC
+#define EXPORTED_FUNC_DECL(FUNC) EXPORT_FUNC FUNC
 
 /** @} */
 
