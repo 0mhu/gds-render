@@ -14,6 +14,11 @@
  */
 
 /**
+ * @brief This define is used to export a function from a shared object
+ */
+#define EXPORT_FUNC __attribute__((visibility("default")))
+
+/**
  * @brief Function name expected to be found in external library for rendering.
  *
  * The function has to be defined as follows:
@@ -37,14 +42,15 @@
  *
  * The pure presence of this symbol name causes forking. The content of this variable is don't care.
  * @note Use this if you mess with the internal structures of gds-render
- *
  */
 #define EXTERNAL_LIBRARY_FORK_REQUEST exported_fork_request
 
 /**
- * @brief Define for declaring the exported functions
+ * @brief Define for declaring the exported functions.
+ *
+ * This not only helps with the declaration but also makes the symbols visible, so they can be called form outside the library
  */
-#define FUNC_DECL(FUNC) FUNC
+#define FUNC_DECL(FUNC) EXPORT_FUNC FUNC
 
 /** @} */
 

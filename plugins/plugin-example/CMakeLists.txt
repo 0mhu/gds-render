@@ -10,3 +10,5 @@ link_libraries(${PYTHON_LDFLAGS} version)
 
 add_library(${PROJECT_NAME} SHARED EXCLUDE_FROM_ALL ${SOURCES})
 add_dependencies(${PROJECT_NAME} version)
+set_target_properties(${PROJECT_NAME} PROPERTIES C_VISIBILITY_PRESET hidden)
+set_target_properties(${PROJECT_NAME} PROPERTIES CXX_VISIBILITY_PRESET hidden)
