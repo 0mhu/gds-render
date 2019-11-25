@@ -48,8 +48,6 @@ enum cell_store_columns {
 	CELL_SEL_LIBRARY = 0,
 	CELL_SEL_CELL,
 	CELL_SEL_CELL_ERROR_STATE, /**< Used for cell color and selectability */
-	CELL_SEL_MODDATE,
-	CELL_SEL_ACCESSDATE,
 	CELL_SEL_COLUMN_COUNT /**< @brief Not a column. Used to determine count of columns */
 };
 
@@ -114,25 +112,6 @@ static gboolean on_window_close(gpointer window, GdkEvent *event, gpointer user)
 	g_signal_emit(self, gds_render_gui_signals[SIGNAL_WINDOW_CLOSED], 0);
 
 	return TRUE;
-}
-
-/**
- * @brief generate string from gds_time_field
- * @param date Date to convert
- * @return String with date
- */
-static GString *generate_string_from_date(struct gds_time_field *date)
-{
-	GString *str;
-
-	str = g_string_new_len(NULL, 50);
-	g_string_printf(str, "%02u.%02u.%u - %02u:%02u",
-			(unsigned int)date->day,
-			(unsigned int)date->month,
-			(unsigned int)date->year,
-			(unsigned int)date->hour,
-			(unsigned int)date->minute);
-	return str;
 }
 
 /**
@@ -237,14 +216,12 @@ exit_filter:
  */
 int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 {
-	GtkCellRenderer *render_dates;
 	GtkCellRenderer *render_cell;
 	GtkCellRenderer *render_lib;
 	GtkTreeViewColumn *column;
 
 	self->cell_tree_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER,
-					 G_TYPE_POINTER, G_TYPE_UINT,
-					 G_TYPE_STRING, G_TYPE_STRING);
+					 G_TYPE_POINTER, G_TYPE_UINT);
 
 	/* Searching */
 	self->cell_filter = GTK_TREE_MODEL_FILTER(
@@ -258,7 +235,6 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 
 	gtk_tree_view_set_model(self->cell_tree_view, GTK_TREE_MODEL(self->cell_filter));
 
-	render_dates = gtk_cell_renderer_text_new();
 	render_cell = lib_cell_renderer_new();
 	render_lib = lib_cell_renderer_new();
 
@@ -267,12 +243,6 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 
 	column = gtk_tree_view_column_new_with_attributes(_("Cell"), render_cell, "gds-cell", CELL_SEL_CELL,
 							  "error-level", CELL_SEL_CELL_ERROR_STATE, NULL);
-	gtk_tree_view_append_column(self->cell_tree_view, column);
-
-	column = gtk_tree_view_column_new_with_attributes(_("Mod. Date"), render_dates, "text", CELL_SEL_MODDATE, NULL);
-	gtk_tree_view_append_column(self->cell_tree_view, column);
-
-	column = gtk_tree_view_column_new_with_attributes(_("Acc. Date"), render_dates, "text", CELL_SEL_ACCESSDATE, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
 	/* Callback for selection
@@ -305,8 +275,6 @@ static void on_load_gds(gpointer button, gpointer user)
 	gint dialog_result;
 	int gds_result;
 	char *filename;
-	GString *mod_date;
-	GString *acc_date;
 	unsigned int cell_error_level;
 
 	self = RENDERER_GUI(user);
@@ -354,30 +322,17 @@ static void on_load_gds(gpointer button, gpointer user)
 		/* Create top level iter */
 		gtk_tree_store_append(self->cell_tree_store, &libiter, NULL);
 
-		/* Convert dates to String */
-		mod_date = generate_string_from_date(&gds_lib->mod_time);
-		acc_date = generate_string_from_date(&gds_lib->access_time);
-
 		gtk_tree_store_set(self->cell_tree_store, &libiter,
 				   CELL_SEL_LIBRARY, gds_lib,
-				   CELL_SEL_MODDATE, mod_date->str,
-				   CELL_SEL_ACCESSDATE, acc_date->str,
 				   -1);
 
 		/* Check this library. This might take a while */
 		(void)gds_tree_check_cell_references(gds_lib);
 		(void)gds_tree_check_reference_loops(gds_lib);
-		/* Delete GStrings including string data. */
-		/* Cell store copies String type data items */
-		g_string_free(mod_date, TRUE);
-		g_string_free(acc_date, TRUE);
 
 		for (cell = gds_lib->cells; cell != NULL; cell = cell->next) {
 			gds_c = (struct gds_cell *)cell->data;
 			gtk_tree_store_append(self->cell_tree_store, &celliter, &libiter);
-			/* Convert dates to String */
-			mod_date = generate_string_from_date(&gds_c->mod_time);
-			acc_date = generate_string_from_date(&gds_c->access_time);
 
 			/* Get the checking results for this cell */
 			cell_error_level = 0;
@@ -391,15 +346,8 @@ static void on_load_gds(gpointer button, gpointer user)
 			/* Add cell to tree store model */
 			gtk_tree_store_set(self->cell_tree_store, &celliter,
 					   CELL_SEL_CELL, gds_c,
-					   CELL_SEL_MODDATE, mod_date->str,
-					   CELL_SEL_ACCESSDATE, acc_date->str,
 					   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
 					   -1);
-
-			/* Delete GStrings including string data. */
-			/* Cell store copies String type data items */
-			g_string_free(mod_date, TRUE);
-			g_string_free(acc_date, TRUE);
 		} /* for cells */
 	} /* for libraries */
 
