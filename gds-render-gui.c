@@ -347,6 +347,7 @@ static void on_load_gds(gpointer button, gpointer user)
 			gtk_tree_store_set(self->cell_tree_store, &celliter,
 					   CELL_SEL_CELL, gds_c,
 					   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
+					   CELL_SEL_LIBRARY, gds_c->parent_library,
 					   -1);
 		} /* for cells */
 	} /* for libraries */
