@@ -597,7 +597,7 @@ static void convert_aref_to_sref(struct gds_cell_array_instance *aref, struct gd
 	/* Iterate over columns and rows */
 	for (col = 0; col < aref->columns; col++) {
 		for (row = 0; row < aref->rows; row++) {
-			/* Create new instance for this row/column and aconfigure data */
+			/* Create new instance for this row/column and configure data */
 			container_cell->child_cells = append_cell_ref(container_cell->child_cells, &sref_inst);
 			if (!sref_inst) {
 				GDS_ERROR("Appending cell ref failed!");
