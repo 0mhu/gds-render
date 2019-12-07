@@ -158,7 +158,6 @@ static void gapp_activate(GApplication *app, gpointer user_data)
 {
 	GtkWindow *main_window;
 	GdsRenderGui *gui;
-
 	struct application_data * const appdata = (struct application_data *)user_data;
 
 	gui = gds_render_gui_new();
