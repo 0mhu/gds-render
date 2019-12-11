@@ -58,7 +58,7 @@ enum graphics_type
 enum path_type {PATH_FLUSH = 0, PATH_ROUNDED = 1, PATH_SQUARED = 2}; /**< Path line caps */
 
 /**
- * @brief A point in the 2D plane. Sometimes reffered to as vertex
+ * @brief A point in the 2D plane. Sometimes referred to as vertex
  */
 struct gds_point {
 	int x;
