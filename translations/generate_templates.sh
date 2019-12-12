@@ -15,5 +15,9 @@ mkdir -p "pot"
 for file in $files; do
 	pot="pot/"$(echo "${file#*/}" | sed -e "s/\//_/g")
 	pot="${pot%.c}.pot"
-	xgettext --keyword=_ --language=C --add-comments --sort-output -o "$pot" "$file"
+	if [[ -f "$pot" ]]; then
+		xgettext --package-name="gds-render" --join-existing --keyword=_ --language=C --add-comments --sort-output -o "$pot" "$file"
+	else
+		xgettext --package-name="gds-render" --keyword=_ --language=C --add-comments --sort-output -o "$pot" "$file"
+	fi
 done
