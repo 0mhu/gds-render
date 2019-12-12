@@ -99,7 +99,6 @@ ActivityBar *activity_bar_new()
 	return bar;
 }
 
-/* TODO: Complete this once the task list is fully implemented */
 void activity_bar_set_ready(ActivityBar *bar)
 {
 	gtk_label_set_text(GTK_LABEL(bar->label), _("Ready"));
