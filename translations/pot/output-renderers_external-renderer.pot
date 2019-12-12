@@ -17,30 +17,38 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../gds-render-gui.c:286
-msgid "Cancel"
+#. Execute
+#: ../output-renderers/external-renderer.c:120
+msgid "Calling external renderer."
 msgstr ""
 
-#: ../gds-render-gui.c:244
-msgid "Cell"
+#: ../output-renderers/external-renderer.c:89
+#, c-format
+msgid ""
+"Could not load external library '%s'\n"
+"Detailed error is:\n"
+"%s\n"
 msgstr ""
 
-#: ../gds-render-gui.c:294
-msgid "GDSII-Files"
+#: ../output-renderers/external-renderer.c:142
+msgid "External renderer finished."
 msgstr ""
 
-#: ../gds-render-gui.c:241
-msgid "Library"
+#: ../output-renderers/external-renderer.c:106
+#, c-format
+msgid ""
+"Init function not found in library:\n"
+"%s\n"
 msgstr ""
 
-#: ../gds-render-gui.c:287
-msgid "Open GDSII"
+#: ../output-renderers/external-renderer.c:78
+#, c-format
+msgid "Path to shared object not set!\n"
 msgstr ""
 
-#: ../gds-render-gui.c:284
-msgid "Open GDSII File"
-msgstr ""
-
-#: ../gds-render-gui.c:554
-msgid "Rendering cell..."
+#: ../output-renderers/external-renderer.c:98
+#, c-format
+msgid ""
+"Rendering function not found in library:\n"
+"%s\n"
 msgstr ""

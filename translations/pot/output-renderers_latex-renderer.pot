@@ -17,10 +17,11 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../widgets/activity-bar.c:104
-msgid "Ready"
+#: ../output-renderers/latex-renderer.c:373
+msgid "Could not open LaTeX output file"
 msgstr ""
 
-#: ../widgets/activity-bar.c:110
-msgid "Working..."
+#: ../output-renderers/latex-renderer.c:253
+#, c-format
+msgid "Generating cell %s"
 msgstr ""

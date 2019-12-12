@@ -17,10 +17,35 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../widgets/activity-bar.c:104
-msgid "Ready"
+#: ../widgets/conv-settings-dialog.c:291
+msgid "Cancel"
 msgstr ""
 
-#: ../widgets/activity-bar.c:110
-msgid "Working..."
+#: ../widgets/conv-settings-dialog.c:246
+#, c-format
+msgid "Height: %.3lf %sm"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:291
+msgid "OK"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:255
+#, c-format
+msgid "Output Height: %u px"
+msgstr ""
+
+#. Set the pixel sizes
+#: ../widgets/conv-settings-dialog.c:252
+#, c-format
+msgid "Output Width: %u px"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:293
+msgid "Renderer Settings"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:244
+#, c-format
+msgid "Width: %.3lf %sm"
 msgstr ""

@@ -1,0 +1,53 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-12-12 21:22+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../output-renderers/cairo-renderer.c:409
+#, c-format
+msgid "Cairo export finished. It might still be buggy!\n"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:366
+#, c-format
+msgid "Exporting layer %d to file\n"
+msgstr ""
+
+#. This should not happen
+#: ../output-renderers/cairo-renderer.c:271
+#, c-format
+msgid "Fatal error: Cairo Renderer: Could not spawn child process!"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:321
+#, c-format
+msgid "Layer number too high / outside of spec.\n"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:369
+#, c-format
+msgid "Layer outside of spec.\n"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:467
+msgid "Rendering Cairo Output..."
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:331
+#, c-format
+msgid "Size of layer %d%s%s%s: <%lf x %lf> @ (%lf | %lf)\n"
+msgstr ""

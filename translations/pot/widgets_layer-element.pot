@@ -17,10 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../widgets/activity-bar.c:104
-msgid "Ready"
-msgstr ""
-
-#: ../widgets/activity-bar.c:110
-msgid "Working..."
+#: ../widgets/layer-element.c:102
+#, c-format
+msgid "Layer: %d"
 msgstr ""

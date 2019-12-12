@@ -17,10 +17,17 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../widgets/activity-bar.c:104
-msgid "Ready"
+#: ../gds-utils/gds-tree-checker.c:71
+#, c-format
+msgid "Broken cell list item found in cell %s. Will continue.\n"
 msgstr ""
 
-#: ../widgets/activity-bar.c:110
-msgid "Working..."
+#: ../gds-utils/gds-tree-checker.c:57
+#, c-format
+msgid "Broken cell list item found. Will continue.\n"
+msgstr ""
+
+#: ../gds-utils/gds-tree-checker.c:188
+#, c-format
+msgid "Visited cell list should be empty. This is a bug. Please report this.\n"
 msgstr ""
