@@ -17,7 +17,6 @@
  * along with GDSII-Converter.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @defgroup version Version Number
  * See @ref git-version-num
