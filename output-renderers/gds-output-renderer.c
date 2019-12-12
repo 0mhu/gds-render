@@ -28,6 +28,7 @@
  */
 
 #include <gds-render/output-renderers/gds-output-renderer.h>
+#include <glib/gi18n.h>
 
 struct renderer_params {
 		struct gds_cell *cell;
@@ -70,7 +71,7 @@ static int gds_output_renderer_render_dummy(GdsOutputRenderer *renderer,
 	(void)cell;
 	(void)scale;
 
-	g_warning("Output renderer does not define a render_output function!");
+	g_warning(_("Output renderer does not define a render_output function!"));
 	return 0;
 }
 
@@ -168,17 +169,17 @@ static void gds_output_renderer_class_init(GdsOutputRendererClass *klass)
 
 	/* Setup properties */
 	gds_output_renderer_properties[PROP_OUTPUT_FILE] =
-			g_param_spec_string("output-file", "output file", "Output file for renderer",
+			g_param_spec_string(N_("output-file"), N_("output file"), N_("Output file for renderer"),
 					    NULL, G_PARAM_READWRITE);
 	gds_output_renderer_properties[PROP_LAYER_SETTINGS] =
-			g_param_spec_object("layer-settings", "Layer Settings object",
-					    "Object containing the layer rendering information",
+			g_param_spec_object(N_("layer-settings"), N_("Layer Settings object"),
+					    N_("Object containing the layer rendering information"),
 					    GDS_RENDER_TYPE_LAYER_SETTINGS, G_PARAM_READWRITE);
 	g_object_class_install_properties(oclass, N_PROPERTIES, gds_output_renderer_properties);
 
 	/* Setup output signals */
 	gds_output_renderer_signals[ASYNC_FINISHED] =
-			g_signal_newv("async-finished", GDS_RENDER_TYPE_OUTPUT_RENDERER,
+			g_signal_newv(N_("async-finished"), GDS_RENDER_TYPE_OUTPUT_RENDERER,
 				      G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
 				      NULL,
 				      NULL,
@@ -188,7 +189,7 @@ static void gds_output_renderer_class_init(GdsOutputRendererClass *klass)
 				      0,
 				      NULL);
 	gds_output_renderer_signals[ASYNC_PROGRESS_CHANGED] =
-			g_signal_newv("progress-changed", GDS_RENDER_TYPE_OUTPUT_RENDERER,
+			g_signal_newv(N_("progress-changed"), GDS_RENDER_TYPE_OUTPUT_RENDERER,
 				      G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
 				      NULL,
 				      NULL,
@@ -223,8 +224,8 @@ GdsOutputRenderer *gds_output_renderer_new()
 GdsOutputRenderer *gds_output_renderer_new_with_props(const char *output_file, LayerSettings *layer_settings)
 {
 	return GDS_RENDER_OUTPUT_RENDERER(g_object_new(GDS_RENDER_TYPE_OUTPUT_RENDERER,
-						       "layer-settings", layer_settings,
-						       "output-file", output_file,
+						       N_("layer-settings"), layer_settings,
+						       N_("output-file"), output_file,
 						       NULL));
 }
 
@@ -235,14 +236,14 @@ void gds_output_renderer_set_output_file(GdsOutputRenderer *renderer, const gcha
 	/* Check if the filename is actually filled */
 	if (!file_name || !file_name[0])
 		return;
-	g_object_set(renderer, "output-file", file_name, NULL);
+	g_object_set(renderer, N_("output-file"), file_name, NULL);
 }
 
 const char *gds_output_renderer_get_output_file(GdsOutputRenderer *renderer)
 {
 	const char *file = NULL;
 
-	g_object_get(renderer, "output-file", &file, NULL);
+	g_object_get(renderer, N_("output-file"), &file, NULL);
 	return file;
 }
 
@@ -257,7 +258,7 @@ LayerSettings *gds_output_renderer_get_and_ref_layer_settings(GdsOutputRenderer 
 	g_mutex_lock(&priv->settings_lock);
 
 	/* This function seems to already reference the LayerSettings object */
-	g_object_get(renderer, "layer-settings", &ret, NULL);
+	g_object_get(renderer, N_("layer-settings"), &ret, NULL);
 
 	/* It is now safe to clear the lock */
 	g_mutex_unlock(&priv->settings_lock);
@@ -269,7 +270,7 @@ void gds_output_renderer_set_layer_settings(GdsOutputRenderer *renderer, LayerSe
 {
 	g_return_if_fail(GDS_RENDER_IS_LAYER_SETTINGS(settings));
 
-	g_object_set(renderer, "layer-settings", settings, NULL);
+	g_object_set(renderer, N_("layer-settings"), settings, NULL);
 }
 
 int gds_output_renderer_render_output(GdsOutputRenderer *renderer, struct gds_cell *cell, double scale)
@@ -279,28 +280,28 @@ int gds_output_renderer_render_output(GdsOutputRenderer *renderer, struct gds_ce
 	GdsOutputRendererPrivate *priv = gds_output_renderer_get_instance_private(renderer);
 
 	if (GDS_RENDER_IS_OUTPUT_RENDERER(renderer) == FALSE) {
-		g_error("Output Renderer not valid.");
+		g_error(_("Output Renderer not valid."));
 		return GDS_OUTPUT_RENDERER_GEN_ERR;
 	}
 
 	if (!priv->output_file || !priv->output_file[0]) {
-		g_error("No/invalid output file set.");
+		g_error(_("No/invalid output file set."));
 		return GDS_OUTPUT_RENDERER_GEN_ERR;
 	}
 
 	if (!priv->layer_settings) {
-		g_error("No layer specification supplied.");
+		g_error(_("No layer specification supplied."));
 		return GDS_OUTPUT_RENDERER_GEN_ERR;
 	}
 
 	if (!cell) {
-		g_error("Output renderer called without cell to render.");
+		g_error(_("Output renderer called without cell to render."));
 		return GDS_OUTPUT_RENDERER_PARAM_ERR;
 	}
 
 	klass = GDS_RENDER_OUTPUT_RENDERER_GET_CLASS(renderer);
 	if (klass->render_output == NULL) {
-		g_critical("Output Renderer: Rendering function broken. This is a bug.");
+		g_critical(_("Output Renderer: Rendering function broken. This is a bug."));
 		return GDS_OUTPUT_RENDERER_GEN_ERR;
 	}
 
@@ -361,7 +362,7 @@ int gds_output_renderer_render_output_async(GdsOutputRenderer *renderer, struct 
 
 	priv = gds_output_renderer_get_instance_private(renderer);
 	if (priv->task) {
-		g_warning("renderer already started asynchronously");
+		g_warning(_("Renderer already started asynchronously"));
 		return -2000;
 	}
 

@@ -34,7 +34,7 @@
  */
 
 #include <stdio.h>
-
+#include <glib/gi18n.h>
 #include <gds-render/gds-utils/gds-tree-checker.h>
 
 int gds_tree_check_cell_references(struct gds_library *lib)
@@ -54,7 +54,7 @@ int gds_tree_check_cell_references(struct gds_library *lib)
 
 		/* Check if this list element is broken. This should never happen */
 		if (!cell) {
-			fprintf(stderr, "Broken cell list item found. Will continue.\n");
+			fprintf(stderr, _("Broken cell list item found. Will continue.\n"));
 			continue;
 		}
 
@@ -68,7 +68,7 @@ int gds_tree_check_cell_references(struct gds_library *lib)
 
 			/* Check if broken. This should not happen */
 			if (!cell_inst) {
-				fprintf(stderr, "Broken cell list item found in cell %s. Will continue.\n",
+				fprintf(stderr, _("Broken cell list item found in cell %s. Will continue.\n"),
 						cell->name);
 				continue;
 			}
@@ -185,7 +185,7 @@ int gds_tree_check_reference_loops(struct gds_library *lib)
 			 */
 			if (res == 0)
 				fprintf(stderr,
-					"Visited cell list should be empty. This is a bug. Please report this.\n");
+					_("Visited cell list should be empty. This is a bug. Please report this.\n"));
 			g_list_free(visited_cells);
 			visited_cells = NULL;
 		}

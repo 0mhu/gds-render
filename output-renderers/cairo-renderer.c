@@ -31,6 +31,7 @@
 #include <cairo.h>
 #include <cairo-pdf.h>
 #include <cairo-svg.h>
+#include <glib/gi18n.h>
 
 #include <gds-render/output-renderers/cairo-renderer.h>
 #include <sys/wait.h>
@@ -267,7 +268,7 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 	//process_id = -1;
 	if (process_id < 0) {
 		/* This should not happen */
-		fprintf(stderr, "Fatal error: Cairo Renderer: Could not spawn child process!");
+		fprintf(stderr, _("Fatal error: Cairo Renderer: Could not spawn child process!"));
 		exit(-2);
 	} else if (process_id > 0) {
 		/* Woohoo... Successfully dumped the shitty code to an unknowing victim */
@@ -317,7 +318,7 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 		linfo = (struct layer_info *)info_list->data;
 
 		if (linfo->layer >= MAX_LAYERS) {
-			printf("Layer outside of Spec.\n");
+			printf(_("Layer number too high / outside of spec.\n"));
 			continue;
 		}
 
@@ -327,7 +328,7 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 		/* Print size */
 		cairo_recording_surface_ink_extents(layers[linfo->layer].rec, &rec_x0, &rec_y0,
 				&rec_width, &rec_height);
-		dprintf(comm_pipe[1], "Size of layer %d%s%s%s: <%lf x %lf> @ (%lf | %lf)\n",
+		dprintf(comm_pipe[1], _("Size of layer %d%s%s%s: <%lf x %lf> @ (%lf | %lf)\n"),
 			linfo->layer,
 			(linfo->name && linfo->name[0] ? " (" : ""),
 			(linfo->name && linfo->name[0] ? linfo->name : ""),
@@ -362,10 +363,10 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
 		linfo = (struct layer_info *)info_list->data;
 
-		dprintf(comm_pipe[1], "Exporting layer %d to file\n", linfo->layer);
+		dprintf(comm_pipe[1], _("Exporting layer %d to file\n"), linfo->layer);
 
 		if (linfo->layer >= MAX_LAYERS) {
-			printf("Layer outside of Spec.\n");
+			printf(_("Layer outside of spec.\n"));
 			continue;
 		}
 
@@ -405,7 +406,7 @@ ret_clear_layers:
 	}
 	free(layers);
 
-	printf("Cairo export finished. It might still be buggy!\n");
+	printf(_("Cairo export finished. It might still be buggy!\n"));
 
 	/* Suspend child process */
 	exit(0);
@@ -463,7 +464,7 @@ static int cairo_renderer_render_output(GdsOutputRenderer *renderer,
 	else
 		pdf_file = output_file;
 
-	gds_output_renderer_update_async_progress(renderer, "Rendering Cairo Output...");
+	gds_output_renderer_update_async_progress(renderer, _("Rendering Cairo Output..."));
 	ret = cairo_renderer_render_cell_to_vector_file(renderer, cell, layer_infos, pdf_file, svg_file, scale);
 
 	if (settings)

@@ -30,6 +30,7 @@
  */
 
 #include <gds-render/widgets/conv-settings-dialog.h>
+#include <glib/gi18n.h>
 
 struct  _RendererSettingsDialog {
 		GtkDialog parent;
@@ -102,9 +103,9 @@ static void renderer_settings_dialog_class_init(RendererSettingsDialogClass *kla
 	oclass->set_property = renderer_settings_dialog_set_property;
 	oclass->get_property = renderer_settings_dialog_get_property;
 
-	properties[PROP_CELL_NAME] = g_param_spec_string("cell-name",
-							 "cell-name",
-							 "Cell name to be displayed in header bar",
+	properties[PROP_CELL_NAME] = g_param_spec_string(N_("cell-name"),
+							 N_("cell-name"),
+							 N_("Cell name to be displayed in header bar"),
 							 "",
 							 G_PARAM_READWRITE);
 	g_object_class_install_properties(oclass, PROP_COUNT, properties);
@@ -240,18 +241,18 @@ static void renderer_settings_dialog_update_labels(RendererSettingsDialog *self)
 	width_engineering = convert_number_to_engineering(width_meters, &width_prefix);
 	height_engineering = convert_number_to_engineering(height_meters, &height_prefix);
 
-	snprintf(default_buff, sizeof(default_buff), "Width: %.3lf %sm", width_engineering, width_prefix);
+	snprintf(default_buff, sizeof(default_buff), _("Width: %.3lf %sm"), width_engineering, width_prefix);
 	gtk_label_set_text(self->x_label, default_buff);
-	snprintf(default_buff, sizeof(default_buff), "Height: %.3lf %sm", height_engineering, height_prefix);
+	snprintf(default_buff, sizeof(default_buff), _("Height: %.3lf %sm"), height_engineering, height_prefix);
 	gtk_label_set_text(self->y_label, default_buff);
 
 	scale = gtk_range_get_value(GTK_RANGE(self->scale));
 
 	/* Set the pixel sizes */
-	snprintf(default_buff, sizeof(default_buff), "Output Width: %u px",
+	snprintf(default_buff, sizeof(default_buff), _("Output Width: %u px"),
 		 (unsigned int)((double)self->cell_width / scale));
 	gtk_label_set_text(self->x_output_label, default_buff);
-	snprintf(default_buff, sizeof(default_buff), "Output Height: %u px",
+	snprintf(default_buff, sizeof(default_buff), _("Output Height: %u px"),
 		 (unsigned int)((double)self->cell_height / scale));
 	gtk_label_set_text(self->y_output_label, default_buff);
 }
@@ -287,9 +288,9 @@ static void renderer_settings_dialog_init(RendererSettingsDialog *self)
 	self->x_output_label = GTK_LABEL(gtk_builder_get_object(builder, "x-output-label"));
 	self->y_output_label = GTK_LABEL(gtk_builder_get_object(builder, "y-output-label"));
 
-	gtk_dialog_add_buttons(dialog, "Cancel", GTK_RESPONSE_CANCEL, "OK", GTK_RESPONSE_OK, NULL);
+	gtk_dialog_add_buttons(dialog, _("Cancel"), GTK_RESPONSE_CANCEL, _("OK"), GTK_RESPONSE_OK, NULL);
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(dialog)), box);
-	gtk_window_set_title(GTK_WINDOW(self), "Renderer Settings");
+	gtk_window_set_title(GTK_WINDOW(self), _("Renderer Settings"));
 
 	g_signal_connect(self->radio_latex, "toggled", G_CALLBACK(latex_render_callback), (gpointer)self);
 	g_signal_connect(G_OBJECT(self->shape_drawing),

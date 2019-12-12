@@ -31,6 +31,7 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <sys/wait.h>
+#include <glib/gi18n.h>
 
 #include <gds-render/output-renderers/external-renderer.h>
 #include <gds-render/version.h>
@@ -74,7 +75,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	int forked_status;
 
 	if (!so_path) {
-		fprintf(stderr, "Path to shared object not set!\n");
+		fprintf(stderr, _("Path to shared object not set!\n"));
 		return -3000;
 	}
 
@@ -85,7 +86,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	/* Load shared object */
 	so_handle = dlopen(so_path, RTLD_LAZY);
 	if (!so_handle) {
-		fprintf(stderr, "Could not load external library '%s'\nDetailed error is:\n%s\n", so_path, dlerror());
+		fprintf(stderr, _("Could not load external library '%s'\nDetailed error is:\n%s\n"), so_path, dlerror());
 		return -2000;
 	}
 
@@ -94,7 +95,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 				dlsym(so_handle, xstr(EXTERNAL_LIBRARY_RENDER_FUNCTION));
 	error_msg = dlerror();
 	if (error_msg != NULL) {
-		fprintf(stderr, "Rendering function not found in library:\n%s\n", error_msg);
+		fprintf(stderr, _("Rendering function not found in library:\n%s\n"), error_msg);
 		goto ret_close_so_handle;
 	}
 
@@ -102,7 +103,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 	so_init_func = (int (*)(const char *, const char *))dlsym(so_handle, xstr(EXTERNAL_LIBRARY_INIT_FUNCTION));
 	error_msg = dlerror();
 	if (error_msg != NULL) {
-		fprintf(stderr, "Rendering function not found in library:\n%s\n", error_msg);
+		fprintf(stderr, _("Init function not found in library:\n%s\n"), error_msg);
 		goto ret_close_so_handle;
 	}
 
@@ -116,7 +117,7 @@ static int external_renderer_render_cell(struct gds_cell *toplevel_cell, GList *
 
 	/* Execute */
 
-	g_message("Calling external renderer.");
+	g_message(_("Calling external renderer."));
 
 	if (forking_req)
 		fork_pid = fork();
@@ -138,7 +139,7 @@ end_forked:
 		ret = WEXITSTATUS(forked_status);
 	}
 
-	g_message("External renderer finished.");
+	g_message(_("External renderer finished."));
 
 ret_close_so_handle:
 	dlclose(so_handle);
@@ -246,15 +247,15 @@ static void external_renderer_class_init(ExternalRendererClass *klass)
 
 	/* Setup properties */
 	external_renderer_properties[PROP_SO_PATH] =
-			g_param_spec_string("shared-object-path",
-					    "Shared object file path",
-					    "Path to the shared object to search rendering function in.",
+			g_param_spec_string(N_("shared-object-path"),
+					    N_("Shared object file path"),
+					    N_("Path to the shared object to search rendering function in."),
 					    NULL,
 					    G_PARAM_READWRITE);
 	external_renderer_properties[PROP_PARAM_STRING] =
-			g_param_spec_string("param-string",
-					    "Shared object renderer parameter string",
-					    "Command line arguments passed to the external shared object renderer",
+			g_param_spec_string(N_("param-string"),
+					    N_("Shared object renderer parameter string"),
+					    N_("Command line arguments passed to the external shared object renderer"),
 					    NULL,
 					    G_PARAM_READWRITE);
 	g_object_class_install_properties(oclass, N_PROPERTIES, external_renderer_properties);
@@ -273,8 +274,8 @@ ExternalRenderer *external_renderer_new()
 
 ExternalRenderer *external_renderer_new_with_so_and_param(const char *so_path, const char *param_string)
 {
-	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, "shared-object-path", so_path,
-				"param-string", param_string,NULL);
+	return g_object_new(GDS_RENDER_TYPE_EXTERNAL_RENDERER, N_("shared-object-path"), so_path,
+				N_("param-string"), param_string, NULL);
 }
 
 /** @} */

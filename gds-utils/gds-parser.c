@@ -40,6 +40,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <cairo.h>
+#include <glib/gi18n.h>
 
 #include <gds-render/gds-utils/gds-parser.h>
 

@@ -37,6 +37,7 @@
  */
 
 #include <gds-render/widgets/layer-element.h>
+#include <glib/gi18n.h>
 
 G_DEFINE_TYPE(LayerElement, layer_element, GTK_TYPE_LIST_BOX_ROW)
 
@@ -98,7 +99,7 @@ void layer_element_set_layer(LayerElement *elem, int layer)
 	GString *string;
 
 	string = g_string_new_len(NULL, 100);
-	g_string_printf(string, "Layer: %d", layer);
+	g_string_printf(string, _("Layer: %d"), layer);
 	gtk_label_set_text(elem->priv.layer, (const gchar *)string->str);
 	elem->priv.layer_num = layer;
 	g_string_free(string, TRUE);

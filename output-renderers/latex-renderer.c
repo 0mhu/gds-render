@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <gds-render/output-renderers/latex-renderer.h>
 #include <gdk/gdk.h>
+#include <glib/gi18n.h>
+
 /**
  * @addtogroup LaTeX-Renderer
  * @{
@@ -248,7 +250,7 @@ static void render_cell(struct gds_cell *cell, GList *layer_infos, FILE *tex_fil
 	struct gds_cell_instance *inst;
 
 	status = g_string_new(NULL);
-	g_string_printf(status, "Generating cell %s", cell->name);
+	g_string_printf(status, _("Generating cell %s"), cell->name);
 	gds_output_renderer_update_async_progress(renderer, status->str);
 	g_string_free(status, TRUE);
 
@@ -368,7 +370,7 @@ static int latex_renderer_render_output(GdsOutputRenderer *renderer,
 						l_renderer->pdf_layers, l_renderer->tex_standalone, renderer);
 		fclose(tex_file);
 	} else {
-		g_error("Could not open LaTeX output file");
+		g_error(_("Could not open LaTeX output file"));
 	}
 
 	if (settings)
@@ -433,14 +435,14 @@ static void latex_renderer_class_init(LatexRendererClass *klass)
 
 	latex_renderer_properties[PROP_STANDALONE] =
 			g_param_spec_boolean("standalone",
-					     "Standalone TeX file",
-					     "Generate a standalone LaTeX file.",
+					     N_("Standalone TeX file"),
+					     N_("Generate a standalone LaTeX file."),
 					     FALSE,
 					     G_PARAM_READWRITE);
 	latex_renderer_properties[PROP_PDF_LAYERS] =
 			g_param_spec_boolean("pdf-layers",
-					     "PDF OCR layers",
-					     "Generate OCR layers",
+					     N_("PDF OCR layers"),
+					     N_("Generate OCR layers"),
 					     FALSE,
 					     G_PARAM_READWRITE);
 

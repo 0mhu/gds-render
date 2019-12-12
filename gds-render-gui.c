@@ -551,7 +551,7 @@ static void on_convert_clicked(gpointer button, gpointer user)
 			g_signal_connect(render_engine, "async-finished", G_CALLBACK(async_rendering_finished_callback),
 					 self);
 
-			activity_bar_set_busy(self->activity_status_bar, "Rendering cell...");
+			activity_bar_set_busy(self->activity_status_bar, _("Rendering cell..."));
 
 			g_signal_connect(render_engine, "progress-changed",
 					 G_CALLBACK(async_rendering_status_update_callback), self);
