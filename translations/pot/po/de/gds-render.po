@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gds-render\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-12-16 18:27+0100\n"
-"PO-Revision-Date: 2019-12-16 21:57+0100\n"
+"PO-Revision-Date: 2019-12-16 22:00+0100\n"
 "Last-Translator: Mario Hüttel <mario.huettel@gmx.net>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -423,7 +423,7 @@ msgstr "Wähle Layer-Farbe und Transparenz"
 
 #: ../resources/main.glade:240
 msgid "Select all layers for export"
-msgstr "Wähle alle Layer für export"
+msgstr "Wähle alle Layer zum Exporieren"
 
 #: ../output-renderers/cairo-renderer.c:331
 #, c-format
@@ -479,7 +479,7 @@ msgid ""
 "gds-render is a free tool for rendering GDS2 layout files into vector "
 "graphics."
 msgstr ""
-"gds-render ist ein freies Programm um GDS2-Layouts in Vektorgrafiken zu "
+"gds-render ist ein freies Programm, um GDS2-Layouts in Vektorgrafiken zu "
 "konvertieren."
 
 #: ../resources/layer-widget.glade:37
