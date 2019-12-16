@@ -35,6 +35,6 @@ It is possible to export the layer configurations so they can be used later on. 
 
 The cell selector on the left shows the GDS Libraries and Cells. The cells are marked green if all references inside the cell could be found. If not all references could be found, the cell is marked orange. This doens't show if child cells have missing childs. Only one level of the hierarchy is checked in order to make it easier to spot an errorneous cell. Cells with missing child cells are still renderable but `--` obviously `--` faulty. If a cell or any sub-cell contains a reference loop, the cell is marked red. In this case it can't be selected for rendering.
 
-In the above image the cell is green; so everything is okay. 
-
+In the above image one cell is green; so everything is okay. And the other one is red, which indicates a reference loop. This cell cannot be selected for rendering!
 */
+
