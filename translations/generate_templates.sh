@@ -12,12 +12,28 @@ cd "$DIR"
 files=`find ../ -name "*.c"`
 mkdir -p "pot"
 
+# C Files
+
+pot="pot/gds-render.pot"
+
 for file in $files; do
-	pot="pot/"$(echo "${file#*/}" | sed -e "s/\//_/g")
-	pot="${pot%.c}.pot"
+	echo "Parsing C file $file"
+	# pot="pot/"$(echo "${file#*/}" | sed -e "s/\//_/g")
+	# pot="${pot%.c}.pot"
 	if [[ -f "$pot" ]]; then
 		xgettext --package-name="gds-render" --join-existing --keyword=_ --language=C --add-comments --sort-output -o "$pot" "$file"
 	else
 		xgettext --package-name="gds-render" --keyword=_ --language=C --add-comments --sort-output -o "$pot" "$file"
+	fi
+done
+
+# Glade files
+glade_files=`find ../resources/ -name "*.glade"`
+for glade in $glade_files; do
+	echo "Parsing Glade file $glade"
+	if [[ -f "$pot" ]]; then
+		xgettext --package-name="gds-render" --join-existing --keyword=_ -L Glade --sort-output -o "$pot" "$glade"
+	else
+		xgettext --package-name="gds-render" --keyword=_ -L Glade --sort-output -o "$pot" "$glade"
 	fi
 done

@@ -1,0 +1,456 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the gds-render package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: gds-render\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-12-16 18:27+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../main.c:97
+#, c-format
+msgid ""
+"\n"
+"\n"
+"Full git commit: %s"
+msgstr ""
+
+#: ../main.c:294
+msgid " FILE - Convert GDS file <FILE> to graphic"
+msgstr ""
+
+#: ../resources/about.glade:10
+msgid "!! Replaced during runtime !!"
+msgstr ""
+
+#: ../command-line.c:205
+#, c-format
+msgid "%d reference loops found.\n"
+msgstr ""
+
+#: ../main.c:220
+msgid "About"
+msgstr ""
+
+#: ../main.c:290
+msgid "Argument string passed to render lib"
+msgstr ""
+
+#: ../resources/main.glade:225
+msgid "Automatically color layers"
+msgstr ""
+
+#: ../resources/main.glade:255
+msgid "Automatically name layers"
+msgstr ""
+
+#: ../gds-utils/gds-tree-checker.c:71
+#, c-format
+msgid "Broken cell list item found in cell %s. Will continue.\n"
+msgstr ""
+
+#: ../gds-utils/gds-tree-checker.c:57
+#, c-format
+msgid "Broken cell list item found. Will continue.\n"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:409
+#, c-format
+msgid "Cairo export finished. It might still be buggy!\n"
+msgstr ""
+
+#. Execute
+#: ../output-renderers/external-renderer.c:120
+msgid "Calling external renderer."
+msgstr ""
+
+#: ../gds-render-gui.c:286 ../widgets/conv-settings-dialog.c:291
+msgid "Cancel"
+msgstr ""
+
+#: ../gds-render-gui.c:244
+msgid "Cell"
+msgstr ""
+
+#: ../command-line.c:209
+#, c-format
+msgid "Cell is affected by reference loop. Abort!\n"
+msgstr ""
+
+#: ../main.c:284
+msgid "Cell to render"
+msgstr ""
+
+#: ../command-line.c:215
+#, c-format
+msgid ""
+"Cell was not checked. This should not happen. Please report this issue. Will "
+"continue either way.\n"
+msgstr ""
+
+#: ../command-line.c:202
+#, c-format
+msgid "Checking library %s failed.\n"
+msgstr ""
+
+#: ../resources/dialog.glade:79
+msgid "Configure LaTeX as standalone document"
+msgstr ""
+
+#: ../resources/main.glade:109
+msgid "Convert selected cell"
+msgstr ""
+
+#: ../output-renderers/external-renderer.c:89
+#, c-format
+msgid ""
+"Could not load external library '%s'\n"
+"Detailed error is:\n"
+"%s\n"
+msgstr ""
+
+#: ../output-renderers/latex-renderer.c:373
+msgid "Could not open LaTeX output file"
+msgstr ""
+
+#: ../command-line.c:195
+#, c-format
+msgid "Couldn't find cell in first library!\n"
+msgstr ""
+
+#: ../command-line.c:81
+#, c-format
+msgid "Count of renderers %d does not match count of output file names %d\n"
+msgstr ""
+
+#: ../main.c:286
+msgid "Create PDF Layers (OCG)"
+msgstr ""
+
+#: ../main.c:285
+msgid "Create standalone TeX"
+msgstr ""
+
+#: ../main.c:280
+msgid "Divide output coordinates by <SCALE>"
+msgstr ""
+
+#: ../resources/layer-widget.glade:62
+msgid "Export Layer"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:366
+#, c-format
+msgid "Exporting layer %d to file\n"
+msgstr ""
+
+#: ../output-renderers/external-renderer.c:142
+msgid "External renderer finished."
+msgstr ""
+
+#. This should not happen
+#: ../output-renderers/cairo-renderer.c:271
+#, c-format
+msgid "Fatal error: Cairo Renderer: Could not spawn child process!"
+msgstr ""
+
+#: ../resources/main.glade:50
+msgid "GDS-Render"
+msgstr ""
+
+#: ../gds-render-gui.c:294
+msgid "GDSII-Files"
+msgstr ""
+
+#: ../resources/dialog.glade:18
+msgid "Generate LaTeX/TikZ output"
+msgstr ""
+
+#: ../resources/dialog.glade:93
+msgid "Generate PDF Layers"
+msgstr ""
+
+#: ../output-renderers/latex-renderer.c:253
+#, c-format
+msgid "Generating cell %s"
+msgstr ""
+
+#: ../resources/about.glade:12
+msgid "Git Repository"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:246
+#, c-format
+msgid "Height: %.3lf %sm"
+msgstr ""
+
+#: ../main.c:321
+#, c-format
+msgid "Ignored argument: %s"
+msgstr ""
+
+#: ../output-renderers/external-renderer.c:106
+#, c-format
+msgid ""
+"Init function not found in library:\n"
+"%s\n"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:321
+#, c-format
+msgid "Layer number too high / outside of spec.\n"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:369
+#, c-format
+msgid "Layer outside of spec.\n"
+msgstr ""
+
+#: ../widgets/layer-element.c:102
+#, c-format
+msgid "Layer: %d"
+msgstr ""
+
+#: ../gds-render-gui.c:241
+msgid "Library"
+msgstr ""
+
+#: ../resources/main.glade:68
+msgid "Load Mapping"
+msgstr ""
+
+#: ../resources/main.glade:73
+msgid "Load the current layer configuration from CSV"
+msgstr ""
+
+#: ../main.c:116
+#, c-format
+msgid "Logo could not be displayed: %s\n"
+msgstr ""
+
+#: ../output-renderers/gds-output-renderer.c:293
+msgid "No layer specification supplied."
+msgstr ""
+
+#: ../command-line.c:186
+#, c-format
+msgid "No library in library list. This should not happen.\n"
+msgstr ""
+
+#: ../output-renderers/gds-output-renderer.c:288
+msgid "No/invalid output file set."
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:291
+msgid "OK"
+msgstr ""
+
+#: ../resources/main.glade:58
+msgid "Open GDS2 Database"
+msgstr ""
+
+#: ../gds-render-gui.c:287
+msgid "Open GDSII"
+msgstr ""
+
+#: ../gds-render-gui.c:284
+msgid "Open GDSII File"
+msgstr ""
+
+#: ../main.c:299
+#, c-format
+msgid "Option parsing failed: %s\n"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:255
+#, c-format
+msgid "Output Height: %u px"
+msgstr ""
+
+#: ../output-renderers/gds-output-renderer.c:283
+msgid "Output Renderer not valid."
+msgstr ""
+
+#: ../output-renderers/gds-output-renderer.c:304
+msgid "Output Renderer: Rendering function broken. This is a bug."
+msgstr ""
+
+#. Set the pixel sizes
+#: ../widgets/conv-settings-dialog.c:252
+#, c-format
+msgid "Output Width: %u px"
+msgstr ""
+
+#: ../main.c:282
+msgid "Output file path. Can be used multiple times."
+msgstr ""
+
+#: ../output-renderers/gds-output-renderer.c:298
+msgid "Output renderer called without cell to render."
+msgstr ""
+
+#: ../output-renderers/gds-output-renderer.c:74
+msgid "Output renderer does not define a render_output function!"
+msgstr ""
+
+#: ../main.c:283
+msgid "Path for Layer Mapping File"
+msgstr ""
+
+#: ../main.c:288
+msgid ""
+"Path to a custom shared object, that implements the necessary rendering "
+"functions"
+msgstr ""
+
+#: ../output-renderers/external-renderer.c:78
+#, c-format
+msgid "Path to shared object not set!\n"
+msgstr ""
+
+#: ../command-line.c:74
+#, c-format
+msgid "Please specify renderers and file names\n"
+msgstr ""
+
+#: ../command-line.c:104
+#, c-format
+msgid ""
+"Please specify shared object for external renderer. Will ignore this "
+"renderer.\n"
+msgstr ""
+
+#: ../main.c:277
+msgid "Print version"
+msgstr ""
+
+#: ../command-line.c:160
+#, c-format
+msgid "Probably missing argument. Check --help option\n"
+msgstr ""
+
+#: ../main.c:219
+msgid "Quit"
+msgstr ""
+
+#: ../widgets/activity-bar.c:104
+msgid "Ready"
+msgstr ""
+
+#: ../resources/dialog.glade:33
+msgid "Render PDF using Cairographics"
+msgstr ""
+
+#: ../resources/dialog.glade:48
+msgid "Render SVG using Cairographics (too buggy at the moment)"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:293
+msgid "Renderer Settings"
+msgstr ""
+
+#: ../output-renderers/gds-output-renderer.c:365
+msgid "Renderer already started asynchronously"
+msgstr ""
+
+#: ../main.c:279
+msgid "Renderer to use. Can be used multiple times."
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:467
+msgid "Rendering Cairo Output..."
+msgstr ""
+
+#: ../gds-render-gui.c:554
+msgid "Rendering cell..."
+msgstr ""
+
+#: ../output-renderers/external-renderer.c:98
+#, c-format
+msgid ""
+"Rendering function not found in library:\n"
+"%s\n"
+msgstr ""
+
+#: ../resources/main.glade:86
+msgid "Save Mapping"
+msgstr ""
+
+#: ../resources/main.glade:23
+msgid "Save the current layer configuration to CSV"
+msgstr ""
+
+#: ../main.c:312
+#, c-format
+msgid "Scale < 1 not allowed. Setting to 1\n"
+msgstr ""
+
+#: ../resources/layer-widget.glade:51
+msgid "Select Layer Color and Opacity"
+msgstr ""
+
+#: ../resources/main.glade:240
+msgid "Select all layers for export"
+msgstr ""
+
+#: ../output-renderers/cairo-renderer.c:331
+#, c-format
+msgid "Size of layer %d%s%s%s: <%lf x %lf> @ (%lf | %lf)\n"
+msgstr ""
+
+#: ../resources/main.glade:195
+msgid "Sort layers ascending"
+msgstr ""
+
+#: ../resources/main.glade:210
+msgid "Sort layers descending"
+msgstr ""
+
+#: ../main.c:212
+#, c-format
+msgid ""
+"There is already an open instance. Will open second window in that "
+"instance.\n"
+msgstr ""
+
+#: ../main.c:244
+#, c-format
+msgid ""
+"This is gds-render, version: %s\n"
+"\n"
+"For a list of supported commands execute with --help option.\n"
+msgstr ""
+
+#: ../gds-utils/gds-tree-checker.c:188
+#, c-format
+msgid "Visited cell list should be empty. This is a bug. Please report this.\n"
+msgstr ""
+
+#: ../widgets/conv-settings-dialog.c:244
+#, c-format
+msgid "Width: %.3lf %sm"
+msgstr ""
+
+#: ../widgets/activity-bar.c:110
+msgid "Working..."
+msgstr ""
+
+#: ../main.c:96
+msgid ""
+"gds-render is a free tool for rendering GDS2 layout files into vector "
+"graphics."
+msgstr ""
+
+#: ../resources/layer-widget.glade:37
+msgid "label"
+msgstr ""
