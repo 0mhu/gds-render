@@ -151,8 +151,6 @@ void bounding_box_update_with_path(GList *vertices, double thickness,
 	GList *vertex_iterator;
 	struct vector_2d pt;
 
-	/* printf("Warning! Function %s not yet implemented correctly!\n", __func__); */
-
 	if (!vertices || !box)
 		return;
 

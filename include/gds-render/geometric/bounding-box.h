@@ -113,6 +113,9 @@ void bounding_box_apply_transform(double scale, double rotation_deg, bool flip_a
  * @param thickness Thisckness of the path
  * @param conv_func Conversion function for vertices to vector_2d structs
  * @param box Bounding box to write results in.
+ * @warning This function is not yet implemented correctly. Miter points of paths are not taken into account.
+ *		If a path is the outmost object of your cell _and_ it is not parallel to one of the coordinate axes,
+ *		the calculated bounding box size might be off. In other cases it should be reasonable close to the real bounding box.
  */
 void bounding_box_update_with_path(GList *vertices, double thickness, conv_generic_to_vector_2d_t conv_func, union bounding_box *box);
 
