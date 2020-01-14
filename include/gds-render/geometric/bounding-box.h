@@ -81,14 +81,14 @@ typedef void (*conv_generic_to_vector_2d_t)(void *, struct vector_2d *);
  * @param conv_func Conversion function to convert vertices to vector_2d structs.
  * @param box Box to write to. This box is not updated! All previous data is discarded
  */
-void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box);
+void bounding_box_calculate_from_polygon(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box);
 
 /**
  * @brief Update an exisitng bounding box with another one.
  * @param destination Target box to update
  * @param update Box to update the target with
  */
-void bounding_box_update_box(union bounding_box *destination, union bounding_box *update);
+void bounding_box_update_with_box(union bounding_box *destination, union bounding_box *update);
 
 /**
  * @brief Prepare an empty bounding box.
@@ -105,7 +105,7 @@ void bounding_box_prepare_empty(union bounding_box *box);
  * @param conv_func Conversion function to convert \p pt to a vector_2d. May be NULL
  * @param pt Point to update bounding box with
  */
-void bounding_box_update_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt);
+void bounding_box_update_with_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt);
 
 /**
  * @brief Return all four corner points of a bounding box

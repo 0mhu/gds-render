@@ -37,7 +37,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b)) /**< @brief Return bigger number */
 #define ABS_DBL(a) ((a) < 0 ? -(a) : (a))
 
-void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
+void bounding_box_calculate_from_polygon(GList *vertices, conv_generic_to_vector_2d_t conv_func, union bounding_box *box)
 {
 	double xmin = DBL_MAX, xmax = -DBL_MAX, ymin = DBL_MAX, ymax = -DBL_MAX;
 	struct vector_2d temp_vec;
@@ -68,7 +68,7 @@ void bounding_box_calculate_polygon(GList *vertices, conv_generic_to_vector_2d_t
 	box->vectors.upper_right.y = ymax;
 }
 
-void bounding_box_update_box(union bounding_box *destination, union bounding_box *update)
+void bounding_box_update_with_box(union bounding_box *destination, union bounding_box *update)
 {
 	if (!destination || !update)
 		return;
@@ -171,7 +171,7 @@ void bounding_box_update_with_path(GList *vertices, double thickness,
 	}
 }
 
-void bounding_box_update_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt)
+void bounding_box_update_with_point(union bounding_box *destination, conv_generic_to_vector_2d_t conv_func, void *pt)
 {
 	struct vector_2d point;
 
@@ -222,7 +222,7 @@ void bounding_box_apply_transform(double scale, double rotation_deg, bool flip_a
 		vector_2d_rotate(&input_points[i], rotation_deg * M_PI / 180.0);
 		vector_2d_scale(&input_points[i], scale);
 
-		bounding_box_update_point(box, NULL, &input_points[i]);
+		bounding_box_update_with_point(box, NULL, &input_points[i]);
 	}
 }
 

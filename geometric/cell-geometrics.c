@@ -53,7 +53,7 @@ static void update_box_with_gfx(union bounding_box *box, struct gds_graphics *gf
 	case GRAPHIC_BOX:
 		/* Expected fallthrough */
 	case GRAPHIC_POLYGON:
-		bounding_box_calculate_polygon(gfx->vertices,
+		bounding_box_calculate_from_polygon(gfx->vertices,
 							(conv_generic_to_vector_2d_t)&convert_gds_point_to_2d_vector,
 							&current_box);
 		break;
@@ -74,7 +74,7 @@ static void update_box_with_gfx(union bounding_box *box, struct gds_graphics *gf
 	}
 
 	/* Update box with results */
-	bounding_box_update_box(box, &current_box);
+	bounding_box_update_with_box(box, &current_box);
 }
 
 void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell)
@@ -113,7 +113,7 @@ void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell)
 		temp_box.vectors.upper_right.y += sub_cell->origin.y;
 
 		/* update the parent's box */
-		bounding_box_update_box(box, &temp_box);
+		bounding_box_update_with_box(box, &temp_box);
 	}
 }
 
