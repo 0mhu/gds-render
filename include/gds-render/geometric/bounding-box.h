@@ -102,7 +102,7 @@ void bounding_box_get_all_points(struct vector_2d *points, union bounding_box *b
  * @param rotation_deg Rotation of bounding box around the origin in degrees (counterclockwise)
  * @param flip_at_x Flip the boundig box on the x axis before rotating.
  * @param box Bounding box the operations should be applied to.
- * @note Keep in mind, that this bounding boxy is actually the bounding box of the rotated boundig box and not the object itself.
+ * @note Keep in mind, that this bounding box is actually the bounding box of the rotated boundig box and not the object itself.
  *       It might be too big.
  */
 void bounding_box_apply_transform(double scale, double rotation_deg, bool flip_at_x, union bounding_box *box);
