@@ -70,6 +70,9 @@ union bounding_box {
 	struct vector_2d vector_array[2];
 };
 
+/*
+ * @brief Pointer to a function that takes any pointer and converts this object to a vector_2d struct
+ */
 typedef void (*conv_generic_to_vector_2d_t)(void *, struct vector_2d *);
 
 /**
