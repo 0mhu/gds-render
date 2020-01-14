@@ -35,12 +35,38 @@
 #include <gds-render/geometric/vector-operations.h>
 #include <stdbool.h>
 
+/**
+ * @brief Union describing a bounding box
+ *
+ * Two ways of accessing a bounding box are possible.
+ *
+ * Either, use the "named" vectors struct to specifically access the points
+ * @code
+ * 	lower_left = box.vectors.lower_left;
+ * 	upper right = box.vectors.upper_right;
+ * @endcode
+ *
+ * or use the iterable vector array:
+ * @code
+ * 	for (i = 0; i < 2; i++)
+ * 		box.vector_array[i] = points[i];
+ * @endcode
+ */
 union bounding_box {
-	/** Coordinate System is (y up | x right) */
+	/**
+	 * @brief Location vectors of upper right and lower left bounding box points
+	 * @note Coordinate System is (y up | x right)
+	 */
 	struct _vectors {
+		/** @brief Lower left point of the bounding box */
 		struct vector_2d lower_left;
+		/** @brief Upper right point of the bounding box */
 		struct vector_2d upper_right;
 	} vectors;
+	/**
+	 * @brief Array of vectors representing a bounding box
+	 * @note This is more convenient for iterating
+	 */
 	struct vector_2d vector_array[2];
 };
 
