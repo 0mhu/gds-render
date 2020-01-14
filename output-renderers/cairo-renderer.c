@@ -275,11 +275,19 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 		goto ret_parent;
 	}
 
-	/* Close stdin and (stdout and stderr may live on) */
+	/* We are now in a separate process just for rendering the output image.
+     * You may print a log message to the activity bar of the gui by writing a line
+     * teminated with '\n' to comm_pipe[1]. This will be handled by the parent process.
+     * Directly calling the update function 
+     *     gds_output_renderer_update_async_progress()
+     * does not have any effect because this is a separate process.
+     */
+  
+	/*
+     * Close stdin and (stdout and stderr may live on)
+     */
 	close(0);
-	//close(1);
 	close(comm_pipe[0]);
-
 
 	layers = (struct cairo_layer *)calloc(MAX_LAYERS, sizeof(struct cairo_layer));
 
