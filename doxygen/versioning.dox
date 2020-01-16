@@ -5,7 +5,7 @@
 The version number of this application consists of a given version in the format of 'v1.0'.
 Where the first number indicates a major release and the second number indicates minor changes.
 
-Versions, including release candidates and path-levels, are tagged in git.
+Versions, including release candidates and patch-levels, are tagged in git.
 
 @subsection rc Release Candidates
 Release candidates are software versions that seem stable and functional to become a new version but testing is not fully finished. These versions are marked with an '-rcX', where X is the number of the release candidate.
