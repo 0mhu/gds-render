@@ -88,11 +88,13 @@ static void lib_cell_renderer_set_property(GObject      *object,
 		g_value_init(&val, G_TYPE_STRING);
 		g_value_set_string(&val, ((struct gds_library *)g_value_get_pointer(value))->name);
 		g_object_set_property(object, "text", &val);
+		g_value_unset(&val);
 		break;
 	case PROP_CELL:
 		g_value_init(&val, G_TYPE_STRING);
 		g_value_set_string(&val, ((struct gds_cell *)g_value_get_pointer(value))->name);
 		g_object_set_property(object, "text", &val);
+		g_value_unset(&val);
 		break;
 	case PROP_ERROR_LEVEL:
 		/* Set cell color according to error level */
@@ -100,6 +102,7 @@ static void lib_cell_renderer_set_property(GObject      *object,
 		convert_error_level_to_color(&color, g_value_get_uint(value));
 		g_value_set_boxed(&val, &color);
 		g_object_set_property(object, "foreground-rgba", &val);
+		g_value_unset(&val);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, param_id, pspec);
