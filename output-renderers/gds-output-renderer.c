@@ -100,6 +100,11 @@ static void gds_output_renderer_dispose(GObject *self_obj)
 	if (priv->output_file)
 		g_free(priv->output_file);
 
+	if (priv->idle_function_parameters.status_message) {
+		g_free(priv->idle_function_parameters.status_message);
+		priv->idle_function_parameters.status_message = NULL;
+	}
+
 	g_clear_object(&priv->layer_settings);
 
 	/* Chain up to parent class */
