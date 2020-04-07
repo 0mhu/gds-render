@@ -41,7 +41,7 @@ struct layer_info
 {
 	int layer; /**< @brief Layer number */
 	char *name; /**< @brief Layer name. */
-	int stacked_position; ///< @brief Position of layer in output @warning This parameter is not used by any renderer so far @note Lower is bottom, higher is top
+	int stacked_position; /**< @brief Position of layer in output @warning This parameter is not used by any renderer so far @note Lower is bottom, higher is top */
 	GdkRGBA color; /**< @brief RGBA color used to render this layer */
 	int render; /**< @brief true: Render to output */
 };
