@@ -1,7 +1,7 @@
 # Maintainer: Mario Hüttel <mario (dot) huettel (!) gmx (dot) net>
 
 pkgname=gds-render
-pkgver=20191020.403.448de30
+pkgver=v1.2_10_g00d02b8
 pkgrel=1
 pkgdesc="Conversion tool for converting GDS layout files into TikZ Code and PDF"
 arch=('i686' 'x86_64')
@@ -15,8 +15,8 @@ sha1sums=('SKIP')
 
 pkgver () {
 	_date=`date +"%Y%m%d"`
-	cd "${srcdir}/${pkgname}-git"
-	echo "$_date.$(git rev-list --count master).$(git rev-parse --short master)"
+	cd "${srcdir}/${pkgname}-git/version"
+	echo "$(echo "$(sh ./generate-version-string.sh)" | sed 's/-/_/g')"
 }
 
 build () {
