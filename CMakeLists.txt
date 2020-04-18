@@ -33,8 +33,6 @@ pkg_check_modules(CAIRO REQUIRED cairo)
 include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(plugins)
 
-add_compile_options(-Wall -Wextra -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
-
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
         message("${Yellow}Debug mode for translations used!${ColorReset}")
 	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"${CMAKE_CURRENT_BINARY_DIR}/translations/output\")
@@ -44,13 +42,7 @@ else(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
 ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
-add_subdirectory(resources)
-add_subdirectory(doxygen)
-add_subdirectory(translations)
-add_subdirectory(version)
 
-link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
-add_definitions(${GLIB2_CFLAGS_OTHER})
 
 aux_source_directory("widgets" LAYER_SOURCES)
 aux_source_directory("cell-selector" CELL_SELECTOR_SOURCES)
@@ -74,15 +66,29 @@ set(SOURCE_GENERATED
   ${CMAKE_CURRENT_BINARY_DIR}/resources/resources.c
 )
 
+link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 SET_SOURCE_FILES_PROPERTIES(${SOURCE_GENERATED} PROPERTIES GENERATED 1)
+
+add_subdirectory(test)
+
+add_compile_options(-Wall -Wextra -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
+
+add_subdirectory(resources)
+add_subdirectory(doxygen)
+add_subdirectory(translations)
+add_subdirectory(version)
+
+link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
+add_definitions(${GLIB2_CFLAGS_OTHER})
 
 add_executable(${PROJECT_NAME} ${SOURCE} ${SOURCE_GENERATED})
 add_dependencies(${PROJECT_NAME} glib-resources)
 add_dependencies(${PROJECT_NAME} version)
 add_dependencies(${PROJECT_NAME} translations)
 
-target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
 install (TARGETS ${PROJECT_NAME} 
 	RUNTIME	
 		DESTINATION bin
 	)
+target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
+
