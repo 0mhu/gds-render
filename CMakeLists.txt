@@ -33,7 +33,6 @@ pkg_check_modules(CAIRO REQUIRED cairo)
 include_directories(${GLIB_INCLUDE_DIRS} ${GTK3_INCLUDE_DIRS} ${CAIRO_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(plugins)
 
-add_compile_options(-Wall -Wextra -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
 
 IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
         message("${Yellow}Debug mode for translations used!${ColorReset}")
@@ -43,6 +42,10 @@ else(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message("Global locale directory used. Make sure files in /usr/share/locale are available")
 	add_definitions(-DGETTEXT_PACKAGE=\"gds-render\" -DLOCALEDATADIR=\"/usr/share\")
 ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+add_subdirectory(test)
+
+add_compile_options(-Wall -Wextra -Wold-style-declaration -Wuninitialized -Wmaybe-uninitialized -Wunused-parameter)
 
 add_subdirectory(resources)
 add_subdirectory(doxygen)
