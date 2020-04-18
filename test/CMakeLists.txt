@@ -25,6 +25,17 @@ endif()
 cmake_minimum_required(VERSION 2.8)
 find_package(PkgConfig REQUIRED)
 
-add_executable(${PROJECT_NAME} EXCLUDE_FROM_ALL "test-main.cpp")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/catch-framework")
+
+aux_source_directory("geometric" GEOMETRIC_TEST_SOURCES)
+set(TEST_SOURCES
+	${GEOMETRIC_TEST_SOURCES}
+)
+
+set(DUT_SOURCES
+	"../geometric/vector-operations.c"
+)
+
+add_executable(${PROJECT_NAME} EXCLUDE_FROM_ALL "test-main.cpp" ${TEST_SOURCES} ${DUT_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
 
