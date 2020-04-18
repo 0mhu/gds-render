@@ -1,6 +1,6 @@
 project(gds-render-test)
 
-add_custom_target(test "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}" DEPENDS ${PROJECT_NAME})
+add_custom_target(test "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}" "-s" DEPENDS ${PROJECT_NAME})
 
 if(NOT WIN32)
   string(ASCII 27 Esc)
