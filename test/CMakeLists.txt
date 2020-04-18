@@ -26,3 +26,5 @@ cmake_minimum_required(VERSION 2.8)
 find_package(PkgConfig REQUIRED)
 
 add_executable(${PROJECT_NAME} EXCLUDE_FROM_ALL "test-main.cpp")
+target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
+
