@@ -80,6 +80,7 @@ enum gds_record {
 	STRANS = 0x1A01,
 	BOX = 0x2D00,
 	LAYER = 0x0D02,
+	DATATYPE = 0x0E02,
 	WIDTH = 0x0F03,
 	PATHTYPE = 0x2102,
 	COLROW = 0x1302,
@@ -867,6 +868,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		case LIBNAME:
 		case SNAME:
 		case LAYER:
+		case DATATYPE:
 		case STRNAME:
 			break;
 		default:
@@ -1002,6 +1004,16 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				GDS_WARN("Layer negative!\n");
 			}
 			GDS_INF("\t\tAdded layer %d\n", (int)current_graphics->layer);
+			break;
+		case DATATYPE:
+			if (!current_graphics) {
+				GDS_WARN("Datatype has to be defined inside graphics object. Probably unknown object. Implement it yourself!");
+				break;
+			}
+			current_graphics->datatype = gds_convert_signed_int16(workbuff);
+			if (current_graphics->datatype < 0)
+				GDS_WARN("Datatype negative!");
+			GDS_INF("\t\tAdded datatype %d\n", (int)current_graphics->datatype);
 			break;
 		case MAG:
 			if (rec_data_length != 8) {
