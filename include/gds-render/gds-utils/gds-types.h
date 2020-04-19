@@ -101,7 +101,7 @@ struct gds_graphics {
 	enum path_type path_render_type; /**< @brief Line cap */
 	int width_absolute; /**< @brief Width. Not used for objects other than paths */
 	int16_t layer; /**< @brief Layer the graphic object is on */
-	uint16_t datatype;
+	int16_t datatype; /**< @brief Data type of graphic object */
 };
 
 /**
