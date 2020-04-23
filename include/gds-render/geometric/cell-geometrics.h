@@ -35,10 +35,16 @@
 #include <gds-render/gds-utils/gds-types.h>
 
 /**
- * @brief calculate_cell_bounding_box Calculate bounding box of gds cell
- * @param box Resulting boundig box. Will be uüdated and not overwritten
+ * @brief Calculate bounding box of a gds cell.
+ *
+ * This function updates a given bounding box with the dimensions of a
+ * gds_cell. Please note that the handling of path miter points is not complete yet.
+ * If a path object is the putmost object of your cell at any edge,
+ * the resulting bounding box might be the wrong size.
+ *
+ * @param box Resulting boundig box. Will be updated and not overwritten
  * @param cell Toplevel cell
- * @warning Path handling not yet implemented correctly.
+ * @warning Handling of Path graphic objects not yet implemented correctly.
  */
 void calculate_cell_bounding_box(union bounding_box *box, struct gds_cell *cell);
 
