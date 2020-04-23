@@ -39,8 +39,9 @@
  *
  * This function updates a given bounding box with the dimensions of a
  * gds_cell. Please note that the handling of path miter points is not complete yet.
- * If a path object is the putmost object of your cell at any edge,
- * the resulting bounding box might be the wrong size.
+ * If a path object is the outmost object of your cell at any edge,
+ * the resulting bounding box might be the wrong size. The devistion from the real size
+ * is guaranteed to be within the width of the path object.
  *
  * @param box Resulting boundig box. Will be updated and not overwritten
  * @param cell Toplevel cell
