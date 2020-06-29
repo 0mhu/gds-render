@@ -65,7 +65,7 @@ void vector_2d_rotate(struct vector_2d *vec, double angle)
 	sin_val = sin(angle);
 	cos_val = cos(angle);
 
-	vector_2d_copy(&temp, vec);
+	(void)vector_2d_copy(&temp, vec);
 
 	/* Apply rotation matrix */
 	vec->x = (cos_val * temp.x) - (sin_val * temp.y);
