@@ -238,6 +238,7 @@ static void color_palette_dispose(GObject *gobj)
 	if (palette->color_array) {
 		palette->color_array_length = 0;
 		free(palette->color_array);
+		palette->color_array = NULL;
 	}
 
 	/* Chain up to parent class */
