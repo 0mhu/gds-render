@@ -187,7 +187,8 @@ static gboolean cell_store_filter_visible_func(GtkTreeModel *model, GtkTreeIter 
 
 	gtk_tree_model_get(model, iter, CELL_SEL_CELL, &cell, CELL_SEL_LIBRARY, &lib, -1);
 
-	if (lib) {
+    /* Show always, if this is a pure lib entry */
+    if (lib && !cell) {
 		result = TRUE;
 		goto exit_filter;
 	}
