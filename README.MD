@@ -1,5 +1,7 @@
 # GDS-Render Readme
 
+[![CMake](https://github.com/0mhu/gds-render/actions/workflows/cmake.yml/badge.svg?branch=master)](https://github.com/0mhu/gds-render/actions/workflows/cmake.yml)
+
 This software is a rendering programm for GDS2 layout files.
 The GDS2 format is mainly used in integrated circuit development.
 This program allows the conversion of a GDS file to a vector graphics file.
