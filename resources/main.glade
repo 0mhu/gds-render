@@ -1,145 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkImage" id="auto-name-img">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-edit</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">format-text-rich-symbolic</property>
   </object>
   <object class="GtkImage" id="color-img">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-select-color</property>
-  </object>
-  <object class="GtkImage" id="load-mapping-img">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-open</property>
-  </object>
-  <object class="GtkImage" id="save-mapping-img">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="tooltip_text" translatable="yes">Save the current layer configuration to CSV</property>
-    <property name="stock">gtk-save-as</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">color-select-symbolic</property>
   </object>
   <object class="GtkImage" id="select-all-img">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-apply</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">emblem-ok-symbolic</property>
   </object>
   <object class="GtkImage" id="sort-down-img">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-sort-ascending</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">view-sort-descending-symbolic</property>
   </object>
   <object class="GtkImage" id="sort-up-img">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-sort-descending</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">view-sort-ascending-symbolic</property>
   </object>
   <object class="GtkWindow" id="main-window">
-    <property name="height_request">250</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">gds-render</property>
-    <child type="titlebar">
-      <object class="GtkHeaderBar" id="header-bar">
-        <property name="name">header</property>
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="title" translatable="yes">GDS-Render</property>
-        <property name="show_close_button">True</property>
-        <child>
-          <object class="GtkButton" id="button-load-gds">
-            <property name="label">gtk-open</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Open GDS2 Database</property>
-            <property name="use_stock">True</property>
-            <property name="always_show_image">True</property>
-            <style>
-              <class name="suggested-action"/>
-            </style>
-          </object>
-        </child>
-        <child>
-          <object class="GtkButton" id="button-load-mapping">
-            <property name="label" translatable="yes">Load Mapping</property>
-            <property name="visible">True</property>
-            <property name="sensitive">False</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Load the current layer configuration from CSV</property>
-            <property name="image">load-mapping-img</property>
-            <property name="always_show_image">True</property>
-            <style>
-              <class name="suggested-action"/>
-            </style>
-          </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="button-save-mapping">
-            <property name="label" translatable="yes">Save Mapping</property>
-            <property name="visible">True</property>
-            <property name="sensitive">False</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="image">save-mapping-img</property>
-            <property name="always_show_image">True</property>
-            <style>
-              <class name="suggested-action"/>
-            </style>
-          </object>
-          <packing>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="convert-button">
-            <property name="label">gtk-convert</property>
-            <property name="name">button-convert</property>
-            <property name="visible">True</property>
-            <property name="sensitive">False</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Convert selected cell</property>
-            <property name="use_stock">True</property>
-            <property name="always_show_image">True</property>
-            <style>
-              <class name="suggested-action"/>
-            </style>
-          </object>
-          <packing>
-            <property name="position">3</property>
-          </packing>
-        </child>
-      </object>
-    </child>
+    <property name="height-request">250</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">gds-render</property>
     <child>
       <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkSearchEntry" id="cell-search">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="primary_icon_name">edit-find-symbolic</property>
-                    <property name="primary_icon_activatable">False</property>
-                    <property name="primary_icon_sensitive">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="primary-icon-name">edit-find-symbolic</property>
+                    <property name="primary-icon-activatable">False</property>
+                    <property name="primary-icon-sensitive">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -150,15 +62,15 @@
                 <child>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="hscrollbar_policy">never</property>
-                    <property name="shadow_type">in</property>
+                    <property name="can-focus">True</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="shadow-type">in</property>
                     <child>
                       <object class="GtkTreeView" id="cell-tree">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="enable_search">False</property>
-                        <property name="enable_grid_lines">both</property>
+                        <property name="can-focus">True</property>
+                        <property name="enable-search">False</property>
+                        <property name="enable-grid-lines">both</property>
                         <child internal-child="selection">
                           <object class="GtkTreeSelection"/>
                         </child>
@@ -181,20 +93,20 @@
             <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="can-focus">False</property>
                     <child>
                       <object class="GtkButton" id="button-up-sort">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Sort layers ascending</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Sort layers ascending</property>
                         <property name="image">sort-up-img</property>
-                        <property name="always_show_image">True</property>
+                        <property name="always-show-image">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -205,11 +117,11 @@
                     <child>
                       <object class="GtkButton" id="button-down-sort">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Sort layers descending</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Sort layers descending</property>
                         <property name="image">sort-down-img</property>
-                        <property name="always_show_image">True</property>
+                        <property name="always-show-image">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -220,11 +132,11 @@
                     <child>
                       <object class="GtkButton" id="auto-color-button">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Automatically color layers</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Automatically color layers</property>
                         <property name="image">color-img</property>
-                        <property name="always_show_image">True</property>
+                        <property name="always-show-image">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -235,11 +147,11 @@
                     <child>
                       <object class="GtkButton" id="button-select-all">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Select all layers for export</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Select all layers for export</property>
                         <property name="image">select-all-img</property>
-                        <property name="always_show_image">True</property>
+                        <property name="always-show-image">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -250,11 +162,11 @@
                     <child>
                       <object class="GtkButton" id="button-auto-name">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="tooltip_text" translatable="yes">Automatically name layers</property>
+                        <property name="can-focus">True</property>
+                        <property name="receives-default">True</property>
+                        <property name="tooltip-text" translatable="yes">Automatically name layers</property>
                         <property name="image">auto-name-img</property>
-                        <property name="always_show_image">True</property>
+                        <property name="always-show-image">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -272,19 +184,19 @@
                 <child>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="margin_top">1</property>
-                    <property name="hscrollbar_policy">never</property>
-                    <property name="shadow_type">in</property>
+                    <property name="can-focus">True</property>
+                    <property name="margin-top">1</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="shadow-type">in</property>
                     <child>
                       <object class="GtkViewport">
                         <property name="visible">True</property>
-                        <property name="can_focus">False</property>
+                        <property name="can-focus">False</property>
                         <child>
                           <object class="GtkListBox" id="layer-list">
                             <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="selection_mode">none</property>
+                            <property name="can-focus">False</property>
+                            <property name="selection-mode">none</property>
                           </object>
                         </child>
                       </object>
@@ -313,7 +225,7 @@
         <child>
           <object class="GtkBox" id="activity-bar">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <placeholder/>
@@ -323,6 +235,76 @@
             <property name="expand">False</property>
             <property name="fill">False</property>
             <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="header-bar">
+        <property name="name">header</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">GDS-Render</property>
+        <property name="show-close-button">True</property>
+        <child>
+          <object class="GtkButton" id="button-load-gds">
+            <property name="label">Open GDS</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Open GDS2 Database</property>
+            <style>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="button-load-mapping">
+            <property name="label" translatable="yes">Load Mapping</property>
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Load the current layer configuration from CSV</property>
+            <style>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="button-save-mapping">
+            <property name="label" translatable="yes">Save Mapping</property>
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <style>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+          <packing>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="convert-button">
+            <property name="label">Convert Cell</property>
+            <property name="name">button-convert</property>
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Convert selected cell</property>
+            <property name="always-show-image">True</property>
+            <style>
+              <class name="suggested-action"/>
+            </style>
+          </object>
+          <packing>
+            <property name="position">3</property>
           </packing>
         </child>
       </object>
