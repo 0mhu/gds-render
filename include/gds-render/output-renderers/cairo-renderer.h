@@ -38,7 +38,7 @@ G_DECLARE_FINAL_TYPE(CairoRenderer, cairo_renderer, GDS_RENDER, CAIRO_RENDERER, 
 
 #define GDS_RENDER_TYPE_CAIRO_RENDERER (cairo_renderer_get_type())
 
-#define MAX_LAYERS (300) /**< \brief Maximum layer count the output renderer can process. Typically GDS only specifies up to 255 layers.*/
+#define MAX_LAYERS (5000) /**< \brief Maximum layer count the output renderer can process. Typically GDS only specifies up to 255 layers.*/
 
 /**
  * @brief Create new CairoRenderer for SVG output

@@ -691,19 +691,13 @@ static void on_select_all_layers_clicked(GtkWidget *button, gpointer user_data)
 	layer_selector_select_all_layers(gui->layer_selector, TRUE);
 }
 
-static void auto_naming_clicked(GtkWidget *button, gpointer user_data)
+static gboolean auto_naming_ask_for_override(GdsRenderGui *gui)
 {
-	GdsRenderGui *gui;
 	GtkDialog *dialog;
-	gboolean overwrite;
-	int dialog_result;
-	(void)button;
+	gint dialog_result;
+	gboolean overwrite = FALSE;
 
-	gui = RENDERER_GUI(user_data);
-
-	/* Don't do anything if the selector is empty. */
-	if (!layer_selector_contains_elements(gui->layer_selector))
-		return;
+	g_return_val_if_fail(RENDERER_IS_GUI(gui), FALSE);
 
 	/* Ask for overwrite */
 	dialog = GTK_DIALOG(gtk_message_dialog_new(gui->main_window, GTK_DIALOG_USE_HEADER_BAR, GTK_MESSAGE_QUESTION,
@@ -719,6 +713,25 @@ static void auto_naming_clicked(GtkWidget *button, gpointer user_data)
 		break;
 	}
 	gtk_widget_destroy(GTK_WIDGET(dialog));
+
+	return overwrite;
+}
+
+static void auto_naming_clicked(GtkWidget *button, gpointer user_data)
+{
+	GdsRenderGui *gui;
+	gboolean overwrite = FALSE;
+	(void)button;
+
+	gui = RENDERER_GUI(user_data);
+
+	/* Don't do anything if the selector is empty. */
+	if (!layer_selector_contains_elements(gui->layer_selector))
+		return;
+
+	/* Ask, if names shall be overwritten, if they are not empty */
+	if (layer_selector_num_of_named_elements(gui->layer_selector) > 0)
+		overwrite = auto_naming_ask_for_override(gui);
 
 	layer_selector_auto_name_layers(gui->layer_selector, overwrite);
 }

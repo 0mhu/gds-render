@@ -822,12 +822,10 @@ void layer_selector_auto_color_layers(LayerSelector *layer_selector, ColorPalett
 	unsigned int color_count;
 	GdkRGBA color;
 
-	if (GDS_RENDER_IS_COLOR_PALETTE(palette) == FALSE || LAYER_IS_SELECTOR(layer_selector) == FALSE)
-		return;
-	if (global_alpha <= 0)
-		return;
-	if (GTK_IS_LIST_BOX(layer_selector->list_box) == FALSE)
-		return;
+	g_return_if_fail(GDS_RENDER_IS_COLOR_PALETTE(palette));
+	g_return_if_fail(LAYER_IS_SELECTOR(layer_selector));
+	g_return_if_fail(global_alpha > 0);
+	g_return_if_fail(GTK_IS_LIST_BOX(layer_selector->list_box));
 
 	le_list = gtk_container_get_children(GTK_CONTAINER(layer_selector->list_box));
 
@@ -896,6 +894,33 @@ gboolean layer_selector_contains_elements(LayerSelector *layer_selector)
 
 	/* Return TRUE if there is an element in the list, else return FALSE */
 	return (layer_element_list ? TRUE : FALSE);
+}
+
+size_t layer_selector_num_of_named_elements(LayerSelector *layer_selector)
+{
+	GList *le_list;
+	GList *le_list_ptr;
+	LayerElement *le;
+	const char *layer_name;
+	size_t count = 0U;
+
+	g_return_val_if_fail(LAYER_IS_SELECTOR(layer_selector), 0U);
+
+	le_list = gtk_container_get_children(GTK_CONTAINER(layer_selector->list_box));
+
+	for (le_list_ptr = le_list; le_list_ptr != NULL; le_list_ptr = g_list_next(le_list_ptr)) {
+		le = LAYER_ELEMENT(le_list_ptr->data);
+		if (!le)
+			continue;
+		layer_name = layer_element_get_name(le);
+
+		if (layer_name && *layer_name) {
+			/* Layer name is not empty. Count it */
+			count++;
+		}
+	}
+
+	return count;
 }
 
 /** @} */
