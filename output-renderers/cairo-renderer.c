@@ -371,8 +371,6 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 	for (info_list = layer_infos; info_list != NULL; info_list = g_list_next(info_list)) {
 		linfo = (struct layer_info *)info_list->data;
 
-		dprintf(comm_pipe[1], _("Exporting layer %d to file\n"), linfo->layer);
-
 		if (linfo->layer >= MAX_LAYERS) {
 			printf(_("Layer outside of spec.\n"));
 			continue;
@@ -380,6 +378,8 @@ static int cairo_renderer_render_cell_to_vector_file(GdsOutputRenderer *renderer
 
 		if (!linfo->render)
 			continue;
+
+		dprintf(comm_pipe[1], _("Exporting layer %d to file\n"), linfo->layer);
 
 		if (pdf_file && pdf_cr) {
 			cairo_set_source_surface(pdf_cr, layers[linfo->layer].rec, -xmin, -ymin);
