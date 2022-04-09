@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.22.1 -->
+<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkAdjustment" id="adjustment1">
     <property name="upper">1</property>
     <property name="value">1</property>
-    <property name="step_increment">0.01</property>
-    <property name="page_increment">0.10000000000000001</property>
+    <property name="step-increment">0.01</property>
+    <property name="page-increment">0.10</property>
   </object>
   <object class="GtkBox" id="box">
     <property name="visible">True</property>
-    <property name="can_focus">False</property>
+    <property name="can-focus">False</property>
     <property name="spacing">3</property>
     <child>
       <object class="GtkEventBox" id="event-box">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <child>
           <object class="GtkImage">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="stock">gtk-justify-fill</property>
+            <property name="can-focus">False</property>
+            <property name="icon-name">open-menu-symbolic</property>
           </object>
         </child>
       </object>
@@ -33,7 +33,7 @@
     <child>
       <object class="GtkLabel" id="layer">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="can-focus">False</property>
         <property name="label" translatable="yes">label</property>
       </object>
       <packing>
@@ -45,9 +45,9 @@
     <child>
       <object class="GtkColorButton" id="color">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="use_alpha">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">True</property>
+        <property name="use-alpha">True</property>
         <property name="title" translatable="yes">Select Layer Color and Opacity</property>
         <property name="rgba">rgb(0,0,0)</property>
       </object>
@@ -61,9 +61,9 @@
       <object class="GtkCheckButton" id="export">
         <property name="label" translatable="yes">Export Layer</property>
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">False</property>
-        <property name="draw_indicator">True</property>
+        <property name="can-focus">True</property>
+        <property name="receives-default">False</property>
+        <property name="draw-indicator">True</property>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -74,7 +74,7 @@
     <child>
       <object class="GtkEntry" id="entry">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
+        <property name="can-focus">True</property>
       </object>
       <packing>
         <property name="expand">True</property>
