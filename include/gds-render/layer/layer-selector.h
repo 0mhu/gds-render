@@ -130,6 +130,13 @@ void layer_selector_auto_name_layers(LayerSelector *layer_selector, gboolean ove
  */
 gboolean layer_selector_contains_elements(LayerSelector *layer_selector);
 
+/**
+ * @brief Get number of layer elements that are named
+ * @param[in] layer_selector Layer selector
+ * @return Number of layers with a name != NULL or != ""
+ */
+size_t layer_selector_num_of_named_elements(LayerSelector *layer_selector);
+
 G_END_DECLS
 
 #endif /* __LAYER_SELECTOR_H__ */
