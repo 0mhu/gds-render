@@ -130,12 +130,20 @@ struct gds_cell {
 };
 
 /**
+ * @brief Options, hwo this liobrary was parsed.
+ */
+struct gds_library_parsing_opts {
+    int simplified_polygons; /**< @brief Polygons have been simplified. Coincident end point removed. */
+};
+
+/**
  * @brief GDS Toplevel library
  */
 struct gds_library {
 	char name[CELL_NAME_MAX];
 	struct gds_time_field mod_time;
 	struct gds_time_field access_time;
+    struct gds_library_parsing_opts parsing_opts;
 	double unit_in_meters;  /**< Length of a database unit in meters */
 	GList *cells; /**< List of #gds_cell that contains all cells in this library*/
 	GList *cell_names /**< List of strings that contains all cell names */;
