@@ -278,6 +278,10 @@ static void on_load_gds(gpointer button, gpointer user)
 	char *filename;
 	unsigned int cell_error_level;
 
+	const struct gds_library_parsing_opts gds_parsing_options = {
+		.simplified_polygons = 1,
+	};
+
 	self = RENDERER_GUI(user);
 	if (!self)
 		return;
@@ -307,7 +311,7 @@ static void on_load_gds(gpointer button, gpointer user)
 	clear_lib_list(&self->gds_libraries);
 
 	/* Parse new GDSII file */
-	gds_result = parse_gds_from_file(filename, &self->gds_libraries);
+	gds_result = parse_gds_from_file(filename, &self->gds_libraries, &gds_parsing_options);
 
 	/* Delete file name afterwards */
 	g_free(filename);

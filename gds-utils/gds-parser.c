@@ -266,7 +266,8 @@ static uint16_t gds_convert_unsigned_int16(const char *data)
  * @param library_ptr Return of newly created library.
  * @return Newly created list pointer
  */
-static GList *append_library(GList *curr_list, struct gds_library **library_ptr)
+static GList *append_library(GList *curr_list, const struct gds_library_parsing_opts *opts,
+			     struct gds_library **library_ptr)
 {
 	struct gds_library *lib;
 
@@ -276,6 +277,8 @@ static GList *append_library(GList *curr_list, struct gds_library **library_ptr)
 		lib->name[0] = 0;
 		lib->unit_in_meters = GDS_DEFAULT_UNITS; // Default. Will be overwritten
 		lib->cell_names = NULL;
+		/* Copy the settings into the library */
+		memcpy(&lib->parsing_opts, opts, sizeof(struct gds_library_parsing_opts));
 	} else
 		return NULL;
 	if (library_ptr)
@@ -488,20 +491,102 @@ static void parse_reference_list(gpointer gcell_ref, gpointer glibrary)
 }
 
 /**
- * @brief Scans cell references inside cell
- This function searches all the references in \p gcell and updates the gds_cell_instance::cell_ref field in each instance
+ * @brief Simplify graphics objects
+ * @param graphics gfx struct
+ * @param user_data GDS library
+ */
+static void simplify_graphics(gpointer graphics, gpointer user_data)
+{
+	struct gds_graphics *gfx;
+	const struct gds_point *first_vertex = NULL;
+	const struct gds_point *prev_vertex = NULL;
+	const struct gds_point *current_vertex;
+	GList *vertex_iter;
+	GList *next_iter;
+	(void)user_data;
+	size_t processed_count = 0U;
+	size_t removed_count = 0U;
+
+	gfx = (struct gds_graphics *)graphics;
+	if (gfx->gfx_type == GRAPHIC_POLYGON) {
+		GDS_INF("\t\t\tPolygon found\n");
+
+		/* Loop over all vertices */
+		for (vertex_iter = gfx->vertices; vertex_iter;) {
+			current_vertex = (const struct gds_point *)vertex_iter->data;
+			next_iter = g_list_next(vertex_iter);
+			processed_count++;
+
+			if (vertex_iter == gfx->vertices) {
+				/* This is the first vertex */
+				first_vertex = current_vertex;
+				prev_vertex = NULL;
+			}
+
+			if (prev_vertex) {
+				if (current_vertex->x == prev_vertex->x && current_vertex->y == prev_vertex->y) {
+					/* Vertex is the same as the previous one */
+					GDS_INF("\t\t\t\tDuplicate vertex (%d,%d). Removing...\n",
+						current_vertex->x, current_vertex->y);
+
+					/* Delete the current one from the list */
+					gfx->vertices = g_list_remove_link(gfx->vertices, vertex_iter);
+
+					/* Free the data */
+					if (vertex_iter->data)
+						free(vertex_iter->data);
+					vertex_iter->data = NULL;
+					g_list_free_1(vertex_iter);
+					removed_count++;
+				} else if (!g_list_next(vertex_iter)) {
+					/* This is the last element in the list */
+					if (current_vertex->x == first_vertex->x &&
+							current_vertex->y == first_vertex->y) {
+						GDS_INF("\t\t\t\tLast vertex is identical to first vertex (%d,%d). Removing\n",
+							current_vertex->x, current_vertex->y);
+						gfx->vertices = g_list_remove_link(gfx->vertices, vertex_iter);
+						if (vertex_iter->data)
+							free(vertex_iter->data);
+						g_list_free_1(vertex_iter);
+						removed_count++;
+					} else {
+						GDS_WARN("First vertex is not coincident with first vertex, although the GDS file format specifies this. However, this is not a problem.");
+					}
+				}
+			}
+
+			vertex_iter = next_iter;
+			prev_vertex = current_vertex;
+		}
+		GDS_INF("\t\t\tProcessed %zu vertices. %zu removed.\n", processed_count, removed_count);
+	}
+}
+
+/**
+ * @brief Scans cell and resolves references and simplifies polygons
+ * This function searches all the references in \p gcell and updates the gds_cell_instance::cell_ref field in each instance
+ *
  * @param gcell pointer cast of #gds_cell *
  * @param library Library where the cell references are searched in
  */
-static void scan_cell_reference_dependencies(gpointer gcell, gpointer library)
+static void scan_cell_references_and_polygons(gpointer gcell, gpointer library)
 {
 	struct gds_cell *cell = (struct gds_cell *)gcell;
+	struct gds_library *my_lib = (struct gds_library *)library;
+	int simplify_polygons;
+
+	simplify_polygons = my_lib->parsing_opts.simplified_polygons;
 
 	GDS_INF("\tScanning cell: %s\n", cell->name);
-
+	GDS_INF("\t\tCell references\n");
 	/* Scan all library references */
 	g_list_foreach(cell->child_cells, parse_reference_list, library);
 
+
+	GDS_INF("\t\tSimplifying Polygons%s\n", simplify_polygons ? "" : ": skipped");
+	if (simplify_polygons) {
+		g_list_foreach(cell->graphic_objs, simplify_graphics, library);
+	}
 }
 
 /**
@@ -517,7 +602,7 @@ static void scan_library_references(gpointer library_list_item, gpointer user)
 	(void)user;
 
 	GDS_INF("Scanning Library: %s\n", lib->name);
-	g_list_foreach(lib->cells, scan_cell_reference_dependencies, lib);
+	g_list_foreach(lib->cells, scan_cell_references_and_polygons, lib);
 }
 
 /**
@@ -617,7 +702,8 @@ static void convert_aref_to_sref(struct gds_cell_array_instance *aref, struct gd
 	GDS_INF("Converted AREF to SREFs\n");
 }
 
-int parse_gds_from_file(const char *filename, GList **library_list)
+int parse_gds_from_file(const char *filename, GList **library_list,
+			const struct gds_library_parsing_opts *parsing_options)
 {
 	char *workbuff;
 	int read;
@@ -697,7 +783,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 		/* if begin: Allocate structures */
 		switch (rec_type) {
 		case BGNLIB:
-			lib_list = append_library(lib_list, &current_lib);
+			lib_list = append_library(lib_list, parsing_options, &current_lib);
 			if (lib_list == NULL) {
 				GDS_ERROR("Allocating memory failed");
 				run = -3;
@@ -771,7 +857,7 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 				run = -4;
 				break;
 			}
-			GDS_INF("\tEntering boundary/Box\n");
+			GDS_INF("\tEntering boundary of type %s\n", rec_type==BOUNDARY ? "polygon" : "box");
 			break;
 		case SREF:
 			if (current_cell == NULL) {
@@ -806,7 +892,9 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 			break;
 		case ENDEL:
 			if (current_graphics != NULL) {
-				GDS_INF("\tLeaving %s\n", (current_graphics->gfx_type == GRAPHIC_POLYGON ? "boundary" : "path"));
+				GDS_INF("\tLeaving %s\n", (current_graphics->gfx_type == GRAPHIC_POLYGON ? "boundary"
+							: (current_graphics->gfx_type == GRAPHIC_PATH ? "path"
+							: "box")));
 				current_graphics = NULL;
 			}
 			if (current_s_reference != NULL) {
@@ -825,11 +913,11 @@ int parse_gds_from_file(const char *filename, GList **library_list)
 
 			} else if (current_s_reference) {
 				if (rec_data_length != 8) {
-					GDS_WARN("Instance has weird coordinates. Rendered output might be screwed!");
+					GDS_WARN("Instance has weird coordinates. Rendered output might be wrong!");
 				}
 			} else if (current_a_reference) {
 				if (rec_data_length != (3*(4+4)))
-					GDS_WARN("Array instance has weird coordinates. Rendered output might be screwed!");
+					GDS_WARN("Array instance has weird coordinates. Rendered output might be wrong!");
 			}
 			break;
 		case AREF:
