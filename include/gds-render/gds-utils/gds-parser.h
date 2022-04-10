@@ -35,7 +35,7 @@
 
 #include <gds-render/gds-utils/gds-types.h>
 
-#define GDS_PRINT_DEBUG_INFOS (1) /**< @brief 1: Print infos, 0: Don't print */
+#define GDS_PRINT_DEBUG_INFOS (0) /**< @brief 1: Print infos, 0: Don't print */
 
 /**
  * @brief Parse a GDS file
