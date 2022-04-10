@@ -155,6 +155,10 @@ int command_line_convert_gds(const char *gds_name,
 	LayerSettings *layer_sett;
 	GdsOutputRenderer *current_renderer;
 
+	const struct gds_library_parsing_opts gds_parsing_options = {
+		.simplified_polygons = 1,
+	};
+
 	/* Check if parameters are valid */
 	if (!gds_name || !cell_name || !output_file_names || !layer_file || !renderers) {
 		printf(_("Probably missing argument. Check --help option\n"));
@@ -173,7 +177,7 @@ int command_line_convert_gds(const char *gds_name,
 
 	/* Load GDS */
 	clear_lib_list(&libs);
-	res = parse_gds_from_file(gds_name, &libs);
+	res = parse_gds_from_file(gds_name, &libs, &gds_parsing_options);
 	if (res)
 		goto ret_destroy_library_list;
 

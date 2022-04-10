@@ -35,7 +35,7 @@
 
 #include <gds-render/gds-utils/gds-types.h>
 
-#define GDS_PRINT_DEBUG_INFOS (0) /**< @brief 1: Print infos, 0: Don't print */
+#define GDS_PRINT_DEBUG_INFOS (1) /**< @brief 1: Print infos, 0: Don't print */
 
 /**
  * @brief Parse a GDS file
@@ -48,9 +48,11 @@
  *
  * @param[in] filename Path to the GDS file
  * @param[in,out] library_array GList Pointer.
+ * @param[in] parsing_options Parsing options.
  * @return 0 if successful
  */
-int parse_gds_from_file(const char *filename, GList **library_array);
+int parse_gds_from_file(const char *filename, GList **library_array,
+                        const struct gds_library_parsing_opts *parsing_options);
 
 /**
  * @brief Deletes all libraries including cells, references etc.
