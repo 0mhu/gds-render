@@ -228,6 +228,8 @@ int command_line_convert_gds(const char *gds_name,
 		gds_output_renderer_render_output(current_renderer, toplevel_cell, scale);
 	}
 
+	ret = 0;
+
 ret_destroy_library_list:
 	clear_lib_list(&libs);
 ret_clear_renderers:
