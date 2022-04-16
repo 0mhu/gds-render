@@ -11,7 +11,7 @@ depends=('glib2' 'gtk3' 'cairo')
 makedepends=('cmake' 'git')
 privides=('gds-render')
 source=("${pkgname}-git"::"git+https://git.shimatta.de/mhu/gds-render.git#recursive" "https://git.shimatta.de/3rd-party/libfort.git")
-sha1sums=('SKIP')
+sha1sums=('SKIP' 'SKIP')
 
 pkgver () {
 	_date=`date +"%Y%m%d"`
