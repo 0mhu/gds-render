@@ -1,4 +1,4 @@
-project(gds-render)
+project(gds-render LANGUAGES C)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/usr/" CACHE PATH "..." FORCE)
@@ -77,6 +77,9 @@ add_subdirectory(resources)
 add_subdirectory(doxygen)
 add_subdirectory(translations)
 add_subdirectory(version)
+set(FORT_ENABLE_TESTING OFF CACHE INTERNAL "")
+
+add_subdirectory(3rdparty/libfort)
 
 link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
@@ -90,5 +93,5 @@ install (TARGETS ${PROJECT_NAME}
 	RUNTIME	
 		DESTINATION bin
 	)
-target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS})
+target_link_libraries(${PROJECT_NAME} ${GLIB_LDFLAGS} ${GTK3_LDFLAGS} ${CAIRO_LDFLAGS} m version ${CMAKE_DL_LIBS} fort)
 

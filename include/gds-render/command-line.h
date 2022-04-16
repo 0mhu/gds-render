@@ -71,6 +71,14 @@ int command_line_convert_gds(const char *gds_name,
 			     gboolean tex_layers,
 			     double scale);
 
+/**
+ * @brief Analyze the given GDS file
+ * @param format Output format of the analysis result
+ * @param gds_name GDS file name
+ * @return 0 if successful
+ */
+int command_line_analyze_lib(const char *format, const char *gds_name);
+
 #endif /* _COMMAND_LINE_H_ */
 
 /** @} */

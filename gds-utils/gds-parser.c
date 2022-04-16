@@ -50,8 +50,8 @@
  */
 #define GDS_DEFAULT_UNITS (10E-9)
 
-#define GDS_ERROR(fmt, ...) printf("[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS error*/
-#define GDS_WARN(fmt, ...) printf("[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS warning */
+#define GDS_ERROR(fmt, ...) fprintf(stderr, "[PARSE_ERROR] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS error*/
+#define GDS_WARN(fmt, ...) fprintf(stderr, "[PARSE_WARNING] " fmt "\n", ##__VA_ARGS__) /**< @brief Print GDS warning */
 
 #if GDS_PRINT_DEBUG_INFOS
 	/**< @brief standard printf. But can be disabled in code. */

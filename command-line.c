@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include <glib/gi18n.h>
+#include <string.h>
 
 #include <gds-render/command-line.h>
 #include <gds-render/gds-utils/gds-parser.h>
@@ -38,6 +39,41 @@
 #include <gds-render/output-renderers/latex-renderer.h>
 #include <gds-render/output-renderers/external-renderer.h>
 #include <gds-render/gds-utils/gds-tree-checker.h>
+#include <gds-render/gds-utils/gds-statistics.h>
+
+#include <fort.h>
+
+#ifndef COUNT_OF
+#define COUNT_OF(x) (sizeof((x))/sizeof(0[(x)]))
+#endif
+
+enum analysis_format {
+	ANA_FORMAT_SIMPLE = 0,
+	ANA_FORMAT_CELLS_ONLY,
+	ANA_FORMAT_PRETTY,
+};
+
+struct analysis_format_cmdarg {
+	enum analysis_format format;
+	const char *argument;
+};
+
+
+
+static const struct analysis_format_cmdarg analysis_format_lookup[] = {
+	{
+		.format = ANA_FORMAT_SIMPLE,
+		.argument = "simple",
+	},
+	{
+		.format = ANA_FORMAT_PRETTY,
+		.argument = "pretty",
+	},
+	{
+		.format = ANA_FORMAT_CELLS_ONLY,
+		.argument = "cellsonly"
+	}
+};
 
 static int string_array_count(char **string_array)
 {
@@ -136,14 +172,14 @@ static struct gds_cell *find_gds_cell_in_lib(struct gds_library *lib, const char
 }
 
 int command_line_convert_gds(const char *gds_name,
-			      const char *cell_name,
-			      char **renderers,
-			      char **output_file_names,
-			      const char *layer_file,
-			      struct external_renderer_params *ext_param,
-			      gboolean tex_standalone,
-			      gboolean tex_layers,
-			      double scale)
+			     const char *cell_name,
+			     char **renderers,
+			     char **output_file_names,
+			     const char *layer_file,
+			     struct external_renderer_params *ext_param,
+			     gboolean tex_standalone,
+			     gboolean tex_layers,
+			     double scale)
 {
 	int ret = -1;
 	GList *libs = NULL;
@@ -237,6 +273,190 @@ ret_clear_renderers:
 		g_object_unref(list_iter->data);
 ret_destroy_layer_mapping:
 	g_object_unref(layer_sett);
+	return ret;
+}
+
+static void indent_line(int level)
+{
+	while (level--)
+		printf("\t");
+}
+
+static int printf_indented(int level, const char *format, ...)
+{
+	int ret;
+
+	va_list a_list;
+	va_start(a_list, format);
+	indent_line(level);
+	ret = vprintf(format, a_list);
+	va_end(a_list);
+
+	return ret;
+}
+
+static void print_simple_stat(GList *lib_stat_list)
+{
+	int indentation_level = 0;
+	GList *lib_iter;
+	GList *cell_iter;
+	const struct gds_lib_statistics *lib_stats;
+	const struct gds_cell_statistics *cell_stats;
+
+	for (lib_iter = lib_stat_list; lib_iter; lib_iter = g_list_next(lib_iter)) {
+		lib_stats = (const struct gds_lib_statistics *)lib_iter->data;
+		printf_indented(indentation_level, "Library %s\n", lib_stats->library->name);
+		indentation_level++;
+
+		for (cell_iter = lib_stats->cell_statistics; cell_iter; cell_iter = g_list_next(cell_iter)) {
+			cell_stats = (const struct gds_cell_statistics *)cell_iter->data;
+			printf_indented(indentation_level, "Cell %s\n", cell_stats->cell->name);
+			indentation_level++;
+			printf_indented(indentation_level, "Reference count: %zu\n", cell_stats->reference_count);
+			printf_indented(indentation_level, "Graphics count: %zu\n", cell_stats->gfx_count);
+			printf_indented(indentation_level, "Vertex count: %zu\n", cell_stats->vertex_count);
+			printf_indented(indentation_level, "Unresolved children: %d\n",
+					cell_stats->cell->checks.unresolved_child_count);
+			printf_indented(indentation_level, "Reference loop: %s\n",
+					cell_stats->cell->checks.affected_by_reference_loop ? "yes" : "no");
+
+			indentation_level--;
+		}
+		printf_indented(indentation_level, "Cell count: %zu\n", lib_stats->cell_count);
+		printf_indented(indentation_level, "Reference count: %zu\n", lib_stats->reference_count);
+		printf_indented(indentation_level, "Graphics count: %zu\n", lib_stats->gfx_count);
+		printf_indented(indentation_level, "Vertex count: %zu\n", lib_stats->vertex_count);
+	}
+
+}
+
+static void print_table_stat(GList *lib_stat_list)
+{
+	ft_table_t *table;
+	GList *lib_stat_iter;
+	GList *cell_stat_iter;
+	const struct gds_lib_statistics *lib_stats;
+	const struct gds_cell_statistics *cell_stats;
+
+	table = ft_create_table();
+
+	ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
+
+	ft_set_cell_prop(table, 0, FT_ANY_COLUMN, FT_CPROP_ROW_TYPE, FT_ROW_HEADER);
+	ft_write_ln(table, "Library", "Cell", "GFX", "Vertices", "Refs", "Unresolved Refs", "Loops");
+	for (lib_stat_iter = lib_stat_list; lib_stat_iter; lib_stat_iter = g_list_next(lib_stat_iter)) {
+		lib_stats = (const struct gds_lib_statistics *)lib_stat_iter->data;
+		ft_printf_ln(table, "%s|%zu|%zu|%zu|%zu|-|-", lib_stats->library->name, lib_stats->cell_count,
+			     lib_stats->gfx_count, lib_stats->vertex_count, lib_stats->reference_count);
+		for (cell_stat_iter = lib_stats->cell_statistics; cell_stat_iter;
+		     cell_stat_iter = g_list_next(cell_stat_iter)) {
+			cell_stats = (const struct gds_cell_statistics *)cell_stat_iter->data;
+			ft_printf_ln(table, "%s|%s|%zu|%zu|%zu|%d|%d", lib_stats->library->name, cell_stats->cell->name,
+				     cell_stats->gfx_count, cell_stats->vertex_count, cell_stats->reference_count,
+				     cell_stats->cell->checks.unresolved_child_count,
+				     cell_stats->cell->checks.affected_by_reference_loop);
+		}
+	}
+
+
+	printf("%s\n", ft_to_string(table));
+	ft_destroy_table(table);
+
+}
+
+static void print_statistics(enum analysis_format format, GList *lib_stat_list)
+{
+	switch (format) {
+	case ANA_FORMAT_PRETTY:
+		print_table_stat(lib_stat_list);
+		break;
+	default:
+		print_simple_stat(lib_stat_list);
+		break;
+	}
+}
+
+static void print_cell_names(GList *lib_list)
+{
+	GList *lib_iter;
+	GList *name_iter;
+	struct gds_library *lib;
+
+	for (lib_iter = lib_list; lib_iter; lib_iter = g_list_next(lib_iter)) {
+		lib = (struct gds_library *)lib_iter->data;
+		for (name_iter = lib->cell_names; name_iter; name_iter = name_iter->next) {
+			printf("%s\n", (const char *)name_iter->data);
+		}
+	}
+}
+
+int command_line_analyze_lib(const char *format, const char *gds_name)
+{
+	enum analysis_format fmt = ANA_FORMAT_SIMPLE;
+	size_t idx;
+	int found = 0;
+	GList *lib_list = NULL;
+	const struct gds_library_parsing_opts parsing_opts = {
+		.simplified_polygons = 0,
+	};
+	int res;
+	int ret = 0;
+	GList *lib_iter;
+	GList *lib_stat_list = NULL;
+
+	g_return_val_if_fail(gds_name, -1002);
+
+	if (format && *format) {
+		/* Check format if it is not empty */
+		for (idx = 0; idx < COUNT_OF(analysis_format_lookup); idx++) {
+			if (!strcmp(analysis_format_lookup[idx].argument, format)) {
+				/* Format specifier matches */
+				fmt = analysis_format_lookup[idx].format;
+				found = 1;
+			}
+		}
+
+		if (!found) {
+			fprintf(stderr, "No format matches %s. Using default.\n", format);
+		}
+	}
+
+	/* Load the GDS file */
+	res = parse_gds_from_file(gds_name, &lib_list, &parsing_opts);
+	if (res) {
+		fprintf(stderr, "Error parsing GDS file\n");
+		(void)clear_lib_list(&lib_list);
+		ret = res;
+		goto return_val;
+	}
+
+	for (lib_iter = lib_list; lib_iter; lib_iter = g_list_next(lib_iter)) {
+		res = gds_tree_check_cell_references((struct gds_library *)lib_iter->data);
+		if (res < 0) {
+			fprintf(stderr, "Error checking cell references. Will continue...\n");
+		}
+		res = gds_tree_check_reference_loops((struct gds_library *)lib_iter->data);
+		if (res < 0) {
+			fprintf(stderr, "Error checking cell reference loops. Will continue...\n");
+		}
+	}
+
+	if (fmt == ANA_FORMAT_CELLS_ONLY) {
+		print_cell_names(lib_list);
+		goto return_clear_libs;
+	}
+
+
+	gds_statistics_calc_library(lib_list, &lib_stat_list);
+
+	print_statistics(fmt, lib_stat_list);
+
+	/* Clean up the whole mess */
+
+	gds_statistics_free_lib_stat_list(&lib_stat_list);
+return_clear_libs:
+	clear_lib_list(&lib_list);
+return_val:
 	return ret;
 }
 

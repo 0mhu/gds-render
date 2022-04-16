@@ -262,6 +262,8 @@ int main(int argc, char **argv)
 	gchar *cellname = NULL;
 	gchar **renderer_args = NULL;
 	gboolean version = FALSE, pdf_standalone = FALSE, pdf_layers = FALSE;
+	gboolean analyze = FALSE;
+	gchar *format = NULL;
 	int scale = 1000;
 	int app_status = 0;
 	struct external_renderer_params so_render_params;
@@ -275,6 +277,8 @@ int main(int argc, char **argv)
 
 	GOptionEntry entries[] = {
 		{"version", 'v', 0, G_OPTION_ARG_NONE, &version, _("Print version"), NULL},
+		{"analyze", 'A', 0, G_OPTION_ARG_NONE, &analyze, _("Anaylze GDS file"), NULL},
+		{"format", 'f', 0, G_OPTION_ARG_STRING, &format, _("Output format of analysis result, Default simple"), "[simple | pretty | cellsonly]"},
 		{"renderer", 'r', 0, G_OPTION_ARG_STRING_ARRAY, &renderer_args,
 			_("Renderer to use. Can be used multiple times."), "pdf|svg|tikz|ext"},
 		{"scale", 's', 0, G_OPTION_ARG_INT, &scale, _("Divide output coordinates by <SCALE>"), "<SCALE>" },
@@ -320,10 +324,13 @@ int main(int argc, char **argv)
 		for (i = 2; i < argc; i++)
 			printf(_("Ignored argument: %s"), argv[i]);
 
-		app_status =
-			command_line_convert_gds(gds_name, cellname, renderer_args, output_paths, mappingname,
-						 &so_render_params, pdf_standalone, pdf_layers, scale);
-
+		if (analyze) {
+			app_status = command_line_analyze_lib(format, gds_name);
+		} else {
+			app_status =
+				command_line_convert_gds(gds_name, cellname, renderer_args, output_paths, mappingname,
+							 &so_render_params, pdf_standalone, pdf_layers, scale);
+		}
 	} else {
 		app_status = start_gui(argc, argv);
 	}
