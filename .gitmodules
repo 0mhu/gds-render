@@ -2,3 +2,7 @@
 	path = c-style-checker
 	url = https://git.shimatta.de/mhu/c-style-checker
 	branch = master
+[submodule "3rdparty/libfort"]
+	path = 3rdparty/libfort
+	url = https://git.shimatta.de/3rd-party/libfort
+	branch = develop
