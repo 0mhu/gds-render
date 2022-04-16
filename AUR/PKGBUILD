@@ -10,7 +10,7 @@ licence=('GPLv2')
 depends=('glib2' 'gtk3' 'cairo')
 makedepends=('cmake' 'git')
 privides=('gds-render')
-source=("${pkgname}-git"::"git+https://git.shimatta.de/mhu/gds-render.git")
+source=("${pkgname}-git"::"git+https://git.shimatta.de/mhu/gds-render.git#recursive")
 sha1sums=('SKIP')
 
 pkgver () {
