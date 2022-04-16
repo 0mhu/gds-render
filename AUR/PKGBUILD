@@ -10,7 +10,7 @@ licence=('GPLv2')
 depends=('glib2' 'gtk3' 'cairo')
 makedepends=('cmake' 'git')
 privides=('gds-render')
-source=("${pkgname}-git"::"git+https://git.shimatta.de/mhu/gds-render.git#recursive")
+source=("${pkgname}-git"::"git+https://git.shimatta.de/mhu/gds-render.git#recursive" "https://git.shimatta.de/3rd-party/libfort.git")
 sha1sums=('SKIP')
 
 pkgver () {
@@ -24,6 +24,13 @@ build () {
 	cd "$srcdir/$pkgname-git/build"
 	cmake -DCMAKE_BUILD_TYPE=Release ..
 	make
+}
+
+prepare () {
+	cd "${pkgname}-git"
+	git submodule init
+	git config submodule.libfort.url "$srcdir/libfort"
+	git submodule update
 }
 
 package () {
