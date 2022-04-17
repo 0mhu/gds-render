@@ -284,8 +284,9 @@ static GList *append_library(GList *curr_list, const struct gds_library_parsing_
 		lib->stats.gfx_count = 0;
 		lib->stats.reference_count = 0;
 		lib->stats.vertex_count = 0;
-	} else
+	} else {
 		return NULL;
+	}
 	if (library_ptr)
 		*library_ptr = lib;
 
