@@ -35,43 +35,7 @@
 
 #include <gds-render/gds-utils/gds-types.h>
 
-struct gds_cell_statistics {
-	size_t gfx_count;
-	size_t vertex_count;
-	size_t reference_count;
-	const struct gds_cell *cell;
-};
-
-struct gds_lib_statistics {
-	size_t gfx_count;
-	size_t vertex_count;
-	size_t reference_count;
-	size_t cell_count;
-	GList *cell_statistics;
-	const struct gds_library *library;
-};
-
-/**
- * @brief Calculate statistics of a single cell
- * @param[in] cell GDS cell
- * @param[out] stat Statistics output
- */
-void gds_statistics_calc_cell(const struct gds_cell *cell,
-			      struct gds_cell_statistics *stat);
-
-/**
- * @brief Calc statistic information for library
- * @param[in] library_list List containing all libraries
- * @param[in,out] lib_stat_list Statistic list
- */
-void gds_statistics_calc_library(GList * library_list,
-				 GList ** lib_stat_list);
-
-/**
- * @brief Free library statistics GList
- * @param[in,out] lib_stat_list List to free
- */
-void gds_statistics_free_lib_stat_list(GList ** lib_stat_list);
+void gds_statistics_calc_cummulative_counts_in_lib(struct gds_library *lib);
 
 /** @} */
 

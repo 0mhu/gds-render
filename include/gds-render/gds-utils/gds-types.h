@@ -65,6 +65,22 @@ struct gds_point {
 	int y;
 };
 
+struct gds_cell_statistics {
+    size_t gfx_count;
+    size_t vertex_count;
+    size_t total_vertex_count;
+    size_t total_gfx_count;
+    size_t reference_count;
+};
+
+struct gds_lib_statistics {
+    size_t gfx_count;
+    size_t vertex_count;
+    size_t reference_count;
+    size_t cell_count;
+};
+
+
 /**
  * @brief Stores the result of the cell checks.
  */
@@ -127,6 +143,7 @@ struct gds_cell {
 	GList *graphic_objs; /**< @brief List of #gds_graphics */
 	struct gds_library *parent_library; /**< @brief Pointer to parent library */
 	struct gds_cell_checks checks; /**< @brief Checking results */
+    struct gds_cell_statistics stats; /**< @brief Optional statistic info */
 };
 
 /**
@@ -147,7 +164,9 @@ struct gds_library {
 	double unit_in_meters;  /**< Length of a database unit in meters */
 	GList *cells; /**< List of #gds_cell that contains all cells in this library*/
 	GList *cell_names /**< List of strings that contains all cell names */;
+    struct gds_lib_statistics stats;
 };
+
 
 /** @} */
 

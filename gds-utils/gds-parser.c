@@ -43,6 +43,7 @@
 #include <glib/gi18n.h>
 
 #include <gds-render/gds-utils/gds-parser.h>
+#include <gds-render/gds-utils/gds-statistics.h>
 
 /**
  * @brief Default units assumed for library.
@@ -279,8 +280,13 @@ static GList *append_library(GList *curr_list, const struct gds_library_parsing_
 		lib->cell_names = NULL;
 		/* Copy the settings into the library */
 		memcpy(&lib->parsing_opts, opts, sizeof(struct gds_library_parsing_opts));
-	} else
+		lib->stats.cell_count = 0;
+		lib->stats.gfx_count = 0;
+		lib->stats.reference_count = 0;
+		lib->stats.vertex_count = 0;
+	} else {
 		return NULL;
+	}
 	if (library_ptr)
 		*library_ptr = lib;
 
@@ -356,6 +362,10 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 		cell->parent_library = NULL;
 		cell->checks.unresolved_child_count = GDS_CELL_CHECK_NOT_RUN;
 		cell->checks.affected_by_reference_loop = GDS_CELL_CHECK_NOT_RUN;
+		cell->stats.reference_count = 0;
+		cell->stats.total_vertex_count = 0;
+		cell->stats.gfx_count = 0;
+		cell->stats.vertex_count = 0;
 	} else
 		return NULL;
 	/* return cell */
@@ -605,6 +615,15 @@ static void scan_library_references(gpointer library_list_item, gpointer user)
 	g_list_foreach(lib->cells, scan_cell_references_and_polygons, lib);
 }
 
+static void calc_library_stats(gpointer library_list_item, gpointer user)
+{
+	struct gds_library *lib = (struct gds_library *)library_list_item;
+	(void)user;
+
+	GDS_INF("Calculating stats for Library: %s\n", lib->name);
+	gds_statistics_calc_cummulative_counts_in_lib(lib);
+}
+
 /**
  * @brief gds_parse_date
  * @param buffer Buffer that contains the GDS Date field
@@ -686,6 +705,7 @@ static void convert_aref_to_sref(struct gds_cell_array_instance *aref, struct gd
 		for (row = 0; row < aref->rows; row++) {
 			/* Create new instance for this row/column and configure data */
 			container_cell->child_cells = append_cell_ref(container_cell->child_cells, &sref_inst);
+			container_cell->stats.reference_count++;
 			if (!sref_inst) {
 				GDS_ERROR("Appending cell ref failed!");
 				continue;
@@ -867,6 +887,7 @@ int parse_gds_from_file(const char *filename, GList **library_list,
 			}
 			current_cell->child_cells = append_cell_ref(current_cell->child_cells,
 								    &current_s_reference);
+			current_cell->stats.reference_count++;
 			if (current_cell->child_cells == NULL) {
 				GDS_ERROR("Memory allocation failed");
 				run = -4;
@@ -896,6 +917,9 @@ int parse_gds_from_file(const char *filename, GList **library_list,
 							: (current_graphics->gfx_type == GRAPHIC_PATH ? "path"
 							: "box")));
 				current_graphics = NULL;
+				if (current_cell) {
+					current_cell->stats.gfx_count++;
+				}
 			}
 			if (current_s_reference != NULL) {
 				GDS_INF("\tLeaving Reference\n");
@@ -1045,7 +1069,9 @@ int parse_gds_from_file(const char *filename, GList **library_list,
 					current_graphics->vertices =
 							append_vertex(current_graphics->vertices, x, y);
 					GDS_INF("\t\tSet coordinate: %d/%d\n", x, y);
-
+					if (current_cell) {
+						current_cell->stats.vertex_count++;
+					}
 				}
 			} else if (current_a_reference) {
 				for (i = 0; i < 3; i++) {
@@ -1161,7 +1187,12 @@ int parse_gds_from_file(const char *filename, GList **library_list,
 	if (!run) {
 		/* Iterate and find references to cells */
 		g_list_foreach(lib_list, scan_library_references, NULL);
+
+		/* Calculate lib stats and cummulative total counts */
+		g_list_foreach(lib_list, calc_library_stats, NULL);
 	}
+
+
 
 	*library_list = lib_list;
 
