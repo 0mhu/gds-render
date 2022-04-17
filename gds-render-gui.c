@@ -37,6 +37,7 @@
 #include <gds-render/layer/layer-selector.h>
 #include <gds-render/widgets/activity-bar.h>
 #include <gds-render/cell-selector/lib-cell-renderer.h>
+#include <gds-render/cell-selector/cell-statistics-renderer.h>
 #include <gds-render/output-renderers/latex-renderer.h>
 #include <gds-render/output-renderers/cairo-renderer.h>
 #include <gds-render/widgets/conv-settings-dialog.h>
@@ -224,7 +225,7 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 	GtkTreeViewColumn *column;
 
 	self->cell_tree_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER,
-					 G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING);
+					 G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_POINTER);
 
 	/* Searching */
 	self->cell_filter = GTK_TREE_MODEL_FILTER(
@@ -240,7 +241,7 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 
 	render_cell = lib_cell_renderer_new();
 	render_lib = lib_cell_renderer_new();
-	render_vertex_count = gtk_cell_renderer_text_new();
+	render_vertex_count = cell_statistics_renderer_new();
 
 	column = gtk_tree_view_column_new_with_attributes(_("Library"), render_lib, "gds-lib", CELL_SEL_LIBRARY, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
@@ -249,7 +250,7 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 							  "error-level", CELL_SEL_CELL_ERROR_STATE, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
-	column = gtk_tree_view_column_new_with_attributes(_("Vertex Count"), render_vertex_count, "text", CELL_SEL_STAT,
+	column = gtk_tree_view_column_new_with_attributes(_("Vertex Count"), render_vertex_count, "cell-stat", CELL_SEL_STAT,
 							  NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
@@ -261,6 +262,10 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 
 	return 0;
 }
+
+const struct gds_cell_statistics cc =  {
+	.vertex_count = 12,
+};
 
 /**
  * @brief Callback function of Load GDS button
@@ -360,6 +365,7 @@ static void on_load_gds(gpointer button, gpointer user)
 					   CELL_SEL_CELL, gds_c,
 					   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
 					   CELL_SEL_LIBRARY, gds_c->parent_library,
+					   CELL_SEL_STAT, &cc,
 					   -1);
 		} /* for cells */
 	} /* for libraries */
