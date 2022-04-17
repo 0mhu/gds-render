@@ -297,6 +297,7 @@ static int printf_indented(int level, const char *format, ...)
 
 static void print_simple_stat(GList *lib_stat_list)
 {
+#if 0
 	int indentation_level = 0;
 	GList *lib_iter;
 	GList *cell_iter;
@@ -327,11 +328,13 @@ static void print_simple_stat(GList *lib_stat_list)
 		printf_indented(indentation_level, "Graphics count: %zu\n", lib_stats->gfx_count);
 		printf_indented(indentation_level, "Vertex count: %zu\n", lib_stats->vertex_count);
 	}
+#endif
 
 }
 
 static void print_table_stat(GList *lib_stat_list)
 {
+#if 0
 	ft_table_t *table;
 	GList *lib_stat_iter;
 	GList *cell_stat_iter;
@@ -361,7 +364,7 @@ static void print_table_stat(GList *lib_stat_list)
 
 	printf("%s\n", ft_to_string(table));
 	ft_destroy_table(table);
-
+#endif
 }
 
 static void print_statistics(enum analysis_format format, GList *lib_stat_list)
@@ -402,7 +405,6 @@ int command_line_analyze_lib(const char *format, const char *gds_name)
 	int res;
 	int ret = 0;
 	GList *lib_iter;
-	GList *lib_stat_list = NULL;
 
 	g_return_val_if_fail(gds_name, -1002);
 
@@ -447,13 +449,6 @@ int command_line_analyze_lib(const char *format, const char *gds_name)
 	}
 
 
-	gds_statistics_calc_library(lib_list, &lib_stat_list);
-
-	print_statistics(fmt, lib_stat_list);
-
-	/* Clean up the whole mess */
-
-	gds_statistics_free_lib_stat_list(&lib_stat_list);
 return_clear_libs:
 	clear_lib_list(&lib_list);
 return_val:

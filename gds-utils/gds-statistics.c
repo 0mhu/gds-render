@@ -32,105 +32,61 @@
  * @{
  */
 
-void gds_statistics_calc_cell(const struct gds_cell *cell, struct gds_cell_statistics *stat)
+#define MAX_RECURSION_DEPTH (1024)
+
+static void calculate_vertex_gfx_count_cell(struct gds_cell *cell, unsigned int recursion_depth)
 {
-	GList *iter;
-	GList *vertex_iter;
-	struct gds_graphics *gfx;
+	GList *cell_iter;
+	struct gds_cell_instance *cell_ref;
+	struct gds_cell *sub_cell;
 
-	if (!stat) {
-		fprintf(stderr, "Internal pointer error.\n");
+	g_return_if_fail(cell);
+
+	/* Check if cell has already been calculated */
+	if (cell->stats.total_gfx_count && cell->stats.total_vertex_count) {
+		/* Return. This cell and all of its subcells have been calculated */
 		return;
 	}
 
-	stat->cell = NULL;
-	stat->gfx_count = 0;
-	stat->reference_count = 0;
-	stat->vertex_count = 0;
+	/* Update with own vertex / GFX count */
+	cell->stats.total_vertex_count = cell->stats.vertex_count;
+	cell->stats.total_gfx_count = cell->stats.gfx_count;
 
-	if (!cell) {
-		fprintf(stderr, "Internal pointer error.\n");
+	/* Do not analyze further, if maximum recursion depth is reached */
+	if (!recursion_depth)
 		return;
 
+	for (cell_iter = cell->child_cells; cell_iter; cell_iter = g_list_next(cell_iter)) {
+		/* Scan all subcells recursively, if there are any */
+
+		cell_ref = (struct gds_cell_instance *)cell_iter->data;
+		sub_cell = (struct gds_cell *)cell_ref->cell_ref;
+
+		calculate_vertex_gfx_count_cell(sub_cell, recursion_depth - 1);
+
+		/* Increment count */
+		cell->stats.total_vertex_count += sub_cell->stats.total_vertex_count;
+		cell->stats.total_gfx_count += sub_cell->stats.total_vertex_count;
 	}
 
-	stat->cell = cell;
-
-	/* Sum up references */
-	for (iter = cell->child_cells; iter; iter = g_list_next(iter))
-		stat->reference_count++;
-
-	/* Sum up graphics objects and vertices */
-	for (iter = cell->graphic_objs; iter; iter = g_list_next(iter)) {
-		gfx = (struct gds_graphics *)iter->data;
-		stat->gfx_count++;
-		for (vertex_iter = gfx->vertices; vertex_iter; vertex_iter = g_list_next(vertex_iter)) {
-			stat->vertex_count++;
-		}
-	}
 }
 
-void gds_statistics_calc_library(GList *library_list, GList **lib_stat_list)
-{
 
-	GList *lib_iter;
+void gds_statistics_calc_cummulative_counts_in_lib(struct gds_library *lib)
+{
 	GList *cell_iter;
-	struct gds_lib_statistics *lib_stats;
-	struct gds_cell_statistics *cell_stats;
-	struct gds_library *gds_lib;
 	struct gds_cell *cell;
 
-	/* Go through each library/cell and generate statistics */
-	for (lib_iter = library_list; lib_iter; lib_iter = g_list_next(lib_iter)) {
-		gds_lib = (struct gds_library *)lib_iter->data;
-		lib_stats = (struct gds_lib_statistics *)malloc(sizeof(struct gds_lib_statistics));
-		if (!lib_stats) {
-			g_error("Failed allocating memory");
-		}
+	g_return_if_fail(lib);
 
-		lib_stats->library = gds_lib;
-		lib_stats->gfx_count = 0;
-		lib_stats->cell_count = 0;
-		lib_stats->reference_count = 0;
-		lib_stats->vertex_count = 0;
-		lib_stats->cell_statistics = NULL;
-
-		for (cell_iter = gds_lib->cells; cell_iter; cell_iter = g_list_next(cell_iter)) {
-			cell = (struct gds_cell *)cell_iter->data;
-			cell_stats = (struct gds_cell_statistics *)malloc(sizeof(struct gds_cell_statistics));
-			lib_stats->cell_count++;
-			gds_statistics_calc_cell(cell, cell_stats);
-			lib_stats->gfx_count += cell_stats->gfx_count;
-			lib_stats->reference_count += cell_stats->reference_count;
-			lib_stats->vertex_count += cell_stats->vertex_count;
-			lib_stats->cell_statistics = g_list_append(lib_stats->cell_statistics, cell_stats);
-		}
-
-		*lib_stat_list = g_list_append(*lib_stat_list, lib_stats);
-	} /* for lib */
-}
-
-static void free_stat_object(gpointer stat_obj)
-{
-	if (stat_obj)
-		free(stat_obj);
-}
-
-void gds_statistics_free_lib_stat_list(GList **lib_stat_list)
-{
-	GList *lib_iter;
-	struct gds_lib_statistics *lib_stats;
-
-	g_return_if_fail(lib_stat_list);
-	g_return_if_fail(*lib_stat_list);
-
-	for (lib_iter = *lib_stat_list; lib_iter; lib_iter = g_list_next(lib_iter)) {
-		lib_stats = (struct gds_lib_statistics *) lib_iter->data;
-		g_list_free_full(lib_stats->cell_statistics,
-				 free_stat_object);
+	for (cell_iter = lib->cells; cell_iter; cell_iter = g_list_next(cell_iter)) {
+		cell = (struct gds_cell *)cell_iter->data;
+		calculate_vertex_gfx_count_cell(cell, MAX_RECURSION_DEPTH);
+		lib->stats.vertex_count += cell->stats.vertex_count;
+		lib->stats.cell_count++;
+		lib->stats.gfx_count += cell->stats.gfx_count;
+		lib->stats.reference_count += cell->stats.reference_count;
 	}
-	g_list_free_full(*lib_stat_list, free_stat_object);
-	*lib_stat_list = NULL;
 }
 
 

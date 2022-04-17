@@ -52,7 +52,8 @@ static void cell_statistics_renderer_set_property(GObject      *object,
 		g_value_init(&val, G_TYPE_STRING);
 		string = g_string_new_len("", 5);
 		if (cell_stat)
-			g_string_printf(string, "%zu", cell_stat->vertex_count);
+			g_string_printf(string, "%zu (%zu) | %zu (%zu)", cell_stat->total_vertex_count,
+					cell_stat->vertex_count, cell_stat->total_gfx_count, cell_stat->gfx_count);
 		g_value_set_string(&val, string->str);
 		g_object_set_property(object, "text", &val);
 		g_value_unset(&val);

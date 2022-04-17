@@ -250,7 +250,7 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 							  "error-level", CELL_SEL_CELL_ERROR_STATE, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
-	column = gtk_tree_view_column_new_with_attributes(_("Vertex Count"), render_vertex_count, "cell-stat", CELL_SEL_STAT,
+	column = gtk_tree_view_column_new_with_attributes(_("Vertex | GFX Count"), render_vertex_count, "cell-stat", CELL_SEL_STAT,
 							  NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
@@ -365,7 +365,7 @@ static void on_load_gds(gpointer button, gpointer user)
 					   CELL_SEL_CELL, gds_c,
 					   CELL_SEL_CELL_ERROR_STATE, cell_error_level,
 					   CELL_SEL_LIBRARY, gds_c->parent_library,
-					   CELL_SEL_STAT, &cc,
+					   CELL_SEL_STAT, &gds_c->stats,
 					   -1);
 		} /* for cells */
 	} /* for libraries */
