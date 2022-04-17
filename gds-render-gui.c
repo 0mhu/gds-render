@@ -48,6 +48,7 @@ enum cell_store_columns {
 	CELL_SEL_LIBRARY = 0,
 	CELL_SEL_CELL,
 	CELL_SEL_CELL_ERROR_STATE, /**< Used for cell color and selectability */
+	CELL_SEL_STAT,
 	CELL_SEL_COLUMN_COUNT /**< @brief Not a column. Used to determine count of columns */
 };
 
@@ -219,10 +220,11 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 {
 	GtkCellRenderer *render_cell;
 	GtkCellRenderer *render_lib;
+	GtkCellRenderer *render_vertex_count;
 	GtkTreeViewColumn *column;
 
 	self->cell_tree_store = gtk_tree_store_new(CELL_SEL_COLUMN_COUNT, G_TYPE_POINTER,
-					 G_TYPE_POINTER, G_TYPE_UINT);
+					 G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_STRING);
 
 	/* Searching */
 	self->cell_filter = GTK_TREE_MODEL_FILTER(
@@ -238,12 +240,17 @@ int gds_render_gui_setup_cell_selector(GdsRenderGui *self)
 
 	render_cell = lib_cell_renderer_new();
 	render_lib = lib_cell_renderer_new();
+	render_vertex_count = gtk_cell_renderer_text_new();
 
 	column = gtk_tree_view_column_new_with_attributes(_("Library"), render_lib, "gds-lib", CELL_SEL_LIBRARY, NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
 	column = gtk_tree_view_column_new_with_attributes(_("Cell"), render_cell, "gds-cell", CELL_SEL_CELL,
 							  "error-level", CELL_SEL_CELL_ERROR_STATE, NULL);
+	gtk_tree_view_append_column(self->cell_tree_view, column);
+
+	column = gtk_tree_view_column_new_with_attributes(_("Vertex Count"), render_vertex_count, "text", CELL_SEL_STAT,
+							  NULL);
 	gtk_tree_view_append_column(self->cell_tree_view, column);
 
 	/* Callback for selection
