@@ -364,6 +364,7 @@ static GList *append_cell(GList *curr_list, struct gds_cell **cell_ptr)
 		cell->checks.affected_by_reference_loop = GDS_CELL_CHECK_NOT_RUN;
 		cell->stats.reference_count = 0;
 		cell->stats.total_vertex_count = 0;
+		cell->stats.total_gfx_count = 0;
 		cell->stats.gfx_count = 0;
 		cell->stats.vertex_count = 0;
 	} else
