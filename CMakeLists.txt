@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.6...3.18)
 project(gds-render LANGUAGES C)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -24,7 +25,7 @@ if(NOT WIN32)
   set(BoldWhite   "${Esc}[1;37m")
 endif()
 
-cmake_minimum_required(VERSION 2.8...3.18)
+
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLIB REQUIRED glib-2.0)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
@@ -80,6 +81,7 @@ add_subdirectory(version)
 set(FORT_ENABLE_TESTING OFF CACHE INTERNAL "")
 
 add_subdirectory(3rdparty/libfort)
+install(TARGETS fort EXCLUDE_FROM_ALL)
 
 link_directories(${GLIB_LINK_DIRS} ${GTK3_LINK_DIRS} ${CAIRO_LINK_DIRS})
 add_definitions(${GLIB2_CFLAGS_OTHER})
