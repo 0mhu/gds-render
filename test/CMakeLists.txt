@@ -22,7 +22,7 @@ if(NOT WIN32)
   set(BoldWhite   "${Esc}[1;37m")
 endif()
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8...3.18)
 find_package(PkgConfig REQUIRED)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/catch-framework")
