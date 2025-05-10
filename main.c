@@ -201,7 +201,7 @@ static int start_gui(int argc, char **argv)
 	application_domain = g_string_new(NULL);
 	g_string_printf(application_domain, "de.shimatta.gds_render_%s", _app_git_commit);
 
-	gapp = gtk_application_new(application_domain->str, G_APPLICATION_FLAGS_NONE);
+    gapp = gtk_application_new(application_domain->str, G_APPLICATION_DEFAULT_FLAGS);
 	g_string_free(application_domain, TRUE);
 
 	g_application_register(G_APPLICATION(gapp), NULL, NULL);
