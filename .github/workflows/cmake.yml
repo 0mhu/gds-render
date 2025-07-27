@@ -28,7 +28,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get -y install libgtk-3-dev gettext
+        sudo apt-get -y install libgtk-3-dev gettext cmake
         echo "Installation successful"
 
     - name: Configure CMake
